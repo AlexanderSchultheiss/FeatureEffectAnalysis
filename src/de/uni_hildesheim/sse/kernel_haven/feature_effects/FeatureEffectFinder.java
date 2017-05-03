@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import de.uni_hildesheim.sse.kernel_haven.SetUpException;
 import de.uni_hildesheim.sse.kernel_haven.analysis.AbstractAnalysis;
@@ -30,9 +32,18 @@ public class FeatureEffectFinder extends AbstractAnalysis {
 
     private PcFinder pcFinder;
     
-    public FeatureEffectFinder(Configuration config) {
+    private Pattern relevantVarsPattern;
+    
+    public FeatureEffectFinder(Configuration config) throws SetUpException {
         super(config);
         this.pcFinder = new PcFinder(config);
+        
+        String relevant = config.getProperty("analysis.relevant_variables", ".*");
+        try {
+            relevantVarsPattern = Pattern.compile(relevant);
+        } catch (PatternSyntaxException e) {
+            throw new SetUpException(e);
+        }
     }
     
     /**
@@ -223,8 +234,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @return Whether the variable is relevant or not.
      */
     private boolean isRelevant(String variable) {
-        return true;
-//        return !variable.startsWith("_");
+        return relevantVarsPattern.matcher(variable).matches();
     }
     
     @Override
