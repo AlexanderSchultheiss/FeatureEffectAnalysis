@@ -20,7 +20,7 @@
 	<property name="jacoco.dir" value="${lib.dir}" />
 	<property name="jacoco.file" value="${jacoco.dir}/jacocoant.jar" />
 	<property name="workspace.snapshot.dir" value="${build.dir}/workspacesnapshot/" />
-	<property name="jenkins.location" value="http://jenkins.sse.uni-hildesheim.de" />
+	<property name="jenkins.location" value="http://jenkins.sse.uni-hildesheim.de/job/KernelHaven_Infrastructure" />
 
 	<!-- Modules that build -->
 	<property name="src.dir" value="${basedir}/src" />
@@ -71,7 +71,7 @@
 		<mkdir dir="${dependencies.dir}" />
 		<mkdir dir="${reports.xml.dir}" />
 		<mkdir dir="${reports.html.dir}" />
-		<get src="${jenkins.location}/job/KernelHaven/lastSuccessfulBuild/artifact/build/jar/kernelhaven.jar" dest="${dependencies.dir}/kernelhaven.jar" />
+		<get src="${jenkins.location}/lastSuccessfulBuild/artifact/build/jar/kernelhaven.jar" dest="${dependencies.dir}/kernelhaven.jar" />
 	</target>
 
 	<target name="compile" depends="init">
