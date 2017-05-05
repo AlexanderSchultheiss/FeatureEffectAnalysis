@@ -86,19 +86,6 @@
 				<exclude name="**/*.java" />
 			</fileset>
 		</copy>
-
-		<!-- compile test-classes -->
-		<javac srcdir="${test.dir}" destdir="${classes.dir}" debug="yes" includeantruntime="false">
-			<classpath refid="classpath.project" />
-		</javac>
-
-		<!-- copy resources for test-classes -->
-		<copy todir="${classes.dir}">
-			<fileset dir="${test.dir}">
-				<exclude name="**/*.java" />
-			</fileset>
-		</copy>
-
 	</target>
 
 	<target name="test">
