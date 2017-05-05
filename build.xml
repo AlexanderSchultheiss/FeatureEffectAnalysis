@@ -43,7 +43,7 @@
 	</taskdef>
 
 	<target name="jenkins" depends="compile">
-		<antcall target="test" />
+		<!-- antcall target="test" / -->
 		<antcall target="jar" />
 		<antcall target="jarwithsources" />
 		<!--antcall target="check" />
