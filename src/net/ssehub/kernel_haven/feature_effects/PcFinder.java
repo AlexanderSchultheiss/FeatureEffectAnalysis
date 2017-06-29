@@ -1,4 +1,4 @@
-package de.uni_hildesheim.sse.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.feature_effects;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -8,18 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.uni_hildesheim.sse.kernel_haven.SetUpException;
-import de.uni_hildesheim.sse.kernel_haven.analysis.AbstractAnalysis;
-import de.uni_hildesheim.sse.kernel_haven.code_model.Block;
-import de.uni_hildesheim.sse.kernel_haven.code_model.SourceFile;
-import de.uni_hildesheim.sse.kernel_haven.config.Configuration;
-import de.uni_hildesheim.sse.kernel_haven.util.CodeExtractorException;
-import de.uni_hildesheim.sse.kernel_haven.util.ExtractorException;
-import de.uni_hildesheim.sse.kernel_haven.util.logic.Conjunction;
-import de.uni_hildesheim.sse.kernel_haven.util.logic.Disjunction;
-import de.uni_hildesheim.sse.kernel_haven.util.logic.Formula;
-import de.uni_hildesheim.sse.kernel_haven.util.logic.Negation;
-import de.uni_hildesheim.sse.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.SetUpException;
+import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
+import net.ssehub.kernel_haven.code_model.Block;
+import net.ssehub.kernel_haven.code_model.SourceFile;
+import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.util.CodeExtractorException;
+import net.ssehub.kernel_haven.util.ExtractorException;
+import net.ssehub.kernel_haven.util.logic.Conjunction;
+import net.ssehub.kernel_haven.util.logic.Disjunction;
+import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.Negation;
+import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
  * Creates a mapping variable -> presence conditions.
