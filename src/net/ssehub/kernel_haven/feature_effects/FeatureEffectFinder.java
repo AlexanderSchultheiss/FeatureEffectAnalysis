@@ -13,8 +13,8 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.util.BlockingQueue;
 import net.ssehub.kernel_haven.util.CodeExtractorException;
-import net.ssehub.kernel_haven.util.ExtractorException;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
@@ -216,7 +216,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @param files The source files that contain blocks with presence conditions.
      * @return The feature effect for each found variable.
      */
-    public Map<String, Formula> getFeatureEffects(List<SourceFile> files) {
+    public Map<String, Formula> getFeatureEffects(BlockingQueue<SourceFile> files) {
         Map<String, Set<Formula>> pcs = pcFinder.findPcs(files);
         Map<String, Formula> result = new HashMap<>(pcs.size());
         
@@ -240,16 +240,9 @@ public class FeatureEffectFinder extends AbstractAnalysis {
     @Override
     public void run() {
         try {
-            cmProvider.start(config.getCodeConfiguration());
+            cmProvider.start();
             
-            List<SourceFile> files = new ArrayList<>(1000);
-            
-            SourceFile file;
-            while ((file = cmProvider.getNext()) != null) {
-                files.add(file);
-            }
-            
-            Map<String, Formula> result = getFeatureEffects(files);
+            Map<String, Formula> result = getFeatureEffects(cmProvider.getResultQueue());
             
             PrintStream out = createResultStream("feature_effects.csv");
             for (Map.Entry<String, Formula> entry : result.entrySet()) {
@@ -264,15 +257,13 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             
             out = createResultStream("unparsable_files.txt");
             CodeExtractorException exc;
-            while ((exc = cmProvider.getNextException()) != null) {
+            while ((exc = (CodeExtractorException) cmProvider.getNextException()) != null) {
                 out.println(exc.getCausingFile().getPath() + ": " + exc.getCause());
             }
             out.close();
             
         } catch (SetUpException e) {
             LOGGER.logException("Error while starting cm provider", e);
-        } catch (ExtractorException e) {
-            LOGGER.logException("Error running extractor", e);
         }
     }
 

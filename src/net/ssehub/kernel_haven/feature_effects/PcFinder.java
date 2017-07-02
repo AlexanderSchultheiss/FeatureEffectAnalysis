@@ -1,10 +1,8 @@
 package net.ssehub.kernel_haven.feature_effects;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,8 +11,8 @@ import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.code_model.Block;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.util.BlockingQueue;
 import net.ssehub.kernel_haven.util.CodeExtractorException;
-import net.ssehub.kernel_haven.util.ExtractorException;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -39,7 +37,7 @@ public class PcFinder extends AbstractAnalysis {
      * @param files The source files to go through.
      * @return Every PC a variable is contained in; for each variable.
      */
-    public Map<String, Set<Formula>> findPcs(List<SourceFile> files) {
+    public Map<String, Set<Formula>> findPcs(BlockingQueue<SourceFile> files) {
         Map<String, Set<Formula>> result = new HashMap<>();
         
         for (SourceFile file : files) {
@@ -106,16 +104,9 @@ public class PcFinder extends AbstractAnalysis {
     @Override
     public void run() {
         try {
-            cmProvider.start(config.getCodeConfiguration());
+            cmProvider.start();
             
-            List<SourceFile> files = new ArrayList<>(1000);
-            
-            SourceFile file;
-            while ((file = cmProvider.getNext()) != null) {
-                files.add(file);
-            }
-            
-            Map<String, Set<Formula>> result = findPcs(files);
+            Map<String, Set<Formula>> result = findPcs(cmProvider.getResultQueue());
             
             PrintStream out = createResultStream("variable_pcs.csv");
             for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
@@ -130,15 +121,13 @@ public class PcFinder extends AbstractAnalysis {
             
             out = createResultStream("unparsable_files.txt");
             CodeExtractorException exc;
-            while ((exc = cmProvider.getNextException()) != null) {
+            while ((exc = (CodeExtractorException) cmProvider.getNextException()) != null) {
                 out.println(exc.getCausingFile().getPath() + ": " + exc.getCause());
             }
             out.close();
             
         } catch (SetUpException e) {
             LOGGER.logException("Error while starting cm provider", e);
-        } catch (ExtractorException e) {
-            LOGGER.logException("Error running extractor", e);
         }
     }
 
