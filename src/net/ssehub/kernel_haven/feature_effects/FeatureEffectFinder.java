@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.feature_effects;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +186,12 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         
         List<Formula> xorTrees = new ArrayList<>(pcs.size());
         
-        for (Formula pc : pcs) {
+        /*
+         * TODO SE: Make this configurable/optional
+         */
+        Collection<Formula> filteredFormula = FeatureEffectReducer.simpleReduce(pcs);
+        
+        for (Formula pc : filteredFormula) {
             Formula trueFormula = setToValue(pc, variable, true);
             Formula falseFormula = setToValue(pc, variable, false);
             
