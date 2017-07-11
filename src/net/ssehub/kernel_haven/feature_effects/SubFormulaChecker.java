@@ -23,8 +23,13 @@ public class SubFormulaChecker extends net.ssehub.kernel_haven.util.logic.parser
         setNested(formula.equals(getNestedFormula()));
         
         if (!isNested()) {
+            boolean oldStatus = isNegated;
+            
+            // Change the status only fur current part of formula
             isNegated = !isNegated;
             formula.getFormula().accept(this);
+            
+            isNegated = oldStatus;
         }
     }
     
