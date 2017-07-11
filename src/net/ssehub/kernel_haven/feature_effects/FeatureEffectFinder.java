@@ -35,6 +35,13 @@ public class FeatureEffectFinder extends AbstractAnalysis {
     
     private Pattern relevantVarsPattern;
     
+    /**
+     * Creates a new FeatureEffectFinder.
+     * 
+     * @param config The Configuration to use.
+     * 
+     * @throws SetUpException If reading configuration options fails.
+     */
     public FeatureEffectFinder(Configuration config) throws SetUpException {
         super(config);
         this.pcFinder = new PcFinder(config);
@@ -56,29 +63,33 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @return A new Formula equal to the given formula, but with each occurrence of the variable replaced.
      */
     private Formula setToValue(Formula formula, String variable, boolean value) {
+        Formula result;
+        
         if (formula instanceof Variable) {
             Variable var = (Variable) formula;
             if (var.getName().equals(variable)) {
-                return (value ? new True() : new False());
+                result = (value ? new True() : new False());
+            } else {
+                result = var;
             }
-            return var;
             
         } else if (formula instanceof Negation) {
-            return new Negation(setToValue(((Negation) formula).getFormula(), variable, value));
+            result = new Negation(setToValue(((Negation) formula).getFormula(), variable, value));
             
         } else if (formula instanceof Disjunction) {
-            return new Disjunction(
+            result = new Disjunction(
                     setToValue(((Disjunction) formula).getLeft(), variable, value),
                     setToValue(((Disjunction) formula).getRight(), variable, value));
             
         } else if (formula instanceof Conjunction) {
-            return new Conjunction(
+            result = new Conjunction(
                     setToValue(((Conjunction) formula).getLeft(), variable, value),
                     setToValue(((Conjunction) formula).getRight(), variable, value));
         } else {
-            return formula;
-            
+            result = formula;
         }
+        
+        return result;
     }
     
     /**
@@ -103,73 +114,77 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      *      <li>a AND a -> a</li>
      * </ul>
      * 
-     * @param f The formula to simplify.
+     * @param formula The formula to simplify.
      * @return A new formula equal to the original, but simplified.
      */
-    private Formula simplify(Formula f) {
-        if (f instanceof Negation) {
-            Formula nested = simplify(((Negation) f).getFormula());
+    private Formula simplify(Formula formula) {
+        Formula result;
+        if (formula instanceof Negation) {
+            Formula nested = simplify(((Negation) formula).getFormula());
             
             if (nested instanceof Negation) {
-                return ((Negation) nested).getFormula();
+                result = ((Negation) nested).getFormula();
                 
             } else if (nested instanceof True) {
-                return new False();
+                result = new False();
                 
             } else if (nested instanceof False) {
-                return new True();
+                result = new True();
+                
+            } else {
+                result = new Negation(nested);
             }
             
-            return new Negation(nested);
-            
-        } else if (f instanceof Disjunction) {
-            Formula left = simplify(((Disjunction) f).getLeft());
-            Formula right = simplify(((Disjunction) f).getRight());
+        } else if (formula instanceof Disjunction) {
+            Formula left = simplify(((Disjunction) formula).getLeft());
+            Formula right = simplify(((Disjunction) formula).getRight());
             
             if (left instanceof True || right instanceof True) {
-                return new True();
+                result = new True();
                 
             } else if (left instanceof False && right instanceof False) {
-                return new False();
+                result = new False();
                 
             } else if (left instanceof False) {
-                return right;
+                result = right;
                 
             } else if (right instanceof False) {
-                return left;
+                result = left;
                 
             } else if (left.equals(right)) {
-                return left;
+                result = left;
+                
+            } else {
+                result = new Disjunction(left, right);
             }
             
-            return new Disjunction(left, right);
-            
-        } else if (f instanceof Conjunction) {
-            Formula left = simplify(((Conjunction) f).getLeft());
-            Formula right = simplify(((Conjunction) f).getRight());
+        } else if (formula instanceof Conjunction) {
+            Formula left = simplify(((Conjunction) formula).getLeft());
+            Formula right = simplify(((Conjunction) formula).getRight());
             
             if (left instanceof False || right instanceof False) {
-                return new False();
+                result = new False();
              
             } else if (left instanceof True && right instanceof True) {
-                return new True();
+                result = new True();
                 
             } else if (left instanceof True) {
-                return right;
+                result = right;
                 
             } else if (right instanceof True) {
-                return left;
+                result = left;
                 
             } else if (left.equals(right)) {
-                return left;
+                result = left;
+                
+            } else {
+                result = new Conjunction(left, right);
             }
             
-            return new Conjunction(left, right);
-            
         } else {
-            return f;
-            
+            result = formula;
         }
+        return result;
     }
     
     /**

@@ -26,6 +26,11 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  */
 public class PcFinder extends AbstractAnalysis {
 
+    /**
+     * Creates a new PcFinder.
+     * 
+     * @param config The configuration to use.
+     */
     public PcFinder(Configuration config) {
         super(config);
     }
@@ -74,30 +79,28 @@ public class PcFinder extends AbstractAnalysis {
     /**
      * Finds all variables in the given formula. This recursively walks through the whole tree.
      * 
-     * @param f The formula to find variables in.
+     * @param formula The formula to find variables in.
      * @param result The resulting set to add variables to.
      */
-    private void findVars(Formula f, Set<Variable> result) {
+    private void findVars(Formula formula, Set<Variable> result) {
         
-        if (f instanceof Variable) {
-            result.add((Variable) f);
+        if (formula instanceof Variable) {
+            result.add((Variable) formula);
             
-        } else if (f instanceof Negation) {
-            findVars(((Negation) f).getFormula(), result);
+        } else if (formula instanceof Negation) {
+            findVars(((Negation) formula).getFormula(), result);
             
-        } else if (f instanceof Disjunction) {
-            Disjunction dis = (Disjunction) f;
+        } else if (formula instanceof Disjunction) {
+            Disjunction dis = (Disjunction) formula;
             findVars(dis.getLeft(), result);
             findVars(dis.getRight(), result);
             
-        } else if (f instanceof Conjunction) {
-            Conjunction con = (Conjunction) f;
+        } else if (formula instanceof Conjunction) {
+            Conjunction con = (Conjunction) formula;
             findVars(con.getLeft(), result);
             findVars(con.getRight(), result);
-            
-        } else {
-            // ignore true and false
         }
+        // ignore true and false
         
     }
 
