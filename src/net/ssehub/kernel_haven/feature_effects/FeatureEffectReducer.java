@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.parser.SubFormulaChecker;
 
 /**
  * Strategies to simplify feature effect constraints.
