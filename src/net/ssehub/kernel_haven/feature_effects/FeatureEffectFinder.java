@@ -268,7 +268,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             PrintStream out = createResultStream("feature_effects.csv");
             for (Map.Entry<String, Formula> entry : result.entrySet()) {
                 if (isRelevant(entry.getKey())) {
-                    out.print(entry.getKey());
+                    out.print(toString(entry.getKey()));
                     out.print(";");
                     out.print(toString(entry.getValue()));
                     out.println();
@@ -293,21 +293,33 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
      * readable form.
      * 
-     * @param value The formula to translate.
+     * @param formula The formula to translate.
 
      * @return A string representation of this formula, in a C-style like format. 
      */
-    private String toString(Formula value) {
-        String result = value.toString();
+    private String toString(Formula formula) {
+        return toString(formula.toString());
+    }
+    
+    /**
+     * Converts the formula into a string representation.
+     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
+     * readable form.
+     * 
+     * @param formula {@link Formula#toString()}
+
+     * @return A string representation of this formula, in a C-style like format. 
+     */
+    private String toString(String formula) {
         if (Boolean.parseBoolean(config.getProperty("prepare_non_boolean"))) {
-            result = result.replace("_eq_", "=");
-            result = result.replace("_ne_", "!=");
-            result = result.replace("_gt_", ">");
-            result = result.replace("_ge_", ">=");
-            result = result.replace("_lt_", ">");
-            result = result.replace("_le_", ">=");
+            formula = formula.replace("_eq_", "=");
+            formula = formula.replace("_ne_", "!=");
+            formula = formula.replace("_gt_", ">");
+            formula = formula.replace("_ge_", ">=");
+            formula = formula.replace("_lt_", ">");
+            formula = formula.replace("_le_", ">=");
         }
-        return result;
+        return formula;
     }
 
 }
