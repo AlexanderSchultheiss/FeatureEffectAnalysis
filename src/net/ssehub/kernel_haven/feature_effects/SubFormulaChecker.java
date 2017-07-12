@@ -13,6 +13,11 @@ public class SubFormulaChecker extends net.ssehub.kernel_haven.util.logic.parser
 
     private boolean isNegated;
     
+    /**
+     * Sole constructor for this visitor.
+     * The accept method must still be called.
+     * @param nestedFormula The formula to check if it is nested inside the visited formula.
+     */
     public SubFormulaChecker(Formula nestedFormula) {
         super(nestedFormula);
         isNegated = false;

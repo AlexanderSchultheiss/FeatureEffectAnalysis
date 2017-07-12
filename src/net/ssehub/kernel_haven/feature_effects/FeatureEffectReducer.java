@@ -23,8 +23,8 @@ class FeatureEffectReducer {
     
     /**
      * Checks if a formula contains an already processed formula as sub formula and removes it.
-     * @param pcs
-     * @return
+     * @param pcs All presence conditions, which belong to a feature and form a feature effect
+     * @return An equivalent (sub-) set of the passed constraints.
      */
     static Collection<Formula> simpleReduce(Collection<Formula> pcs) {
         List<Formula> result = new ArrayList<>();

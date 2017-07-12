@@ -270,7 +270,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
                 if (isRelevant(entry.getKey())) {
                     out.print(entry.getKey());
                     out.print(";");
-                    out.print(entry.getValue());
+                    out.print(toString(entry.getValue()));
                     out.println();
                 }
             }
@@ -286,6 +286,28 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         } catch (SetUpException e) {
             LOGGER.logException("Error while starting cm provider", e);
         }
+    }
+
+    /**
+     * Converts the formula into a string representation.
+     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
+     * readable form.
+     * 
+     * @param value The formula to translate.
+
+     * @return A string representation of this formula, in a C-style like format. 
+     */
+    private String toString(Formula value) {
+        String result = value.toString();
+        if (Boolean.parseBoolean(config.getProperty("prepare_non_boolean"))) {
+            result = result.replace("_eq_", "=");
+            result = result.replace("_ne_", "!=");
+            result = result.replace("_gt_", ">");
+            result = result.replace("_ge_", ">=");
+            result = result.replace("_lt_", ">");
+            result = result.replace("_le_", ">=");
+        }
+        return result;
     }
 
 }
