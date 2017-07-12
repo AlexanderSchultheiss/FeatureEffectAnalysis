@@ -35,6 +35,8 @@ public class FeatureEffectFinder extends AbstractAnalysis {
     
     private Pattern relevantVarsPattern;
     
+    private boolean nonBooleanReplacements;
+    
     /**
      * Creates a new FeatureEffectFinder.
      * 
@@ -52,39 +54,54 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         } catch (PatternSyntaxException e) {
             throw new SetUpException(e);
         }
+        
+        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
     }
     
     /**
      * Replaces each occurrence of a variable with a constant.
      * 
+     * TODO: move this to general utils.
+     * 
      * @param formula The formula to replace the variable in; this formula is not altered.
      * @param variable The variable to replace.
      * @param value Which constant the variable should be replaced with.
+     * @param exactMatch Whether the variable name has to match exactly. If <code>false</code>, then startsWith()
+     *      is used to find matches to replace.
+     * 
      * @return A new Formula equal to the given formula, but with each occurrence of the variable replaced.
      */
-    private Formula setToValue(Formula formula, String variable, boolean value) {
+    private Formula setToValue(Formula formula, String variable, boolean value, boolean exactMatch) {
         Formula result;
         
         if (formula instanceof Variable) {
             Variable var = (Variable) formula;
-            if (var.getName().equals(variable)) {
+            boolean replace;
+            
+            if (exactMatch) {
+                replace = var.getName().equals(variable);
+            } else {
+                replace = var.getName().startsWith(variable);
+            }
+            
+            if (replace) {
                 result = (value ? new True() : new False());
             } else {
                 result = var;
             }
             
         } else if (formula instanceof Negation) {
-            result = new Negation(setToValue(((Negation) formula).getFormula(), variable, value));
+            result = new Negation(setToValue(((Negation) formula).getFormula(), variable, value, exactMatch));
             
         } else if (formula instanceof Disjunction) {
             result = new Disjunction(
-                    setToValue(((Disjunction) formula).getLeft(), variable, value),
-                    setToValue(((Disjunction) formula).getRight(), variable, value));
+                    setToValue(((Disjunction) formula).getLeft(), variable, value, exactMatch),
+                    setToValue(((Disjunction) formula).getRight(), variable, value, exactMatch));
             
         } else if (formula instanceof Conjunction) {
             result = new Conjunction(
-                    setToValue(((Conjunction) formula).getLeft(), variable, value),
-                    setToValue(((Conjunction) formula).getRight(), variable, value));
+                    setToValue(((Conjunction) formula).getLeft(), variable, value, exactMatch),
+                    setToValue(((Conjunction) formula).getRight(), variable, value, exactMatch));
         } else {
             result = formula;
         }
@@ -113,6 +130,8 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      *      <li>true AND a -> a</li>
      *      <li>a AND a -> a</li>
      * </ul>
+     * 
+     * TODO: move this to general utils.
      * 
      * @param formula The formula to simplify.
      * @return A new formula equal to the original, but simplified.
@@ -207,8 +226,8 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         Collection<Formula> filteredFormula = FeatureEffectReducer.simpleReduce(pcs);
         
         for (Formula pc : filteredFormula) {
-            Formula trueFormula = setToValue(pc, variable, true);
-            Formula falseFormula = setToValue(pc, variable, false);
+            Formula trueFormula = setToValue(pc, variable, true, true);
+            Formula falseFormula = setToValue(pc, variable, false, true);
             
             // xorTrees.add(new Xor(trueFormula, falseFormula));
             
@@ -225,6 +244,15 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         
         for (int i = 1; i < xorTrees.size(); i++) {
             result = new Disjunction(result, xorTrees.get(i));
+        }
+        
+        if (nonBooleanReplacements) {
+            int index = variable.indexOf("_eq_");
+            
+            if (index != -1) {
+                String varBaseName = variable.substring(0, index);
+                result = setToValue(result, varBaseName + "_", false, false);
+            }
         }
         
         return simplify(result);
@@ -311,7 +339,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @return A string representation of this formula, in a C-style like format. 
      */
     private String toString(String formula) {
-        if (Boolean.parseBoolean(config.getProperty("prepare_non_boolean"))) {
+        if (nonBooleanReplacements) {
             formula = formula.replace("_eq_", "=");
             formula = formula.replace("_ne_", "!=");
             formula = formula.replace("_gt_", ">");
