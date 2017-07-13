@@ -39,19 +39,15 @@ public class FeatureEffectFinder extends AbstractAnalysis {
     private Pattern relevantVarsPattern;
     
     /**
-     * Used if non-Boolean pre-processor constants are escaped by the code extractor. In this case, this option is also
-     * used to re-translate the escaped variables:
-     * <ul>
-     *   <li><tt>true</tt>: Back translation activated</li>
-     *   <li><tt>false</tt>: No post-processing</li>
-     * </ul>
-     * Known properties parameter, which trigger the escaping of non-Boolean elements:
-     * <ul>
-     *   <li><tt>code.extractor.fuzzy_parsing = true</tt></li>
-     *   <li><tt>prepare_non_boolean = true</tt></li>
-     * </ul>
+     * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
      */
     private boolean nonBooleanReplacements;
+    
+    /**
+     * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
+     * human readable form.
+     */
+    private boolean replaceNonBooleanReplacements;
     
     /**
      * Creates a new FeatureEffectFinder.
@@ -71,8 +67,9 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             throw new SetUpException(e);
         }
         
-        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"))
-            || Boolean.parseBoolean(config.getProperty("code.extractor.fuzzy_parsing"));
+        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
+        this.replaceNonBooleanReplacements = nonBooleanReplacements
+                || Boolean.parseBoolean(config.getProperty("code.extractor.fuzzy_parsing"));
     }
     
     /**
@@ -371,7 +368,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @return A string representation of this formula, in a C-style like format. 
      */
     private String toString(String formula) {
-        if (nonBooleanReplacements) {
+        if (replaceNonBooleanReplacements) {
             formula = formula.replace("_eq_", "=");
             formula = formula.replace("_ne_", "!=");
             formula = formula.replace("_gt_", ">");
