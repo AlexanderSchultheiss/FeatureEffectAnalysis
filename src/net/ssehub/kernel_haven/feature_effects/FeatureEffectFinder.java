@@ -3,9 +3,12 @@ package net.ssehub.kernel_haven.feature_effects;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -308,13 +311,28 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             Map<String, Formula> result = getFeatureEffects(cmProvider.getResultQueue());
             
             PrintStream out = createResultStream("feature_effects.csv");
+            
+            // Filter and sort relevant results
+            List<Map.Entry<String, Formula>> filteredResults = new ArrayList<>();
             for (Map.Entry<String, Formula> entry : result.entrySet()) {
                 if (isRelevant(entry.getKey())) {
-                    out.print(toString(entry.getKey()));
-                    out.print(";");
-                    out.print(toString(entry.getValue()));
-                    out.println();
+                    filteredResults.add(entry);
                 }
+            }
+            Collections.sort(filteredResults, new Comparator<Map.Entry<String, Formula>>() {
+
+                @Override
+                public int compare(Entry<String, Formula> o1, Entry<String, Formula> o2) {
+                    return o1.getKey().compareTo(o2.getKey());
+                }
+                
+            });
+            
+            for (Map.Entry<String, Formula> entry : filteredResults) {
+                out.print(toString(entry.getKey()));
+                out.print(";");
+                out.print(toString(entry.getValue()));
+                out.println();
             }
             out.close();
             
