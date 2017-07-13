@@ -23,10 +23,11 @@ class FeatureEffectReducer {
     
     /**
      * Checks if a formula contains an already processed formula as sub formula and removes it.
+     * @param variable The name of the variable for which it is done, only used for logging debug messages.
      * @param pcs All presence conditions, which belong to a feature and form a feature effect
      * @return An equivalent (sub-) set of the passed constraints.
      */
-    static Collection<Formula> simpleReduce(Collection<Formula> pcs) {
+    static Collection<Formula> simpleReduce(String variable, Collection<Formula> pcs) {
         List<Formula> result = new ArrayList<>();
         List<Formula> orderedPCs = new ArrayList<>(pcs);
         Collections.sort(orderedPCs, new Comparator<Formula>() {
@@ -56,7 +57,8 @@ class FeatureEffectReducer {
             if (newFormula) {
                 result.add(pc);
             } else {
-                net.ssehub.kernel_haven.util.Logger.get().logInfo("Ommited Feature effect formula: ", pc.toString());
+                net.ssehub.kernel_haven.util.Logger.get().logDebug("Ommited feature effect constraint for feature \"",
+                    variable, "\", sub-constraint: ", pc.toString());
             }
         }
         

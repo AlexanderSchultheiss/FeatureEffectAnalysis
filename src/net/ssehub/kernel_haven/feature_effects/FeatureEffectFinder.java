@@ -35,6 +35,19 @@ public class FeatureEffectFinder extends AbstractAnalysis {
     
     private Pattern relevantVarsPattern;
     
+    /**
+     * Used if non-Boolean pre-processor constants are escaped by the code extractor. In this case, this option is also
+     * used to re-translate the escaped variables:
+     * <ul>
+     *   <li><tt>true</tt>: Back translation activated</li>
+     *   <li><tt>false</tt>: No post-processing</li>
+     * </ul>
+     * Known properties parameter, which trigger the escaping of non-Boolean elements:
+     * <ul>
+     *   <li><tt>code.extractor.fuzzy_parsing = true</tt></li>
+     *   <li><tt>prepare_non_boolean = true</tt></li>
+     * </ul>
+     */
     private boolean nonBooleanReplacements;
     
     /**
@@ -55,7 +68,8 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             throw new SetUpException(e);
         }
         
-        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
+        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"))
+            || Boolean.parseBoolean(config.getProperty("code.extractor.fuzzy_parsing"));
     }
     
     /**
@@ -223,7 +237,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         /*
          * TODO SE: Make this configurable/optional
          */
-        Collection<Formula> filteredFormula = FeatureEffectReducer.simpleReduce(pcs);
+        Collection<Formula> filteredFormula = FeatureEffectReducer.simpleReduce(variable, pcs);
         
         for (Formula pc : filteredFormula) {
             Formula trueFormula = setToValue(pc, variable, true, true);
