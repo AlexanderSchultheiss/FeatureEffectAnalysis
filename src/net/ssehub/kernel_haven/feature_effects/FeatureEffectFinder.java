@@ -279,7 +279,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @param files The source files that contain blocks with presence conditions.
      * @return The feature effect for each found variable.
      */
-    public Map<String, Formula> getFeatureEffects(BlockingQueue<SourceFile> files) {
+    public List<Map.Entry<String, Formula>> getFeatureEffects(BlockingQueue<SourceFile> files) {
         Map<String, Set<Formula>> pcs = pcFinder.findPcs(files);
         Map<String, Formula> result = new HashMap<>(pcs.size());
         
@@ -287,7 +287,23 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             result.put(variable, buildFeatureEffefct(variable, pcs.get(variable)));
         }
         
-        return result;
+        // Filter and sort relevant results
+        List<Map.Entry<String, Formula>> filteredResults = new ArrayList<>();
+        for (Map.Entry<String, Formula> entry : result.entrySet()) {
+            if (isRelevant(entry.getKey())) {
+                filteredResults.add(entry);
+            }
+        }
+        Collections.sort(filteredResults, new Comparator<Map.Entry<String, Formula>>() {
+
+            @Override
+            public int compare(Entry<String, Formula> o1, Entry<String, Formula> o2) {
+                return o1.getKey().compareTo(o2.getKey());
+            }
+            
+        });
+        
+        return filteredResults;
     }
 
     /**
@@ -305,27 +321,10 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         try {
             cmProvider.start();
             
-            Map<String, Formula> result = getFeatureEffects(cmProvider.getResultQueue());
+            List<Map.Entry<String, Formula>> result = getFeatureEffects(cmProvider.getResultQueue());
             
             PrintStream out = createResultStream("feature_effects.csv");
-            
-            // Filter and sort relevant results
-            List<Map.Entry<String, Formula>> filteredResults = new ArrayList<>();
-            for (Map.Entry<String, Formula> entry : result.entrySet()) {
-                if (isRelevant(entry.getKey())) {
-                    filteredResults.add(entry);
-                }
-            }
-            Collections.sort(filteredResults, new Comparator<Map.Entry<String, Formula>>() {
-
-                @Override
-                public int compare(Entry<String, Formula> o1, Entry<String, Formula> o2) {
-                    return o1.getKey().compareTo(o2.getKey());
-                }
-                
-            });
-            
-            for (Map.Entry<String, Formula> entry : filteredResults) {
+            for (Map.Entry<String, Formula> entry : result) {
                 out.print(toString(entry.getKey()));
                 out.print(";");
                 out.print(toString(entry.getValue()));
@@ -367,7 +366,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
 
      * @return A string representation of this formula, in a C-style like format. 
      */
-    private String toString(String formula) {
+    public String toString(String formula) {
         if (replaceNonBooleanReplacements) {
             formula = formula.replace("_eq_", "=");
             formula = formula.replace("_ne_", "!=");
