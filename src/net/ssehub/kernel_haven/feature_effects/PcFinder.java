@@ -6,8 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
+import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.Block;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
@@ -45,9 +47,16 @@ public class PcFinder extends AbstractAnalysis {
     public Map<String, Set<Formula>> findPcs(BlockingQueue<SourceFile> files) {
         Map<String, Set<Formula>> result = new HashMap<>();
         
+        BuildModel bm = PipelineConfigurator.instance().getBmProvider().getResult();
+        
         for (SourceFile file : files) {
+            Formula filePc = null;
+            if (null != bm) {
+                filePc = bm.getPc(file.getPath());
+            }
+            
             for (Block b : file) {
-                findPcsInBlock(b, result);
+                findPcsInBlock(b, result, filePc);
             }
         }
         
@@ -60,19 +69,27 @@ public class PcFinder extends AbstractAnalysis {
      * 
      * @param block The block to find PCs in.
      * @param result The result to add the PCs to.
+     * @param filePc Optional: The presence condition of the file which is currently processed. Will be ignored if it is
+     * <tt>null</tt>.
      */
-    private void findPcsInBlock(Block block, Map<String, Set<Formula>> result) {
+    private void findPcsInBlock(Block block, Map<String, Set<Formula>> result, Formula filePc) {
         
         Set<Variable> vars = new HashSet<>();
-        findVars(block.getPresenceCondition(), vars);
+        Formula pc = block.getPresenceCondition();
+        
+        if (null != filePc) {
+            pc = new Conjunction(filePc, pc);
+        }
+        
+        findVars(pc, vars);
         
         for (Variable var : vars)  {
             result.putIfAbsent(var.getName(), new HashSet<>());
-            result.get(var.getName()).add(block.getPresenceCondition());
+            result.get(var.getName()).add(pc);
         }
         
         for (Block child : block) {
-            findPcsInBlock(child, result);
+            findPcsInBlock(child, result, filePc);
         }
     }
     
