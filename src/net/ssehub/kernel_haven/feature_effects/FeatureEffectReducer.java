@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Formula;
 
 /**
@@ -57,7 +58,7 @@ class FeatureEffectReducer {
             if (newFormula) {
                 result.add(pc);
             } else {
-                net.ssehub.kernel_haven.util.Logger.get().logDebug("Ommited feature effect constraint for feature \""
+                Logger.get().logDebug("Ommited feature effect constraint for feature \""
                     + variable + "\" + sub-constraint: " + pc.toString());
             }
         }
