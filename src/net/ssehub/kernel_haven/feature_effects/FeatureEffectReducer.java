@@ -57,8 +57,8 @@ class FeatureEffectReducer {
             if (newFormula) {
                 result.add(pc);
             } else {
-                net.ssehub.kernel_haven.util.Logger.get().logDebug("Ommited feature effect constraint for feature \"",
-                    variable, "\", sub-constraint: ", pc.toString());
+                net.ssehub.kernel_haven.util.Logger.get().logDebug("Ommited feature effect constraint for feature \""
+                    + variable + "\" + sub-constraint: " + pc.toString());
             }
         }
         
