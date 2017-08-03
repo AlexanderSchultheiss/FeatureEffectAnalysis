@@ -15,6 +15,8 @@ import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.BlockingQueue;
 import net.ssehub.kernel_haven.util.CodeExtractorException;
+import net.ssehub.kernel_haven.util.ExtractorException;
+import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -48,11 +50,30 @@ public class PcFinder extends AbstractAnalysis {
         Map<String, Set<Formula>> result = new HashMap<>();
         
         BuildModel bm = PipelineConfigurator.instance().getBmProvider().getResult();
+        if (null == bm) {
+            ExtractorException exc = null;
+            StringBuffer errMsg = new StringBuffer();
+            while ((exc = PipelineConfigurator.instance().getBmProvider().getNextException()) != null) {
+                if (errMsg.length() > 0) {
+                    errMsg.append(", ");                    
+                }
+                errMsg.append(exc.getMessage());
+            }
+            if (errMsg.length() == 0) {
+                Logger.get().logDebug("Calculating presence conditions without considering build model");
+            } else {
+                Logger.get().logError("Should use build information for calculation of presence conditions, "
+                    + "but build model provider returned an error: " + errMsg);
+            }
+        } else {
+            Logger.get().logDebug("Calculating presence conditions including information from build model");
+        }
         
         for (SourceFile file : files) {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
+                Logger.get().logDebug("Presence condition for " + file.getPath() + ": " + filePc);
             }
             
             for (Block b : file) {
