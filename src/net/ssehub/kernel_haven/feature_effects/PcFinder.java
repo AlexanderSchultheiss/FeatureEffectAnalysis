@@ -55,7 +55,7 @@ public class PcFinder extends AbstractAnalysis {
                 Logger.get().logDebug("Calculating presence conditions without considering build model");
             } else {
                 throw new SetUpException("Should use build information for calculation of presence conditions, "
-                    + "but build model provider returned an error.", exc);
+                    + "but build model provider returned an error: " + errMsg.toString(), exc);
             }
         } else {
             Logger.get().logDebug("Calculating presence conditions including information from build model");
