@@ -54,7 +54,8 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * 
      * @param config The Configuration to use.
      * 
-     * @throws SetUpException If reading configuration options fails.
+     * @throws SetUpException If reading configuration options fails or if a build model was specified,
+     * but exited abnormally.
      */
     public FeatureEffectFinder(Configuration config) throws SetUpException {
         super(config);

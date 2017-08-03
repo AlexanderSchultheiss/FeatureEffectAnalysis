@@ -29,27 +29,19 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  * @author Adam
  */
 public class PcFinder extends AbstractAnalysis {
+    
+    private BuildModel bm;
 
     /**
      * Creates a new PcFinder.
      * 
      * @param config The configuration to use.
+     * @throws SetUpException if a build model was specified, but exited abnormally
      */
-    public PcFinder(Configuration config) {
+    public PcFinder(Configuration config) throws SetUpException {
         super(config);
-    }
-    
-    /**
-     * Goes through all presence conditions in all source files and creates a mapping
-     * variable -> all PCs that the variable appears in.
-     * 
-     * @param files The source files to go through.
-     * @return Every PC a variable is contained in; for each variable.
-     */
-    public Map<String, Set<Formula>> findPcs(BlockingQueue<SourceFile> files) {
-        Map<String, Set<Formula>> result = new HashMap<>();
         
-        BuildModel bm = PipelineConfigurator.instance().getBmProvider().getResult();
+        bm = PipelineConfigurator.instance().getBmProvider().getResult();
         if (null == bm) {
             ExtractorException exc = null;
             StringBuffer errMsg = new StringBuffer();
@@ -62,12 +54,23 @@ public class PcFinder extends AbstractAnalysis {
             if (errMsg.length() == 0) {
                 Logger.get().logDebug("Calculating presence conditions without considering build model");
             } else {
-                Logger.get().logError("Should use build information for calculation of presence conditions, "
-                    + "but build model provider returned an error: " + errMsg);
+                throw new SetUpException("Should use build information for calculation of presence conditions, "
+                    + "but build model provider returned an error.", exc);
             }
         } else {
             Logger.get().logDebug("Calculating presence conditions including information from build model");
         }
+    }
+    
+    /**
+     * Goes through all presence conditions in all source files and creates a mapping
+     * variable -> all PCs that the variable appears in.
+     * 
+     * @param files The source files to go through.
+     * @return Every PC a variable is contained in; for each variable.
+     */
+    public Map<String, Set<Formula>> findPcs(BlockingQueue<SourceFile> files) {
+        Map<String, Set<Formula>> result = new HashMap<>();
         
         for (SourceFile file : files) {
             Formula filePc = null;
