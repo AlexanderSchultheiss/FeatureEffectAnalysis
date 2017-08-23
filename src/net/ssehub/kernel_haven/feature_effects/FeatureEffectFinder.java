@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.code_model.SourceFile;
@@ -26,6 +27,7 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 
 /**
  * Calculates feature effects for all variables found in presence conditions.
@@ -34,6 +36,8 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  */
 public class FeatureEffectFinder extends AbstractAnalysis {
 
+    private static final String USE_VARMODEL_VARIABLES_ONLY = "analysis.consider_vm_vars_only";
+    
     private PcFinder pcFinder;
     
     private Pattern relevantVarsPattern;
@@ -48,6 +52,10 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * human readable form.
      */
     private boolean replaceNonBooleanReplacements;
+    
+    private boolean considerVmVarsOnly;
+    
+    private VariabilityModel vm;
     
     /**
      * Creates a new FeatureEffectFinder.
@@ -67,6 +75,15 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         } catch (PatternSyntaxException e) {
             throw new SetUpException(e);
         }
+        
+        considerVmVarsOnly = config.getBooleanProperty(USE_VARMODEL_VARIABLES_ONLY, false);
+        vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
+        if (null == vm) {
+            throw new SetUpException(USE_VARMODEL_VARIABLES_ONLY + "[true] was specified, but no variability model"
+                + " was passed.");
+        }
+        
+        PipelineConfigurator.instance().getVmProvider().getResult();
         
         this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
         this.replaceNonBooleanReplacements = nonBooleanReplacements
@@ -314,7 +331,14 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      * @return Whether the variable is relevant or not.
      */
     private boolean isRelevant(String variable) {
-        return relevantVarsPattern.matcher(variable).matches();
+        boolean isRelevant;
+        if (considerVmVarsOnly) {
+            isRelevant = vm.getVariableMap().containsKey(variable);
+        } else {
+            isRelevant = relevantVarsPattern.matcher(variable).matches();
+        }
+        
+        return isRelevant;
     }
     
     @Override
