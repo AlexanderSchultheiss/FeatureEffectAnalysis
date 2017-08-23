@@ -78,7 +78,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         
         considerVmVarsOnly = config.getBooleanProperty(USE_VARMODEL_VARIABLES_ONLY, false);
         vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
-        if (null == vm) {
+        if (null == vm && considerVmVarsOnly) {
             throw new SetUpException(USE_VARMODEL_VARIABLES_ONLY + "[true] was specified, but no variability model"
                 + " was passed.");
         }
