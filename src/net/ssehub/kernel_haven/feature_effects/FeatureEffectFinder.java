@@ -334,6 +334,12 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         boolean isRelevant;
         if (considerVmVarsOnly) {
             isRelevant = vm.getVariableMap().containsKey(variable);
+            if (!isRelevant && nonBooleanReplacements) {
+                int index = variable.indexOf("_eq_");
+                if (index > -1) {
+                    isRelevant = vm.getVariableMap().containsKey(variable.substring(0, index));
+                }
+            }
         } else {
             isRelevant = relevantVarsPattern.matcher(variable).matches();
         }
