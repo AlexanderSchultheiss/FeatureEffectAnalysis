@@ -15,7 +15,6 @@ import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.Variable;
-import net.ssehub.kernel_haven.util.logic.VariableFinder;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 
 /**
@@ -109,8 +108,6 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
         boolean isRelevant = false;
         
         // Checks that at least one variable of the formula is relevant
-        VariableFinder finder = new VariableFinder();
-        formula.accept(finder);
         Set<Variable> variables = new HashSet<>();
         findVars(formula, variables);
         Iterator<Variable> varItr = variables.iterator();
