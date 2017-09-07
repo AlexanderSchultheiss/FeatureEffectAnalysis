@@ -17,9 +17,7 @@ import net.ssehub.kernel_haven.util.CodeExtractorException;
 import net.ssehub.kernel_haven.util.ExtractorException;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -79,7 +77,7 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
             }
             
             for (Block b : file) {
-                findPcsInBlock(b, result, filePc);
+                findPcsInBlock(b, result, filePc, false);
             }
         }
         
@@ -94,13 +92,18 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
      * @param result The result to add the PCs to.
      * @param filePc Optional: The presence condition of the file which is currently processed. Will be ignored if it is
      * <tt>null</tt>.
+     * @param parentIsRelevant Used for optimization (<tt>true</tt> parent condition is relevant and, thus, also all
+     * nested conditions are relevant, <tt>false</tt> this method will check if the condition should be considered).
      */
-    private void findPcsInBlock(Block block, Map<String, Set<Formula>> result, Formula filePc) {
+    private void findPcsInBlock(Block block, Map<String, Set<Formula>> result, Formula filePc,
+        boolean parentIsRelevant) {
         
         Set<Variable> vars = new HashSet<>();
         Formula pc = block.getPresenceCondition();
         
-        if (isRelevant(pc)) {
+        if (parentIsRelevant || isRelevant(pc)) {
+            // Skip retrieval of variables for nested conditions (last for loop)
+            parentIsRelevant = true;
             if (null != filePc) {
                 pc = new Conjunction(filePc, pc);
             }
@@ -114,38 +117,10 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
         }
         
         for (Block child : block) {
-            findPcsInBlock(child, result, filePc);
+            findPcsInBlock(child, result, filePc, parentIsRelevant);
         }
     }
     
-    /**
-     * Finds all variables in the given formula. This recursively walks through the whole tree.
-     * 
-     * @param formula The formula to find variables in.
-     * @param result The resulting set to add variables to.
-     */
-    private void findVars(Formula formula, Set<Variable> result) {
-        
-        if (formula instanceof Variable) {
-            result.add((Variable) formula);
-            
-        } else if (formula instanceof Negation) {
-            findVars(((Negation) formula).getFormula(), result);
-            
-        } else if (formula instanceof Disjunction) {
-            Disjunction dis = (Disjunction) formula;
-            findVars(dis.getLeft(), result);
-            findVars(dis.getRight(), result);
-            
-        } else if (formula instanceof Conjunction) {
-            Conjunction con = (Conjunction) formula;
-            findVars(con.getLeft(), result);
-            findVars(con.getRight(), result);
-        }
-        // ignore true and false
-        
-    }
-
     @Override
     public void run() {
         try {
