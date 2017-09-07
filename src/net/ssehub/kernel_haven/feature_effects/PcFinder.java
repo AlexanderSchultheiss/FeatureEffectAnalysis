@@ -8,7 +8,6 @@ import java.util.Set;
 
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.Block;
 import net.ssehub.kernel_haven.code_model.SourceFile;
@@ -28,7 +27,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  * 
  * @author Adam
  */
-public class PcFinder extends AbstractAnalysis {
+public class PcFinder extends AbstractPresenceConditionAnalysis {
     
     private BuildModel bm;
 
@@ -101,15 +100,17 @@ public class PcFinder extends AbstractAnalysis {
         Set<Variable> vars = new HashSet<>();
         Formula pc = block.getPresenceCondition();
         
-        if (null != filePc) {
-            pc = new Conjunction(filePc, pc);
-        }
-        
-        findVars(pc, vars);
-        
-        for (Variable var : vars)  {
-            result.putIfAbsent(var.getName(), new HashSet<>());
-            result.get(var.getName()).add(pc);
+        if (isRelevant(pc)) {
+            if (null != filePc) {
+                pc = new Conjunction(filePc, pc);
+            }
+            
+            findVars(pc, vars);
+            
+            for (Variable var : vars)  {
+                result.putIfAbsent(var.getName(), new HashSet<>());
+                result.get(var.getName()).add(pc);
+            }
         }
         
         for (Block child : block) {

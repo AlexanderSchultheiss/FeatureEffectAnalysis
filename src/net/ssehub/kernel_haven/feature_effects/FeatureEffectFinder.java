@@ -10,12 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.BlockingQueue;
@@ -27,35 +23,15 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
-import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 
 /**
  * Calculates feature effects for all variables found in presence conditions.
  *  
  * @author Adam
  */
-public class FeatureEffectFinder extends AbstractAnalysis {
-
-    private static final String USE_VARMODEL_VARIABLES_ONLY = "analysis.consider_vm_vars_only";
+public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
     
     private PcFinder pcFinder;
-    
-    private Pattern relevantVarsPattern;
-    
-    /**
-     * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
-     */
-    private boolean nonBooleanReplacements;
-    
-    /**
-     * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
-     * human readable form.
-     */
-    private boolean replaceNonBooleanReplacements;
-    
-    private boolean considerVmVarsOnly;
-    
-    private VariabilityModel vm;
     
     /**
      * Creates a new FeatureEffectFinder.
@@ -67,27 +43,7 @@ public class FeatureEffectFinder extends AbstractAnalysis {
      */
     public FeatureEffectFinder(Configuration config) throws SetUpException {
         super(config);
-        this.pcFinder = new PcFinder(config);
-        
-        String relevant = config.getProperty("analysis.relevant_variables", ".*");
-        try {
-            relevantVarsPattern = Pattern.compile(relevant);
-        } catch (PatternSyntaxException e) {
-            throw new SetUpException(e);
-        }
-        
-        considerVmVarsOnly = config.getBooleanProperty(USE_VARMODEL_VARIABLES_ONLY, false);
-        vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
-        if (null == vm && considerVmVarsOnly) {
-            throw new SetUpException(USE_VARMODEL_VARIABLES_ONLY + "[true] was specified, but no variability model"
-                + " was passed.");
-        }
-        
-        PipelineConfigurator.instance().getVmProvider().getResult();
-        
-        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
-        this.replaceNonBooleanReplacements = nonBooleanReplacements
-                || Boolean.parseBoolean(config.getProperty("code.extractor.fuzzy_parsing"));
+        this.pcFinder = new PcFinder(config);                
     }
     
     /**
@@ -323,29 +279,6 @@ public class FeatureEffectFinder extends AbstractAnalysis {
         
         return filteredResults;
     }
-
-    /**
-     * Helper function to determine which variables are relevant.
-     * 
-     * @param variable The variable to check.
-     * @return Whether the variable is relevant or not.
-     */
-    private boolean isRelevant(String variable) {
-        boolean isRelevant;
-        if (considerVmVarsOnly) {
-            isRelevant = vm.getVariableMap().containsKey(variable);
-            if (!isRelevant && nonBooleanReplacements) {
-                int index = variable.indexOf("_eq_");
-                if (index > -1) {
-                    isRelevant = vm.getVariableMap().containsKey(variable.substring(0, index));
-                }
-            }
-        } else {
-            isRelevant = relevantVarsPattern.matcher(variable).matches();
-        }
-        
-        return isRelevant;
-    }
     
     @Override
     public void run() {
@@ -374,39 +307,4 @@ public class FeatureEffectFinder extends AbstractAnalysis {
             LOGGER.logException("Error while starting cm provider", e);
         }
     }
-
-    /**
-     * Converts the formula into a string representation.
-     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
-     * readable form.
-     * 
-     * @param formula The formula to translate.
-
-     * @return A string representation of this formula, in a C-style like format. 
-     */
-    private String toString(Formula formula) {
-        return toString(formula.toString());
-    }
-    
-    /**
-     * Converts the formula into a string representation.
-     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
-     * readable form.
-     * 
-     * @param formula {@link Formula#toString()}
-
-     * @return A string representation of this formula, in a C-style like format. 
-     */
-    public String toString(String formula) {
-        if (replaceNonBooleanReplacements) {
-            formula = formula.replace("_eq_", "=");
-            formula = formula.replace("_ne_", "!=");
-            formula = formula.replace("_gt_", ">");
-            formula = formula.replace("_ge_", ">=");
-            formula = formula.replace("_lt_", ">");
-            formula = formula.replace("_le_", ">=");
-        }
-        return formula;
-    }
-
 }
