@@ -73,7 +73,7 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
             }
             
             if (replace) {
-                result = (value ? new True() : new False());
+                result = (value ? True.INSTANCE : False.INSTANCE);
             } else {
                 result = var;
             }
@@ -133,10 +133,10 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
                 result = ((Negation) nested).getFormula();
                 
             } else if (nested instanceof True) {
-                result = new False();
+                result = False.INSTANCE;
                 
             } else if (nested instanceof False) {
-                result = new True();
+                result = True.INSTANCE;
                 
             } else {
                 result = new Negation(nested);
@@ -147,10 +147,10 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
             Formula right = simplify(((Disjunction) formula).getRight());
             
             if (left instanceof True || right instanceof True) {
-                result = new True();
+                result = True.INSTANCE;
                 
             } else if (left instanceof False && right instanceof False) {
-                result = new False();
+                result = False.INSTANCE;
                 
             } else if (left instanceof False) {
                 result = right;
@@ -170,10 +170,10 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
             Formula right = simplify(((Conjunction) formula).getRight());
             
             if (left instanceof False || right instanceof False) {
-                result = new False();
+                result = False.INSTANCE;
              
             } else if (left instanceof True && right instanceof True) {
-                result = new True();
+                result = True.INSTANCE;
                 
             } else if (left instanceof True) {
                 result = right;
