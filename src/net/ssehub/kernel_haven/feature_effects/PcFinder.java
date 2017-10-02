@@ -9,7 +9,7 @@ import java.util.Set;
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.build_model.BuildModel;
-import net.ssehub.kernel_haven.code_model.Block;
+import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.BlockingQueue;
@@ -76,7 +76,7 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
                 Logger.get().logDebug("Presence condition for " + file.getPath() + ": " + filePc);
             }
             
-            for (Block b : file) {
+            for (CodeElement b : file) {
                 findPcsInBlock(b, result, filePc, false);
             }
         }
@@ -95,7 +95,7 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
      * @param parentIsRelevant Used for optimization (<tt>true</tt> parent condition is relevant and, thus, also all
      * nested conditions are relevant, <tt>false</tt> this method will check if the condition should be considered).
      */
-    private void findPcsInBlock(Block block, Map<String, Set<Formula>> result, Formula filePc,
+    private void findPcsInBlock(CodeElement block, Map<String, Set<Formula>> result, Formula filePc,
         boolean parentIsRelevant) {
         
         Set<Variable> vars = new HashSet<>();
@@ -116,7 +116,7 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
             }
         }
         
-        for (Block child : block) {
+        for (CodeElement child : block.iterateNestedElements()) {
             findPcsInBlock(child, result, filePc, parentIsRelevant);
         }
     }
