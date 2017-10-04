@@ -77,7 +77,7 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
             }
             
             for (CodeElement b : file) {
-                findPcsInBlock(b, result, filePc, false);
+                findPcsInElement(b, result, filePc, false);
             }
         }
         
@@ -85,21 +85,21 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
     }
     
     /**
-     * Finds all PCs in a block and recursively in all child blocks. Adds the PC to the set for
+     * Finds all PCs in an element and recursively in all child elements. Adds the PC to the set for
      * all variables that are found in the PC.
      * 
-     * @param block The block to find PCs in.
+     * @param element The element to find PCs in.
      * @param result The result to add the PCs to.
      * @param filePc Optional: The presence condition of the file which is currently processed. Will be ignored if it is
      * <tt>null</tt>.
      * @param parentIsRelevant Used for optimization (<tt>true</tt> parent condition is relevant and, thus, also all
      * nested conditions are relevant, <tt>false</tt> this method will check if the condition should be considered).
      */
-    private void findPcsInBlock(CodeElement block, Map<String, Set<Formula>> result, Formula filePc,
+    private void findPcsInElement(CodeElement element, Map<String, Set<Formula>> result, Formula filePc,
         boolean parentIsRelevant) {
         
         Set<Variable> vars = new HashSet<>();
-        Formula pc = block.getPresenceCondition();
+        Formula pc = element.getPresenceCondition();
         
         if (parentIsRelevant || isRelevant(pc)) {
             // Skip retrieval of variables for nested conditions (last for loop)
@@ -116,8 +116,8 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
             }
         }
         
-        for (CodeElement child : block.iterateNestedElements()) {
-            findPcsInBlock(child, result, filePc, parentIsRelevant);
+        for (CodeElement child : element.iterateNestedElements()) {
+            findPcsInElement(child, result, filePc, parentIsRelevant);
         }
     }
     

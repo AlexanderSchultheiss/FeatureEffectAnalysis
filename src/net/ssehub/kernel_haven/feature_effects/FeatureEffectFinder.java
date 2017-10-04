@@ -250,7 +250,7 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
      * Calculates the feature effects for each variable found in the presence conditions of the given
      * source files.
      * 
-     * @param files The source files that contain blocks with presence conditions.
+     * @param files The source files that contain elements with presence conditions.
      * @return The feature effect for each found variable.
      */
     public List<Map.Entry<String, Formula>> getFeatureEffects(BlockingQueue<SourceFile> files) {
