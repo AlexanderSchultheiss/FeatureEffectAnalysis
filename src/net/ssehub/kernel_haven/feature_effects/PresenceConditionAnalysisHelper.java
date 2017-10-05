@@ -8,7 +8,6 @@ import java.util.regex.PatternSyntaxException;
 
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.analysis.AbstractAnalysis;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
@@ -22,7 +21,7 @@ import net.ssehub.kernel_haven.variability_model.VariabilityModel;
  * @author El-Sharkawy
  *
  */
-abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
+class PresenceConditionAnalysisHelper {
     
     public static final String USE_VARMODEL_VARIABLES_ONLY = "analysis.consider_vm_vars_only";
     
@@ -31,10 +30,6 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
      */
     protected boolean nonBooleanReplacements;
     
-    /**
-     * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
-     * human readable form.
-     */
     private boolean replaceNonBooleanReplacements;
     
     private boolean considerVmVarsOnly;
@@ -49,9 +44,7 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
      * @throws SetUpException If reading configuration options fails or if a build model was specified,
      * but exited abnormally.
      */
-    public AbstractPresenceConditionAnalysis(Configuration config) throws SetUpException {
-        super(config);
-        
+    public PresenceConditionAnalysisHelper(Configuration config) throws SetUpException {
         String relevant = config.getProperty("analysis.relevant_variables", ".*");
         try {
             relevantVarsPattern = Pattern.compile(relevant);
@@ -77,7 +70,7 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
      * @param formula The formula to find variables in.
      * @param result The resulting set to add variables to.
      */
-    protected void findVars(Formula formula, Set<Variable> result) {
+    public void findVars(Formula formula, Set<Variable> result) {
         
         if (formula instanceof Variable) {
             result.add((Variable) formula);
@@ -104,7 +97,7 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
      * @param formula The formula to check.
      * @return <tt>true</tt> if the formula should be kept, <tt>false</tt> if the formula should be discarded.
      */
-    protected boolean isRelevant(Formula formula) {
+    public boolean isRelevant(Formula formula) {
         boolean isRelevant = false;
         
         // Checks that at least one variable of the formula is relevant
@@ -125,7 +118,7 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
      * @param variable The variable to check.
      * @return Whether the variable is relevant or not.
      */
-    protected boolean isRelevant(String variable) {
+    public boolean isRelevant(String variable) {
         boolean isRelevant;
         if (considerVmVarsOnly) {
             isRelevant = vm.getVariableMap().containsKey(variable);
@@ -143,28 +136,46 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
     }
     
     /**
-     * Converts the formula into a string representation.
-     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
-     * readable form.
+     * Does the necessary replacements in the formula variable names, in case of non Boolean replacements.
+     * The non boolean replacements will be translated back into human readable form. No-op in case non Boolean
+     * replacements are switched off.
      * 
-     * @param formula The formula to translate.
+     * @param formula The formula to do replacements in.
 
-     * @return A string representation of this formula, in a C-style like format. 
+     * @return The same formula, but with all necessary replacements in the variable names.
      */
-    protected String toString(Formula formula) {
-        return toString(formula.toString());
+    public Formula doReplacements(Formula formula) {
+        Formula result = formula;
+        
+        if (replaceNonBooleanReplacements) {
+            if (formula instanceof Variable) {
+                result = new Variable(doReplacements(((Variable) formula).getName()));
+                
+            } else if (formula instanceof Negation) {
+                result = new Negation(((Negation) formula).getFormula());
+                
+            } else if (formula instanceof Disjunction) {
+                result = new Disjunction(((Disjunction) formula).getLeft(), ((Disjunction) formula).getRight());
+                
+            } else if (formula instanceof Conjunction) {
+                result = new Conjunction(((Conjunction) formula).getLeft(), ((Conjunction) formula).getRight());
+            }
+            // ignore true and false
+        }
+        
+        return result;
     }
     
     /**
-     * Converts the formula into a string representation.
-     * In case of non Boolean replacements used, the non boolean replacements will be translated back into human
-     * readable form.
+     * Does the necessary replacements in the formula string, in case of non Boolean replacements.
+     * The non boolean replacements will be translated back into human readable form. No-op in case non Boolean
+     * replacements are switched off.
      * 
-     * @param formula {@link Formula#toString()}
+     * @param formula The formula to do replacements in.
 
-     * @return A string representation of this formula, in a C-style like format. 
+     * @return The same formula, but with the replacements done.
      */
-    protected String toString(String formula) {
+    public String doReplacements(String formula) {
         if (replaceNonBooleanReplacements) {
             formula = formula.replace("_eq_", "=");
             formula = formula.replace("_ne_", "!=");
@@ -176,5 +187,14 @@ abstract class AbstractPresenceConditionAnalysis extends AbstractAnalysis {
         return formula;
     }
 
+    /**
+     * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
+     * human readable form.
+     * 
+     * @return Whether to do non boolean replcaments or not.
+     */
+    public boolean isNonBooleanReplacements() {
+        return nonBooleanReplacements;
+    }
 
 }

@@ -1,21 +1,15 @@
 package net.ssehub.kernel_haven.feature_effects;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.code_model.SourceFile;
+import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.util.BlockingQueue;
-import net.ssehub.kernel_haven.util.CodeExtractorException;
+import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
@@ -25,25 +19,91 @@ import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
- * Calculates feature effects for all variables found in presence conditions.
+ * A component that finds feature effects for variables.
  *  
  * @author Adam
  */
-public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
+public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEffect> {
+
+    /**
+     * A variable together with its feature effect formula.
+     * 
+     * @author Adam
+     */
+    public static class VariableWithFeatureEffect {
+        private String variable;
+        
+        private Formula featureEffect;
+
+        /**
+         * Creates a new feature effect result.
+         * 
+         * @param variable The variable name.
+         * @param featureEffect The feature effect of the given variable. Must not be <code>null</code>.
+         */
+        public VariableWithFeatureEffect(String variable, Formula featureEffect) {
+            this.variable = variable;
+            this.featureEffect = featureEffect;
+        }
+        
+        /**
+         * Returns the variable name.
+         * 
+         * @return The name of the variable.
+         */
+        public String getVariable() {
+            return variable;
+        }
+        
+        /**
+         * Returns the feature effect formula for this variable.
+         * 
+         * @return The feature effect, never <code>null</code>.
+         */
+        public Formula getFeatureEffect() {
+            return featureEffect;
+        }
+        
+        @Override
+        public String toString() {
+            return "FeatureEffect[" + variable + "] = " + featureEffect.toString();
+        }
+        
+    }
     
-    private PcFinder pcFinder;
+    private AnalysisComponent<VariableWithPcs> pcFinder;
+    
+    private PresenceConditionAnalysisHelper helper;
     
     /**
-     * Creates a new FeatureEffectFinder.
+     * Creates a new {@link FeatureEffectFinder} for the given PC finder.
      * 
-     * @param config The Configuration to use.
+     * @param config The global configuration.
+     * @param pcFinder The component to get the PCs from.
      * 
-     * @throws SetUpException If reading configuration options fails or if a build model was specified,
-     * but exited abnormally.
+     * @throws SetUpException If creating this component fails.
      */
-    public FeatureEffectFinder(Configuration config) throws SetUpException {
+    public FeatureEffectFinder(Configuration config, AnalysisComponent<VariableWithPcs> pcFinder)
+            throws SetUpException {
+        
         super(config);
-        this.pcFinder = new PcFinder(config);                
+        this.pcFinder = pcFinder;
+        this.helper = new PresenceConditionAnalysisHelper(config);
+    }
+
+    @Override
+    protected void execute() {
+        
+        VariableWithPcs pcs;
+        while ((pcs = pcFinder.getNextResult()) != null) {
+            if (helper.isRelevant(pcs.getVariable())) {
+                addResult(new VariableWithFeatureEffect(
+                        helper.doReplacements(pcs.getVariable()),
+                        helper.doReplacements(buildFeatureEffefct(pcs))
+                ));
+            }
+        }
+        
     }
     
     /**
@@ -200,11 +260,12 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
      * <code>Or over (for each PC in PCs ( PC[variable <- true] XOR PC[variable <- false] ))</code>.
      * 
      * 
-     * @param variable The variable that the feature effect should be calculated for.
-     * @param pcs All presence condition that the given variable appears in.
+     * @param varWithPcs The variable and all presence condition that the variable appears in.
      * @return A formula representing the feature effect of the variable.
      */
-    private Formula buildFeatureEffefct(String variable, Set<Formula> pcs) {
+    private Formula buildFeatureEffefct(VariableWithPcs varWithPcs) {
+        String variable = varWithPcs.getVariable();
+        Set<Formula> pcs = varWithPcs.getPcs();
         
         List<Formula> xorTrees = new ArrayList<>(pcs.size());
         
@@ -234,7 +295,7 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
             result = new Disjunction(result, xorTrees.get(i));
         }
         
-        if (nonBooleanReplacements) {
+        if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
             if (index != -1) {
@@ -246,65 +307,4 @@ public class FeatureEffectFinder extends AbstractPresenceConditionAnalysis {
         return simplify(result);
     }
     
-    /**
-     * Calculates the feature effects for each variable found in the presence conditions of the given
-     * source files.
-     * 
-     * @param files The source files that contain elements with presence conditions.
-     * @return The feature effect for each found variable.
-     */
-    public List<Map.Entry<String, Formula>> getFeatureEffects(BlockingQueue<SourceFile> files) {
-        Map<String, Set<Formula>> pcs = pcFinder.findPcs(files);
-        Map<String, Formula> result = new HashMap<>(pcs.size());
-        
-        for (String variable : pcs.keySet()) {
-            result.put(variable, buildFeatureEffefct(variable, pcs.get(variable)));
-        }
-        
-        // Filter and sort relevant results
-        List<Map.Entry<String, Formula>> filteredResults = new ArrayList<>();
-        for (Map.Entry<String, Formula> entry : result.entrySet()) {
-            if (isRelevant(entry.getKey())) {
-                filteredResults.add(entry);
-            }
-        }
-        Collections.sort(filteredResults, new Comparator<Map.Entry<String, Formula>>() {
-
-            @Override
-            public int compare(Entry<String, Formula> o1, Entry<String, Formula> o2) {
-                return o1.getKey().compareTo(o2.getKey());
-            }
-            
-        });
-        
-        return filteredResults;
-    }
-    
-    @Override
-    public void run() {
-        try {
-            cmProvider.start();
-            
-            List<Map.Entry<String, Formula>> result = getFeatureEffects(cmProvider.getResultQueue());
-            
-            PrintStream out = createResultStream("feature_effects.csv");
-            for (Map.Entry<String, Formula> entry : result) {
-                out.print(toString(entry.getKey()));
-                out.print(";");
-                out.print(toString(entry.getValue()));
-                out.println();
-            }
-            out.close();
-            
-            out = createResultStream("unparsable_files.txt");
-            CodeExtractorException exc;
-            while ((exc = (CodeExtractorException) cmProvider.getNextException()) != null) {
-                out.println(exc.getCausingFile().getPath() + ": " + exc.getCause());
-            }
-            out.close();
-            
-        } catch (SetUpException e) {
-            LOGGER.logException("Error while starting cm provider", e);
-        }
-    }
 }

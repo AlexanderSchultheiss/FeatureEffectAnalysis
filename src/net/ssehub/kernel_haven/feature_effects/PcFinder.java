@@ -1,75 +1,132 @@
 package net.ssehub.kernel_haven.feature_effects;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
+import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.util.BlockingQueue;
-import net.ssehub.kernel_haven.util.CodeExtractorException;
-import net.ssehub.kernel_haven.util.ExtractorException;
+import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
- * Creates a mapping variable -> presence conditions.
+ * A component that creates a mapping variable -> set of all PCs the variable is used in.
  * 
  * @author Adam
  */
-public class PcFinder extends AbstractPresenceConditionAnalysis {
+public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     
-    private BuildModel bm;
+    /**
+     * A variable together with all presence conditions it is used in.
+     * 
+     * @author Adam
+     */
+    public static class VariableWithPcs {
+        private String variable;
+        
+        private Set<Formula> pcs;
+
+        /**
+         * Creates a new {@link VariableWithPcs}.
+         * 
+         * @param variable The variable name.
+         * @param pcs All the PCs that the variable is used in. Must not be <code>null</code>.
+         */
+        public VariableWithPcs(String variable, Set<Formula> pcs) {
+            this.variable = variable;
+            this.pcs = pcs;
+        }
+        
+        /**
+         * Returns the variable name.
+         * 
+         * @return The name of the variable.
+         */
+        public String getVariable() {
+            return variable;
+        }
+        
+        /**
+         * Returns a set of all presence conditions that this variable is used in.
+         * 
+         * @return A set of all PCs, never <code>null</code>.
+         */
+        public Set<Formula> getPcs() {
+            return pcs;
+        }
+        
+        @Override
+        public String toString() {
+            return "PCs[" + variable + "] = " + pcs.toString();
+        }
+        
+    }
+    
+    private AnalysisComponent<SourceFile> sourceFiles;
+    
+    private AnalysisComponent<BuildModel> bmComponent;
+    
+    private PresenceConditionAnalysisHelper helper;
 
     /**
-     * Creates a new PcFinder.
+     * Creates a {@link PcFinder} for the given code model.
      * 
-     * @param config The configuration to use.
-     * @throws SetUpException if a build model was specified, but exited abnormally
+     * @param config The global configuration.
+     * @param sourceFiles The code model provider component.
+     * 
+     * @throws SetUpException If setting up this component fails.
      */
-    public PcFinder(Configuration config) throws SetUpException {
+    public PcFinder(Configuration config, AnalysisComponent<SourceFile> sourceFiles) throws SetUpException {
         super(config);
-        
-        bm = PipelineConfigurator.instance().getBmProvider().getResult();
-        if (null == bm) {
-            ExtractorException exc = null;
-            StringBuffer errMsg = new StringBuffer();
-            while ((exc = PipelineConfigurator.instance().getBmProvider().getNextException()) != null) {
-                if (errMsg.length() > 0) {
-                    errMsg.append(", ");                    
-                }
-                errMsg.append(exc.getMessage());
-            }
-            if (errMsg.length() == 0) {
-                Logger.get().logDebug("Calculating presence conditions without considering build model");
-            } else {
-                throw new SetUpException("Should use build information for calculation of presence conditions, "
-                    + "but build model provider returned an error: " + errMsg.toString(), exc);
-            }
-        } else {
-            Logger.get().logDebug("Calculating presence conditions including information from build model");
-        }
+        this.sourceFiles = sourceFiles;
+        this.helper = new PresenceConditionAnalysisHelper(config);
     }
     
     /**
-     * Goes through all presence conditions in all source files and creates a mapping
-     * variable -> all PCs that the variable appears in.
+     * Creates a {@link PcFinder} for the given code and build model. The build model presence conditions will be
+     * added to the code model conditions.
      * 
-     * @param files The source files to go through.
-     * @return Every PC a variable is contained in; for each variable.
+     * @param config The global configuration.
+     * @param sourceFiles The code model provider component.
+     * @param bm The build model provider component.
+     * 
+     * @throws SetUpException If setting up this component fails.
      */
-    public Map<String, Set<Formula>> findPcs(BlockingQueue<SourceFile> files) {
+    public PcFinder(Configuration config, AnalysisComponent<SourceFile> sourceFiles, AnalysisComponent<BuildModel> bm)
+            throws SetUpException {
+        this(config, sourceFiles);
+        this.bmComponent = bm;
+    }
+
+    @Override
+    protected void execute() {
+        BuildModel bm = null;
+        if (bmComponent != null) {
+            bm = bmComponent.getNextResult();
+            if (bm != null) {
+                Logger.get().logDebug("Calculating presence conditions including information from build model");
+            } else {
+                Logger.get().logWarning("Should use build information for calculation of presence conditions, "
+                        + "but build model provider returned null", "Ignoring build model");
+            }
+        } else {
+            Logger.get().logDebug("Calculating presence conditions without considering build model");
+        }
+            
+        
+
         Map<String, Set<Formula>> result = new HashMap<>();
         
-        for (SourceFile file : files) {
+        SourceFile file;
+        while ((file = sourceFiles.getNextResult()) != null) {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
@@ -81,7 +138,9 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
             }
         }
         
-        return result;
+        for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
+            addResult(new VariableWithPcs(entry.getKey(), entry.getValue()));
+        }
     }
     
     /**
@@ -101,14 +160,14 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
         Set<Variable> vars = new HashSet<>();
         Formula pc = element.getPresenceCondition();
         
-        if (parentIsRelevant || isRelevant(pc)) {
+        if (parentIsRelevant || helper.isRelevant(pc)) {
             // Skip retrieval of variables for nested conditions (last for loop)
             parentIsRelevant = true;
             if (null != filePc) {
                 pc = new Conjunction(filePc, pc);
             }
             
-            findVars(pc, vars);
+            helper.findVars(pc, vars);
             
             for (Variable var : vars)  {
                 result.putIfAbsent(var.getName(), new HashSet<>());
@@ -118,36 +177,6 @@ public class PcFinder extends AbstractPresenceConditionAnalysis {
         
         for (CodeElement child : element.iterateNestedElements()) {
             findPcsInElement(child, result, filePc, parentIsRelevant);
-        }
-    }
-    
-    @Override
-    public void run() {
-        try {
-            cmProvider.start();
-            
-            Map<String, Set<Formula>> result = findPcs(cmProvider.getResultQueue());
-            
-            PrintStream out = createResultStream("variable_pcs.csv");
-            for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
-                out.print(entry.getKey());
-                for (Formula f : entry.getValue()) {
-                    out.print(";");
-                    out.print(f.toString());
-                }
-                out.println();
-            }
-            out.close();
-            
-            out = createResultStream("unparsable_files.txt");
-            CodeExtractorException exc;
-            while ((exc = (CodeExtractorException) cmProvider.getNextException()) != null) {
-                out.println(exc.getCausingFile().getPath() + ": " + exc.getCause());
-            }
-            out.close();
-            
-        } catch (SetUpException e) {
-            LOGGER.logException("Error while starting cm provider", e);
         }
     }
 
