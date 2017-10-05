@@ -45,22 +45,44 @@ class FeatureEffectReducer {
             }
         });
         
-        for (Formula pc : orderedPCs) {
+        for (int i = 0; i < orderedPCs.size(); i++) {
+            Formula pc = orderedPCs.get(i);
             boolean newFormula = true;
             
-            // Dismiss new formula "pc" if it is contained in one of the "result" formulas
-            for (int i = 0; i < result.size() && newFormula; i++) {
-                SubFormulaChecker checker = new SubFormulaChecker(result.get(i));
-                pc.accept(checker);
-                newFormula = !checker.isNested();
+            // Remove a subformula from "pc" if it is contained in one of the "result" formulas
+            for (int j = 0; j < orderedPCs.size() && j < i && newFormula; j++) {
+                SubFormulaReplacer replacer = new SubFormulaReplacer(orderedPCs.get(j));
+                Formula minimizedPC = replacer.minimize(pc);
+                if (null == minimizedPC) {
+                    // Discard 
+                    newFormula = false;
+                    Logger.get().logDebug("Ommited feature effect constraint for feature \""
+                        + variable + "\" + constraint: " + pc.toString());
+                } else if (minimizedPC != pc) {
+                    // Formula was minimized 
+                    newFormula = false;
+                    Logger.get().logDebug("Feature effect constraint for feature \"" + variable
+                        + "\" + was mimized from \"" + pc.toString() + "\" -> \"" + minimizedPC.toString() + "\"");
+                }
+                // Else: Continue
             }
             
             if (newFormula) {
                 result.add(pc);
-            } else {
-                Logger.get().logDebug("Ommited feature effect constraint for feature \""
-                    + variable + "\" + sub-constraint: " + pc.toString());
             }
+//            // Remove a subformula from "pc" if it is contained in one of the "result" formulas
+//            for (int i = 0; i < result.size() && newFormula; i++) {
+//                SubFormulaChecker checker = new SubFormulaChecker(result.get(i));
+//                pc.accept(checker);
+//                newFormula = !checker.isNested();
+//            }
+//            
+//            if (newFormula) {
+//                result.add(pc);
+//            } else {
+//                Logger.get().logDebug("Ommited feature effect constraint for feature \""
+//                    + variable + "\" + sub-constraint: " + pc.toString());
+//            }
         }
         
         return result;
