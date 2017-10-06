@@ -10,6 +10,8 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.util.io.TableElement;
+import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
@@ -30,9 +32,13 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @author Adam
      */
+    @TableRow
     public static class VariableWithFeatureEffect {
+        
+        @TableElement(name = "Variable", index = 0)
         private String variable;
         
+        @TableElement(name = "Feature Effect", index = 1)
         private Formula featureEffect;
 
         /**
