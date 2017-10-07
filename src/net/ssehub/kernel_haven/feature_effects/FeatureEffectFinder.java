@@ -35,10 +35,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     @TableRow
     public static class VariableWithFeatureEffect {
         
-        @TableElement(name = "Variable", index = 0)
         private String variable;
         
-        @TableElement(name = "Feature Effect", index = 1)
         private Formula featureEffect;
 
         /**
@@ -57,6 +55,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
          * 
          * @return The name of the variable.
          */
+        @TableElement(name = "Variable", index = 0)
         public String getVariable() {
             return variable;
         }
@@ -66,6 +65,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
          * 
          * @return The feature effect, never <code>null</code>.
          */
+        @TableElement(name = "Feature Effect", index = 1)
         public Formula getFeatureEffect() {
             return featureEffect;
         }
