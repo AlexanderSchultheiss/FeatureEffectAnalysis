@@ -4,11 +4,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.DefaultSettings;
+import net.ssehub.kernel_haven.config.Setting;
+import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -23,7 +25,11 @@ import net.ssehub.kernel_haven.variability_model.VariabilityModel;
  */
 class PresenceConditionAnalysisHelper {
     
-    public static final String USE_VARMODEL_VARIABLES_ONLY = "analysis.consider_vm_vars_only";
+    public static final Setting<Boolean> USE_VARMODEL_VARIABLES_ONLY
+        = new Setting<>("analysis.consider_vm_vars_only", Type.BOOLEAN, true, "false", "TODO");
+    
+    public static final Setting<Pattern> RELEVANT_VARIABLES
+        = new Setting<>("analysis.relevant_variables", Type.REGEX, true, ".*", "TODO");
     
     /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
@@ -45,23 +51,20 @@ class PresenceConditionAnalysisHelper {
      * but exited abnormally.
      */
     public PresenceConditionAnalysisHelper(Configuration config) throws SetUpException {
-        String relevant = config.getProperty("analysis.relevant_variables", ".*");
-        try {
-            relevantVarsPattern = Pattern.compile(relevant);
-        } catch (PatternSyntaxException e) {
-            throw new SetUpException(e);
-        }
+        config.registerSetting(USE_VARMODEL_VARIABLES_ONLY);
+        config.registerSetting(RELEVANT_VARIABLES);
         
-        considerVmVarsOnly = config.getBooleanProperty(USE_VARMODEL_VARIABLES_ONLY, false);
+        relevantVarsPattern = config.getValue(RELEVANT_VARIABLES);
+        considerVmVarsOnly = config.getValue(USE_VARMODEL_VARIABLES_ONLY);
+        
         vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
         if (null == vm && considerVmVarsOnly) {
             throw new SetUpException(USE_VARMODEL_VARIABLES_ONLY + "[true] was specified, but no variability model"
                 + " was passed.");
         }
         
-        this.nonBooleanReplacements = Boolean.parseBoolean(config.getProperty("prepare_non_boolean"));
-        this.replaceNonBooleanReplacements = nonBooleanReplacements
-            || Boolean.parseBoolean(config.getProperty("code.extractor.fuzzy_parsing"));
+        this.nonBooleanReplacements = config.getValue(DefaultSettings.PREPARE_NON_BOOLEAN);
+        this.replaceNonBooleanReplacements = nonBooleanReplacements || config.getValue(DefaultSettings.FUZZY_PARSING);
     }
     
     /**
