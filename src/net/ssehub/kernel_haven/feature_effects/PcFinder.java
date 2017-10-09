@@ -13,6 +13,8 @@ import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.Logger;
+import net.ssehub.kernel_haven.util.io.TableElement;
+import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
@@ -29,7 +31,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * 
      * @author Adam
      */
+    @TableRow
     public static class VariableWithPcs {
+        
         private String variable;
         
         private Set<Formula> pcs;
@@ -50,6 +54,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * 
          * @return The name of the variable.
          */
+        @TableElement(name = "Variable", index = 0)
         public String getVariable() {
             return variable;
         }
@@ -59,6 +64,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * 
          * @return A set of all PCs, never <code>null</code>.
          */
+        @TableElement(name = "Presence conditions", index  = 1)
         public Set<Formula> getPcs() {
             return pcs;
         }
