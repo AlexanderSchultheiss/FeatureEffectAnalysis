@@ -186,4 +186,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         }
     }
 
+    @Override
+    public String getResultName() {
+        return "Presence Conditions";
+    }
+
 }

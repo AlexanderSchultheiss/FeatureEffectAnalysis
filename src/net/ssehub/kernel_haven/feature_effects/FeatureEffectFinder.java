@@ -312,5 +312,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         return simplify(result);
     }
+
+    @Override
+    public String getResultName() {
+        return "Feature Effects";
+    }
     
 }
