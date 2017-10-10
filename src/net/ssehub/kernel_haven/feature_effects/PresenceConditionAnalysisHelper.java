@@ -155,13 +155,18 @@ class PresenceConditionAnalysisHelper {
                 result = new Variable(doReplacements(((Variable) formula).getName()));
                 
             } else if (formula instanceof Negation) {
-                result = new Negation(((Negation) formula).getFormula());
+                result = new Negation(
+                        doReplacements(((Negation) formula).getFormula()));
                 
             } else if (formula instanceof Disjunction) {
-                result = new Disjunction(((Disjunction) formula).getLeft(), ((Disjunction) formula).getRight());
+                result = new Disjunction(
+                        doReplacements(((Disjunction) formula).getLeft()),
+                        doReplacements(((Disjunction) formula).getRight()));
                 
             } else if (formula instanceof Conjunction) {
-                result = new Conjunction(((Conjunction) formula).getLeft(), ((Conjunction) formula).getRight());
+                result = new Conjunction(
+                        doReplacements(((Conjunction) formula).getLeft()),
+                        doReplacements(((Conjunction) formula).getRight()));
             }
             // ignore true and false
         }
