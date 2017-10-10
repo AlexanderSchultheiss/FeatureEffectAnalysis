@@ -26,10 +26,12 @@ import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 class PresenceConditionAnalysisHelper {
     
     public static final Setting<Boolean> USE_VARMODEL_VARIABLES_ONLY
-        = new Setting<>("analysis.consider_vm_vars_only", Type.BOOLEAN, true, "false", "TODO");
+        = new Setting<>("analysis.consider_vm_vars_only", Type.BOOLEAN, true, "false", "Defines whether the analysis "
+                + "should only consider variables that are present in the variability model.");
     
     public static final Setting<Pattern> RELEVANT_VARIABLES
-        = new Setting<>("analysis.relevant_variables", Type.REGEX, true, ".*", "TODO");
+        = new Setting<>("analysis.relevant_variables", Type.REGEX, true, ".*", "Defines a regular expression that "
+                + "specifies which variables should be present in the output.");
     
     /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
