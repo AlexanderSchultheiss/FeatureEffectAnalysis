@@ -4,7 +4,7 @@ import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.IFormulaVisitor;
+import net.ssehub.kernel_haven.util.logic.IVoidFormulaVisitor;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
@@ -15,7 +15,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  * @author El-Sharkawy
  *
  */
-class SubFormulaReplacer implements IFormulaVisitor {
+class SubFormulaReplacer implements IVoidFormulaVisitor {
     
     private Formula original;
     private Formula tmp;
@@ -46,10 +46,10 @@ class SubFormulaReplacer implements IFormulaVisitor {
                 result = null;
             } else {
                 SubFormulaChecker checker = new SubFormulaChecker(other);
-                original.accept(checker);
+                checker.visit(original);
                 if (checker.isNested()) {
                     // Rewrite the "other" formula
-                    other.accept(this);
+                    visit(other);
                     result = tmp;
                 }
             }
@@ -90,7 +90,7 @@ class SubFormulaReplacer implements IFormulaVisitor {
         if (formula.equals(original)) {
             tmp = null;
         } else {
-            formula.getFormula().accept(this);
+            visit(formula.getFormula());
             if (null != tmp) {
                 tmp = new Negation(tmp);
             } else {
@@ -104,9 +104,9 @@ class SubFormulaReplacer implements IFormulaVisitor {
         if (formula.equals(original)) {
             tmp = null;
         } else {
-            formula.getLeft().accept(this);
+            visit(formula.getLeft());
             Formula left = tmp;
-            formula.getRight().accept(this);
+            visit(formula.getRight());
             Formula right = tmp;
             if (null != left && null != right) {
                 tmp = new Disjunction(left, right);
@@ -122,9 +122,9 @@ class SubFormulaReplacer implements IFormulaVisitor {
         if (formula.equals(original)) {
             tmp = null;
         } else {
-            formula.getLeft().accept(this);
+            visit(formula.getLeft());
             Formula left = tmp;
-            formula.getRight().accept(this);
+            visit(formula.getRight());
             Formula right = tmp;
             if (null != left && null != right) {
                 tmp = new Conjunction(left, right);
