@@ -136,10 +136,19 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
-                Logger.get().logDebug("Presence condition for " + file.getPath() + ": " + filePc);
+                
+                if (filePc != null) {
+                    Logger.get().logDebug("File PC for " + file.getPath() + ": " + filePc);
+                    // add the file PC as a stand-alone PC
+                    addPcToResult(result, filePc);
+                    
+                } else {
+                    Logger.get().logWarning("No file PC for " + file.getPath() + " in build model");
+                }
             }
             
             for (CodeElement b : file) {
+                // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
         }
@@ -163,7 +172,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private void findPcsInElement(CodeElement element, Map<String, Set<Formula>> result, Formula filePc,
         boolean parentIsRelevant) {
         
-        Set<Variable> vars = new HashSet<>();
         Formula pc = element.getPresenceCondition();
         
         if (parentIsRelevant || helper.isRelevant(pc)) {
@@ -173,16 +181,26 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 pc = new Conjunction(filePc, pc);
             }
             
-            helper.findVars(pc, vars);
-            
-            for (Variable var : vars)  {
-                result.putIfAbsent(var.getName(), new HashSet<>());
-                result.get(var.getName()).add(pc);
-            }
+            addPcToResult(result, pc);
         }
         
         for (CodeElement child : element.iterateNestedElements()) {
             findPcsInElement(child, result, filePc, parentIsRelevant);
+        }
+    }
+    
+    /**
+     * Adds a presence condition to the result.
+     * 
+     * @param result The result map to add to.
+     * @param pc The presence condition that was found.
+     */
+    private void addPcToResult(Map<String, Set<Formula>> result, Formula pc) {
+        Set<Variable> vars = new HashSet<>();
+        helper.findVars(pc, vars);
+        for (Variable var : vars)  {
+            result.putIfAbsent(var.getName(), new HashSet<>());
+            result.get(var.getName()).add(pc);
         }
     }
 
