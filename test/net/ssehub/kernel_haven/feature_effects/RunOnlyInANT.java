@@ -23,8 +23,8 @@ public class RunOnlyInANT extends BlockJUnit4ClassRunner {
 
     @Override
     public void run(RunNotifier notifier) {
-        if (null == System.getProperty("ant.project.name") && null == System.getProperty("ant.version")) {
-            System.err.println(this.getTestClass().getName() + " skipped because of wrong OS used.");            
+        if (null == System.getProperty("KH.ANT.Test.Execution")) {
+            System.err.println(getTestClass().getName() + " skipped because it was called from outside of ANT script.");
         } else {
             super.run(notifier);                        
         }
