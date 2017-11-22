@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -16,7 +15,6 @@ import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 
 /**
  * Common part for the two different kind of {@link PcFinder} tests.
@@ -25,14 +23,6 @@ import net.ssehub.kernel_haven.util.Logger;
  */
 class AbstractPcFinderTests {
     
-    /**
-     * Initializes the logger.
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        Logger.init();
-    }
-
     /**
      * Runs the {@link PcFinder} on the passed element and returns the result for testing.
      * @param element A mocked element, which should be analyzed by the {@link PcFinder}.

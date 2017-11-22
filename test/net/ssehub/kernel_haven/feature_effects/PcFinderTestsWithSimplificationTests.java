@@ -3,6 +3,7 @@ package net.ssehub.kernel_haven.feature_effects;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,6 +11,7 @@ import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
@@ -23,6 +25,14 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 @RunWith(value = RunOnlyInANT.class)
 public class PcFinderTestsWithSimplificationTests extends AbstractPcFinderTests {
 
+    /**
+     * Initializes the logger.
+     */
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        Logger.init();
+    }
+    
     /**
      * Tests that a single condition in the form of <tt>A || A</tt> can be identified and simplified.
      */

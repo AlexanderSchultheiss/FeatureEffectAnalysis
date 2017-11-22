@@ -3,12 +3,14 @@ package net.ssehub.kernel_haven.feature_effects;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -17,12 +19,20 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  *
  */
 public class PcFinderTests extends AbstractPcFinderTests {
+    
+    /**
+     * Initializes the logger.
+     */
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        Logger.init();
+    }
 
     /**
      * Checks if a single statement with only 1 variable is detected correctly.
      */
     @Test
-    public void testSimplificationOfSingleStatement() {
+    public void testRetrievalOfSingleStatement() {
         Variable varA = new Variable("A");
         CodeElement element = new CodeBlock(varA);
         List<VariableWithPcs> results = detectPCs(element);
