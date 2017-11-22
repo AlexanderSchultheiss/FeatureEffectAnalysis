@@ -9,6 +9,7 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
+import net.ssehub.kernel_haven.config.EnumSetting;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -34,7 +35,7 @@ class PresenceConditionAnalysisHelper {
                 + "specifies which variables should be present in the output.");
     
     /**
-     * Different steps in the analysis where and whether to simplifiy results.
+     * Different steps in the analysis where and whether to simplify results.
      */
     public static enum SimplificationType {
         NO_SIMPLIFICATION,
@@ -43,7 +44,8 @@ class PresenceConditionAnalysisHelper {
     }
     
     public static final Setting<SimplificationType> SIMPLIFIY
-        = new Setting<>("analysis.simplify_conditions", Type.ENUM, true, SimplificationType.NO_SIMPLIFICATION.name(),
+        = new EnumSetting<SimplificationType>("analysis.simplify_conditions", SimplificationType.class, true,
+            SimplificationType.NO_SIMPLIFICATION,
             "Specifies whether and and which analysis step, results should be simplified:\n"
             + " - " + SimplificationType.NO_SIMPLIFICATION + ": Won't simplifiy results.\n"
             + " - " + SimplificationType.PRESENCE_CONDITIONS + ": Will simplifiy (indermediate) results of presence\n"
