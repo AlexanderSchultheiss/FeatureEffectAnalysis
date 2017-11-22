@@ -4,27 +4,33 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.util.logic.Disjunction;
+import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
- * Tests the {@link PcFinder}.
+ * Special tests of the {@link PcFinder}, which test that formulas can be simplified. These tests can only be executed
+ * when called from ANT scripts.
  * @author El-Sharkawy
  *
  */
-public class PcFinderTests extends AbstractPcFinderTests {
+@RunWith(value = RunOnlyInANT.class)
+public class PcFinderTestsWithSimplificationTests extends AbstractPcFinderTests {
 
     /**
-     * Checks if a single statement with only 1 variable is detected correctly.
+     * Tests that a single condition in the form of <tt>A || A</tt> can be identified and simplified.
      */
     @Test
     public void testSimplificationOfSingleStatement() {
         Variable varA = new Variable("A");
-        CodeElement element = new CodeBlock(varA);
+        Formula tooComplex = new Disjunction(varA, varA);
+        CodeElement element = new CodeBlock(tooComplex);
         List<VariableWithPcs> results = detectPCs(element);
         
         // Test the expected outcome
@@ -41,6 +47,6 @@ public class PcFinderTests extends AbstractPcFinderTests {
      * @return The detected presence conditions.
      */
     private List<VariableWithPcs> detectPCs(CodeElement element) {
-        return super.detectPCs(element, SimplificationType.NO_SIMPLIFICATION);
+        return super.detectPCs(element, SimplificationType.PRESENCE_CONDITIONS);
     }
 }

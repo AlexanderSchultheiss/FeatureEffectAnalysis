@@ -12,6 +12,8 @@
   <target name="jenkins">
     <antcall target="init" />
     <antcall target="KH_Common.compile" />
+  	<!-- CNF Utils are only used in tests. For this reason, they are downloaded after compilation to avoid unexpected dependencies -->
+  	<get src="${CnfUtils.location}" dest="${dependencies.dir}/cnfutils.jar" />
   	<antcall target="KH_Common.test" />
     <antcall target="KH_Common.jar" />
     <antcall target="KH_Common.jarwithsources" />

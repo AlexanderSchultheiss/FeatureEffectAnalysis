@@ -11,7 +11,8 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    PcFinderTests.class
+    PcFinderTests.class,
+    PcFinderTestsWithSimplificationTests.class
     })
 public class AllTests {
 
