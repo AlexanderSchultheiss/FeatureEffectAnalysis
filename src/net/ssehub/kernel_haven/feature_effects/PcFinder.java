@@ -12,6 +12,7 @@ import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
@@ -81,6 +82,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private AnalysisComponent<BuildModel> bmComponent;
     
     private PresenceConditionAnalysisHelper helper;
+    private boolean simplify;
+    private FormulaSimplifier simplifier = null;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
@@ -94,6 +97,10 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         super(config);
         this.sourceFiles = sourceFiles;
         this.helper = new PresenceConditionAnalysisHelper(config);
+        simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
+        if (simplify) {
+            simplifier = new FormulaSimplifier();
+        }
     }
     
     /**
@@ -154,7 +161,16 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         }
         
         for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
-            addResult(new VariableWithPcs(entry.getKey(), entry.getValue()));
+            Set<Formula> pcs;
+            if (simplify) {
+                pcs = new HashSet<>();
+                for (Formula formula :  entry.getValue()) {
+                    pcs.add(simplifier.simplify(formula));
+                }
+            } else {
+                pcs = entry.getValue();
+            }
+            addResult(new VariableWithPcs(entry.getKey(), pcs));
         }
     }
     

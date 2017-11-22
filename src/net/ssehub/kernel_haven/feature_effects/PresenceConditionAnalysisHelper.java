@@ -34,6 +34,24 @@ class PresenceConditionAnalysisHelper {
                 + "specifies which variables should be present in the output.");
     
     /**
+     * Different steps in the analysis where and whether to simplifiy results.
+     */
+    public static enum SimplificationType {
+        NO_SIMPLIFICATION,
+        PRESENCE_CONDITIONS,
+        FEATURE_EFFECTS,
+    }
+    
+    public static final Setting<SimplificationType> SIMPLIFIY
+        = new Setting<>("analysis.simplify_conditions", Type.ENUM, true, SimplificationType.NO_SIMPLIFICATION.name(),
+            "Specifies whether and and which analysis step, results should be simplified:\n"
+            + " - " + SimplificationType.NO_SIMPLIFICATION + ": Won't simplifiy results.\n"
+            + " - " + SimplificationType.PRESENCE_CONDITIONS + ": Will simplifiy (indermediate) results of presence\n"
+            + "   condition detection and all later steps.\n"
+            + " - " + SimplificationType.FEATURE_EFFECTS + ": Will simplifiy the results of the feature effect "
+            + "analysis.");
+    
+    /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
      */
     protected boolean nonBooleanReplacements;
@@ -41,6 +59,7 @@ class PresenceConditionAnalysisHelper {
     private boolean replaceNonBooleanReplacements;
     
     private boolean considerVmVarsOnly;
+    private SimplificationType simplificationType;
     
     private Pattern relevantVarsPattern;
     private VariabilityModel vm;
@@ -55,9 +74,11 @@ class PresenceConditionAnalysisHelper {
     public PresenceConditionAnalysisHelper(Configuration config) throws SetUpException {
         config.registerSetting(USE_VARMODEL_VARIABLES_ONLY);
         config.registerSetting(RELEVANT_VARIABLES);
+        config.registerSetting(SIMPLIFIY);
         
         relevantVarsPattern = config.getValue(RELEVANT_VARIABLES);
         considerVmVarsOnly = config.getValue(USE_VARMODEL_VARIABLES_ONLY);
+        simplificationType = config.getValue(SIMPLIFIY);
         
         vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
         if (null == vm && considerVmVarsOnly) {
@@ -205,6 +226,14 @@ class PresenceConditionAnalysisHelper {
      */
     public boolean isNonBooleanReplacements() {
         return nonBooleanReplacements;
+    }
+    
+    /**
+     * Returns at which (and whether) analysis step conditions should be simplified.
+     * @return At which (and whether) analysis step conditions should be simplified.
+     */
+    public SimplificationType getSimplificationMode() {
+        return simplificationType;
     }
 
 }
