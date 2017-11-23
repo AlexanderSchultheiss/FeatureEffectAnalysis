@@ -283,9 +283,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         List<Formula> xorTrees = new ArrayList<>(pcs.size());
         
-        /*
-         * TODO SE: Make this configurable/optional
-         */
         Collection<Formula> filteredFormula;
         if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.

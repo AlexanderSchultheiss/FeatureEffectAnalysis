@@ -13,7 +13,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     PcFinderTests.class,
     PcFinderTestsWithSimplificationTests.class,
-    FeatureEffectFinderTests.class
+    FeatureEffectFinderTests.class,
+    FeatureEffectFinderWithSimplificationTests.class
     })
 public class AllTests {
 
