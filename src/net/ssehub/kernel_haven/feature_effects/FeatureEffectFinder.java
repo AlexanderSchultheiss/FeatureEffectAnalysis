@@ -10,6 +10,7 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -80,6 +81,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     private AnalysisComponent<VariableWithPcs> pcFinder;
     
     private PresenceConditionAnalysisHelper helper;
+    private SimplificationType simplifyType;
     
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
@@ -95,6 +97,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         super(config);
         this.pcFinder = pcFinder;
         this.helper = new PresenceConditionAnalysisHelper(config);
+        simplifyType = helper.getSimplificationMode();
     }
 
     @Override
@@ -263,7 +266,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     /**
      * Creates a feature effect for the given variable and it's PCs.
      * A feature effect is defined as:
-     * <code>Or over (for each PC in PCs ( PC[variable <- true] XOR PC[variable <- false] ))</code>.
+     * <code>Or over (for each PC in PCs ( PC[variable &lt;- true] XOR PC[variable &lt;- false] ))</code>.
      * 
      * 
      * @param varWithPcs The variable and all presence condition that the variable appears in.
@@ -278,7 +281,13 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         /*
          * TODO SE: Make this configurable/optional
          */
-        Collection<Formula> filteredFormula = FeatureEffectReducer.simpleReduce(variable, pcs);
+        Collection<Formula> filteredFormula;
+        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+            // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
+            filteredFormula = FeatureEffectReducer.simpleReduce(variable, pcs);
+        } else {
+            filteredFormula = pcs;
+        }
         
         for (Formula pc : filteredFormula) {
             Formula trueFormula = setToValue(pc, variable, true, true);
@@ -310,7 +319,15 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             }
         }
         
-        return simplify(result);
+        Formula simplifiedResult;
+        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+            // Perform a simplification on the final result
+            simplifiedResult = simplify(result);
+        } else {
+            simplifiedResult = result;
+        }
+        
+        return simplifiedResult;
     }
 
     @Override
