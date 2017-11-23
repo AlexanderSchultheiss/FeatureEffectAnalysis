@@ -195,7 +195,7 @@ class PresenceConditionAnalysisHelper {
      * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
      * human readable form.
      * 
-     * @return Whether to do non boolean replcaments or not.
+     * @return Whether to do non boolean replacements or not.
      */
     public boolean isNonBooleanReplacements() {
         return nonBooleanReplacements;
