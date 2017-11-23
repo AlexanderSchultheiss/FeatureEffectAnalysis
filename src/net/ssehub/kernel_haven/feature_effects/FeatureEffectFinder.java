@@ -82,6 +82,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     
     private PresenceConditionAnalysisHelper helper;
     private SimplificationType simplifyType;
+    private FormulaSimplifier simplifier = null;
     
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
@@ -98,6 +99,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         this.pcFinder = pcFinder;
         this.helper = new PresenceConditionAnalysisHelper(config);
         simplifyType = helper.getSimplificationMode();
+        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+            // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
+            simplifier = new FormulaSimplifier();
+        }
     }
 
     @Override
@@ -322,7 +327,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         Formula simplifiedResult;
         if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Perform a simplification on the final result
-            simplifiedResult = simplify(result);
+            simplifiedResult = simplifier.simplify(result);
         } else {
             simplifiedResult = result;
         }

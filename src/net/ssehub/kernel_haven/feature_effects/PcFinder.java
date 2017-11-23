@@ -101,6 +101,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         this.helper = new PresenceConditionAnalysisHelper(config);
         simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
         if (simplify) {
+            // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
             simplifier = new FormulaSimplifier();
         }
     }
