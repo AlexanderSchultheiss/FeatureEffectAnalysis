@@ -14,7 +14,7 @@ import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;

@@ -11,7 +11,7 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
-import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 
@@ -36,7 +36,7 @@ abstract class AbstractFinderTests<R> {
         TestConfiguration tConfig = null;
         Properties config = new Properties();
         if (null != simplification) {
-            config.setProperty(PresenceConditionAnalysisHelper.SIMPLIFIY.getKey(), simplification.name());
+            config.setProperty(Settings.SIMPLIFIY.getKey(), simplification.name());
         }
         try {
             tConfig = new TestConfiguration(config);

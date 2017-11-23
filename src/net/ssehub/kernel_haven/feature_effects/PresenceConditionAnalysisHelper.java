@@ -9,9 +9,7 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
-import net.ssehub.kernel_haven.config.EnumSetting;
-import net.ssehub.kernel_haven.config.Setting;
-import net.ssehub.kernel_haven.config.Setting.Type;
+import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -25,33 +23,6 @@ import net.ssehub.kernel_haven.variability_model.VariabilityModel;
  *
  */
 class PresenceConditionAnalysisHelper {
-    
-    public static final Setting<Boolean> USE_VARMODEL_VARIABLES_ONLY
-        = new Setting<>("analysis.consider_vm_vars_only", Type.BOOLEAN, true, "false", "Defines whether the analysis "
-                + "should only consider variables that are present in the variability model.");
-    
-    public static final Setting<Pattern> RELEVANT_VARIABLES
-        = new Setting<>("analysis.relevant_variables", Type.REGEX, true, ".*", "Defines a regular expression that "
-                + "specifies which variables should be present in the output.");
-    
-    /**
-     * Different steps in the analysis where and whether to simplify results.
-     */
-    public static enum SimplificationType {
-        NO_SIMPLIFICATION,
-        PRESENCE_CONDITIONS,
-        FEATURE_EFFECTS,
-    }
-    
-    public static final Setting<SimplificationType> SIMPLIFIY
-        = new EnumSetting<SimplificationType>("analysis.simplify_conditions", SimplificationType.class, true,
-            SimplificationType.NO_SIMPLIFICATION,
-            "Specifies whether and and which analysis step, results should be simplified:\n"
-            + " - " + SimplificationType.NO_SIMPLIFICATION + ": Won't simplifiy results.\n"
-            + " - " + SimplificationType.PRESENCE_CONDITIONS + ": Will simplifiy (indermediate) results of presence\n"
-            + "   condition detection and all later steps.\n"
-            + " - " + SimplificationType.FEATURE_EFFECTS + ": Will simplifiy the results of the feature effect "
-            + "analysis.");
     
     /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
@@ -74,18 +45,18 @@ class PresenceConditionAnalysisHelper {
      * but exited abnormally.
      */
     public PresenceConditionAnalysisHelper(Configuration config) throws SetUpException {
-        config.registerSetting(USE_VARMODEL_VARIABLES_ONLY);
-        config.registerSetting(RELEVANT_VARIABLES);
-        config.registerSetting(SIMPLIFIY);
+        config.registerSetting(Settings.USE_VARMODEL_VARIABLES_ONLY);
+        config.registerSetting(Settings.RELEVANT_VARIABLES);
+        config.registerSetting(Settings.SIMPLIFIY);
         
-        relevantVarsPattern = config.getValue(RELEVANT_VARIABLES);
-        considerVmVarsOnly = config.getValue(USE_VARMODEL_VARIABLES_ONLY);
-        simplificationType = config.getValue(SIMPLIFIY);
+        relevantVarsPattern = config.getValue(Settings.RELEVANT_VARIABLES);
+        considerVmVarsOnly = config.getValue(Settings.USE_VARMODEL_VARIABLES_ONLY);
+        simplificationType = config.getValue(Settings.SIMPLIFIY);
         
         vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
         if (null == vm && considerVmVarsOnly) {
-            throw new SetUpException(USE_VARMODEL_VARIABLES_ONLY + "[true] was specified, but no variability model"
-                + " was passed.");
+            throw new SetUpException(Settings.USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
+                + "but no variability model was passed.");
         }
         
         this.nonBooleanReplacements = config.getValue(DefaultSettings.PREPARE_NON_BOOLEAN);
