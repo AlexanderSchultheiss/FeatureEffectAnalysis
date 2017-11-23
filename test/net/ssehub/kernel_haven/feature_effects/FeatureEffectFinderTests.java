@@ -15,6 +15,7 @@ import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithF
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
+import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
@@ -45,8 +46,30 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
         // Test the expected outcome
         Assert.assertEquals(1,  results.size());
         VariableWithFeatureEffect result1 = results.get(0);
-        Assert.assertEquals(varA.getName(), result1.getVariable());
+        Assert.assertSame(varA.getName(), result1.getVariable());
         Assert.assertSame(True.INSTANCE, result1.getFeatureEffect());
+    }
+    
+    /**
+     * Checks if a variable, which is (always) nested below the same feature is handled correctly.
+     */
+    @Test
+    public void testSimpleNestedFeature() {
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        CodeElement element = new CodeBlock(varA);
+        CodeElement nestedElement = new CodeBlock(new Conjunction(varB, varA));
+        element.addNestedElement(nestedElement);
+        List<VariableWithFeatureEffect> results = detectFEs(element);
+        
+        // Test the expected outcome (results should be ordered alphabetically)
+        Assert.assertEquals(2,  results.size());
+        VariableWithFeatureEffect resultA = results.get(0);
+        Assert.assertSame(varA.getName(), resultA.getVariable());
+        Assert.assertSame(True.INSTANCE, resultA.getFeatureEffect());
+        VariableWithFeatureEffect resultB = results.get(1);
+        Assert.assertSame(varB.getName(), resultB.getVariable());
+        Assert.assertSame(varA, resultB.getFeatureEffect());
     }
 
     /**
