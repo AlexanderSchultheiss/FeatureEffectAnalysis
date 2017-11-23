@@ -1,9 +1,11 @@
 package net.ssehub.kernel_haven.feature_effects;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -160,6 +162,19 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             }
         }
         
+        /*
+         * Temporary List for sorting the results (TreeList automatically sorts add insertion)
+         * This breaks the pipeline concept, as all results need to be finished before we can sort and send the results.
+         * However, at this point the whole analysis is almost finished and its only about (optional) filtering of
+         * results and sorting.
+         */
+        TreeSet<VariableWithPcs> tmpResults = new TreeSet<>(new Comparator<VariableWithPcs>() {
+            @Override
+            public int compare(VariableWithPcs o1, VariableWithPcs o2) {
+                return  o1.getVariable().compareTo(o2.getVariable());
+            }
+        });
+        
         for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
             Set<Formula> pcs;
             if (simplify) {
@@ -170,7 +185,11 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             } else {
                 pcs = entry.getValue();
             }
-            addResult(new VariableWithPcs(entry.getKey(), pcs));
+            tmpResults.add(new VariableWithPcs(entry.getKey(), pcs));
+        }
+                
+        for (VariableWithPcs var : tmpResults) {
+            addResult(var);            
         }
     }
     
