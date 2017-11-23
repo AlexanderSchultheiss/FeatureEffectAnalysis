@@ -11,17 +11,18 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
-import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 
 /**
  * Common part for the two different kind of {@link PcFinder} tests.
+ * 
+ * @param <R> The analysis result type
  * @author El-Sharkawy
  *
  */
-class AbstractPcFinderTests {
+abstract class AbstractFinderTests<R> {
     
     /**
      * Runs the {@link PcFinder} on the passed element and returns the result for testing.
@@ -30,7 +31,7 @@ class AbstractPcFinderTests {
      * {@link SimplificationType#NO_SIMPLIFICATION}, works only from ANT. 
      * @return The detected presence conditions.
      */
-    protected List<VariableWithPcs> detectPCs(CodeElement element, SimplificationType simplification) {
+    protected List<R> runAnalysis(CodeElement element, SimplificationType simplification) {
         // Generate configuration
         TestConfiguration tConfig = null;
         Properties config = new Properties();
@@ -50,12 +51,11 @@ class AbstractPcFinderTests {
             sourceFile1.addElement(element);
         }
         
-        List<VariableWithPcs> results = new ArrayList<>();
+        List<R> results = new ArrayList<>();
         try {
             AnalysisComponent<SourceFile> cmComponent = new TestAnalysisComponentProvider<SourceFile>(sourceFile1);
-            PcFinder finder = new PcFinder(tConfig, cmComponent);
-            finder.execute();
-            VariableWithPcs result;
+            AnalysisComponent<R> finder = callAnalysor(tConfig, cmComponent);
+            R result;
             do {
                 result = finder.getNextResult();
                 if (null != result) {
@@ -68,4 +68,15 @@ class AbstractPcFinderTests {
 
         return results;
     }
+
+    /**
+     * Calls the analysis component (e.g., {@link PcFinder} or {@link FeatureEffectFinder}.
+     * @param tConfig the configuration to pass.
+     * @param cmComponent The mocked test file.
+     * 
+     * @return The analysis component.
+     * @throws SetUpException If analysis fails.
+     */
+    protected abstract AnalysisComponent<R> callAnalysor(TestConfiguration tConfig,
+        AnalysisComponent<SourceFile> cmComponent) throws SetUpException;
 }

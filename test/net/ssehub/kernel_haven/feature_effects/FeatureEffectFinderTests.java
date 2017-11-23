@@ -11,18 +11,19 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
-import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
+import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
- * Tests the {@link PcFinder}.
+ * Tests the {@link FeatureEffectFinder} without any simplification.
  * @author El-Sharkawy
  *
  */
-public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
+public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFeatureEffect> {
     
     /**
      * Initializes the logger.
@@ -31,39 +32,40 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
     public static void setUpBeforeClass() {
         Logger.init();
     }
-
+    
     /**
-     * Checks if a single statement with only 1 variable is detected correctly.
+     * Checks if a variable, which is used at toplevel, has no feature effect condition.
      */
     @Test
-    public void testRetrievalOfSingleStatement() {
+    public void testAlwaysOnFeature() {
         Variable varA = new Variable("A");
         CodeElement element = new CodeBlock(varA);
-        List<VariableWithPcs> results = detectPCs(element);
+        List<VariableWithFeatureEffect> results = detectFEs(element);
         
         // Test the expected outcome
         Assert.assertEquals(1,  results.size());
-        VariableWithPcs result1 = results.get(0);
+        VariableWithFeatureEffect result1 = results.get(0);
         Assert.assertEquals(varA.getName(), result1.getVariable());
-        Assert.assertEquals(1, result1.getPcs().size());
-        Assert.assertTrue(result1.getPcs().contains(varA));
+        Assert.assertSame(True.INSTANCE, result1.getFeatureEffect());
     }
-    
+
     /**
-     * Runs the {@link PcFinder} on the passed element and returns the result for testing.
-     * @param element A mocked element, which should be analyzed by the {@link PcFinder}. 
-     * @return The detected presence conditions.
+     * Runs the {@link FeatureEffectFinder} on the passed element and returns the result for testing.
+     * @param element A mocked element, which should be analyzed by the {@link FeatureEffectFinder}. 
+     * @return The detected feature effects.
      */
-    private List<VariableWithPcs> detectPCs(CodeElement element) {
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement element) {
         return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION);
     }
     
     @Override
-    protected AnalysisComponent<VariableWithPcs> callAnalysor(TestConfiguration tConfig,
+    protected AnalysisComponent<VariableWithFeatureEffect> callAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
-        
-        PcFinder finder = new PcFinder(tConfig, cmComponent);
-        finder.execute();
-        return finder;
+
+        PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
+        FeatureEffectFinder feFinder = new FeatureEffectFinder(tConfig, pcFinder);
+        feFinder.execute();
+        return feFinder;
     }
+
 }

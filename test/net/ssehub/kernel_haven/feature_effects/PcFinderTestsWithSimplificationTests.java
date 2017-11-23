@@ -7,10 +7,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import net.ssehub.kernel_haven.SetUpException;
+import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
+import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.SimplificationType;
+import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -23,7 +27,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  *
  */
 @RunWith(value = RunOnlyInANT.class)
-public class PcFinderTestsWithSimplificationTests extends AbstractPcFinderTests {
+public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<VariableWithPcs> {
 
     /**
      * Initializes the logger.
@@ -57,6 +61,15 @@ public class PcFinderTestsWithSimplificationTests extends AbstractPcFinderTests 
      * @return The detected presence conditions.
      */
     private List<VariableWithPcs> detectPCs(CodeElement element) {
-        return super.detectPCs(element, SimplificationType.PRESENCE_CONDITIONS);
+        return super.runAnalysis(element, SimplificationType.PRESENCE_CONDITIONS);
+    }
+    
+    @Override
+    protected AnalysisComponent<VariableWithPcs> callAnalysor(TestConfiguration tConfig,
+        AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+        
+        PcFinder finder = new PcFinder(tConfig, cmComponent);
+        finder.execute();
+        return finder;
     }
 }

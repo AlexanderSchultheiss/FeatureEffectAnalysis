@@ -329,7 +329,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             // Perform a simplification on the final result
             simplifiedResult = simplifier.simplify(result);
         } else {
-            simplifiedResult = result;
+            // At least try to resolve all the (unnecessary) XORs
+            simplifiedResult = simplify(result);
         }
         
         return simplifiedResult;

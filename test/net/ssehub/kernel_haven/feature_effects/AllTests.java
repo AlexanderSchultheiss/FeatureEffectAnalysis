@@ -12,7 +12,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     PcFinderTests.class,
-    PcFinderTestsWithSimplificationTests.class
+    PcFinderTestsWithSimplificationTests.class,
+    FeatureEffectFinderTests.class
     })
 public class AllTests {
 
