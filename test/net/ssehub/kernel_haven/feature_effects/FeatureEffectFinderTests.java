@@ -16,6 +16,7 @@ import net.ssehub.kernel_haven.feature_effects.PresenceConditionAnalysisHelper.S
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
+import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
@@ -96,9 +97,10 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
         VariableWithFeatureEffect resultA = results.get(0);
         Assert.assertSame(varA.getName(), resultA.getVariable());
         Assert.assertSame(True.INSTANCE, resultA.getFeatureEffect());
+        // B -> (A || !A)
         VariableWithFeatureEffect resultB = results.get(1);
         Assert.assertSame(varB.getName(), resultB.getVariable());
-        Assert.assertSame(varA, resultB.getFeatureEffect());
+        Assert.assertEquals(new Disjunction(varA, notA), resultB.getFeatureEffect());
     }
 
     /**

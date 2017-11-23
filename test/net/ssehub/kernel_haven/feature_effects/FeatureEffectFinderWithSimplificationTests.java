@@ -18,6 +18,7 @@ import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
@@ -35,6 +36,34 @@ public class FeatureEffectFinderWithSimplificationTests extends AbstractFinderTe
     @BeforeClass
     public static void setUpBeforeClass() {
         Logger.init();
+    }
+    
+    /**
+     * Checks if a variable, which is (always) nested but still has always an effect, is handled correctly.
+     */
+    @Test
+    public void testAlwaysNestedButAlwaysOn() {
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        Formula notA = new Negation(varA);
+        CodeElement element1 = new CodeBlock(varA);
+        element1.addNestedElement(new CodeBlock(new Conjunction(varB, varA)));
+        CodeElement element2 = new CodeBlock(notA);
+        element2.addNestedElement(new CodeBlock(new Conjunction(varB, notA)));
+        CodeElement element = new CodeBlock(True.INSTANCE);
+        element.addNestedElement(element1);
+        element.addNestedElement(element2);
+        List<VariableWithFeatureEffect> results = detectFEs(element);
+       
+        // Test the expected outcome (results should be ordered alphabetically)
+        Assert.assertEquals(2,  results.size());
+        VariableWithFeatureEffect resultA = results.get(0);
+        Assert.assertSame(varA.getName(), resultA.getVariable());
+        Assert.assertSame(True.INSTANCE, resultA.getFeatureEffect());
+        // B -> (A || !A) <-> B -> TRUE
+        VariableWithFeatureEffect resultB = results.get(1);
+        Assert.assertSame(varB.getName(), resultB.getVariable());
+        Assert.assertSame(True.INSTANCE, resultB.getFeatureEffect());
     }
     
     /**
