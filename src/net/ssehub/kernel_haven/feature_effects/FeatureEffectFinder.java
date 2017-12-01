@@ -293,8 +293,15 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
-        DisjunctionQueue innerElements = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
-        DisjunctionQueue xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        DisjunctionQueue innerElements;
+        DisjunctionQueue xorTrees;
+        if (null != simplifier) {
+            innerElements = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+            xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        } else {
+            innerElements = new DisjunctionQueue(simplify);
+            xorTrees = new DisjunctionQueue(simplify);
+        }
         //List<Formula> xorTrees = new ArrayList<>(pcs.size());    
         for (Formula pc : filteredFormula) {
             //      A xor B
