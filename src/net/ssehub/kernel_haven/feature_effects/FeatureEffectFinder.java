@@ -1,7 +1,8 @@
 package net.ssehub.kernel_haven.feature_effects;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -278,10 +279,18 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      */
     private Formula buildFeatureEffefct(VariableWithPcs varWithPcs) {
         String variable = varWithPcs.getVariable();
-        Set<Formula> pcs = varWithPcs.getPcs();
+        Collection<Formula> pcs = varWithPcs.getPcs();
         boolean simplify = simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
 
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
+        if (simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+            // Simplification wasn't applied to separate presence conditions before, do this here
+            List<Formula> tmp = new ArrayList<>(pcs.size());
+            for (Formula formula : pcs) {
+                tmp.add(simplifier.simplify(formula));
+            }
+            pcs = tmp;
+        }
         Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
         DisjunctionQueue innerElements = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));

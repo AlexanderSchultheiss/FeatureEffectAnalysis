@@ -25,8 +25,21 @@ public class Settings {
      * Different steps in the analysis where and whether to simplify results.
      */
     public static enum SimplificationType {
+        // Do not change order.
+        
+        /**
+         * No simplification in any step.
+         */
         NO_SIMPLIFICATION,
+        
+        /**
+         * Simplification already in presence condition detection (recommended) and subsequent steps.
+         */
         PRESENCE_CONDITIONS,
+        
+        /**
+         * Simplification only in feature effects (and in subsequent steps if there are any).
+         */
         FEATURE_EFFECTS,
     }
     
