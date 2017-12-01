@@ -1,8 +1,6 @@
 package net.ssehub.kernel_haven.feature_effects;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -15,6 +13,7 @@ import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
+import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
@@ -285,28 +284,29 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
         Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
-        List<Formula> xorTrees = new ArrayList<>(pcs.size());    
+        DisjunctionQueue innerElements = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        DisjunctionQueue xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        //List<Formula> xorTrees = new ArrayList<>(pcs.size());    
         for (Formula pc : filteredFormula) {
+            //      A xor B
+            // <==> (A || B) && (!A || !B)
             Formula trueFormula = setToValue(pc, variable, true, true);
             Formula falseFormula = setToValue(pc, variable, false, true);
             
-            // xorTrees.add(new Xor(trueFormula, falseFormula));
+            // (A || B)
+            innerElements.add(trueFormula);
+            innerElements.add(falseFormula);
+            Formula atLeastOnePositive = innerElements.getDisjunction(variable);
             
-            //    A xor B
-            // == (A || B) && (!A || !B)
-            
-            Formula atLeastOnePositive = new Disjunction(trueFormula, falseFormula);
-            Formula atLeastOneNegative = new Disjunction(new Negation(trueFormula), new Negation(falseFormula));
+            // (!A || !B)
+            innerElements.add(new Negation(trueFormula));
+            innerElements.add(new Negation(falseFormula));
+            Formula atLeastOneNegative = innerElements.getDisjunction(variable);
             
             xorTrees.add(new Conjunction(atLeastOnePositive, atLeastOneNegative));
         }
         
-        Formula result = xorTrees.get(0);
-        
-        for (int i = 1; i < xorTrees.size(); i++) {
-            result = new Disjunction(result, xorTrees.get(i));
-        }
-        
+        Formula result = xorTrees.getDisjunction(variable);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
