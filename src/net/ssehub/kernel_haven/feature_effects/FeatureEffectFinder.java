@@ -293,36 +293,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
-        DisjunctionQueue innerElements;
-        DisjunctionQueue xorTrees;
-        if (null != simplifier) {
-            innerElements = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
-            xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
-        } else {
-            innerElements = new DisjunctionQueue(simplify);
-            xorTrees = new DisjunctionQueue(simplify);
-        }
-        //List<Formula> xorTrees = new ArrayList<>(pcs.size());    
-        for (Formula pc : filteredFormula) {
-            //      A xor B
-            // <==> (A || B) && (!A || !B)
-            Formula trueFormula = setToValue(pc, variable, true, true);
-            Formula falseFormula = setToValue(pc, variable, false, true);
-            
-            // (A || B)
-            innerElements.add(trueFormula);
-            innerElements.add(falseFormula);
-            Formula atLeastOnePositive = innerElements.getDisjunction(variable);
-            
-            // (!A || !B)
-            innerElements.add(new Negation(trueFormula));
-            innerElements.add(new Negation(falseFormula));
-            Formula atLeastOneNegative = innerElements.getDisjunction(variable);
-            
-            xorTrees.add(new Conjunction(atLeastOnePositive, atLeastOneNegative));
-        }
-        
-        Formula result = xorTrees.getDisjunction(variable);
+        Formula result = createXorTree(variable, simplify, filteredFormula);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
@@ -342,6 +313,55 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         
         return simplifiedResult;
+    }
+
+    /**
+     * Creates the disjunction of the XOR elements as needed by the Feature effect algorithm.
+     * @param variable The variable name for which we currently compute the feature effect.
+     * @param simplify <tt>true</tt> if the result should be simplified
+     * @param pcs The presence conditions relevant for the variable.
+     * @return The feature effect constraint (pre-condition).
+     */
+    private Formula createXorTree(String variable, boolean simplify, Collection<Formula> pcs) {
+        DisjunctionQueue innerElements;
+        DisjunctionQueue xorTrees;
+        if (null != simplifier) {
+            innerElements = new DisjunctionQueue(true, f -> simplifier.simplify(f));
+            xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        } else {
+            innerElements = new DisjunctionQueue(true);
+            xorTrees = new DisjunctionQueue(simplify);
+        }
+        
+        for (Formula pc : pcs) {
+            //      A xor B
+            // <==> (A || B) && (!A || !B)
+            Formula trueFormula = setToValue(pc, variable, true, true);
+            Formula falseFormula = setToValue(pc, variable, false, true);
+            
+            // (A || B)
+            innerElements.add(trueFormula);
+            innerElements.add(falseFormula);
+            Formula atLeastOnePositive = innerElements.getDisjunction(variable);
+            
+            // (!A || !B)
+            innerElements.add(new Negation(trueFormula));
+            innerElements.add(new Negation(falseFormula));
+            Formula atLeastOneNegative = innerElements.getDisjunction(variable);
+            
+            Formula xor;
+            if (atLeastOnePositive == null && atLeastOneNegative != null) {
+                xor = atLeastOneNegative;
+            } else if (atLeastOnePositive != null && atLeastOneNegative == null) {
+                xor = atLeastOnePositive;
+            } else {
+                xor = new Conjunction(atLeastOnePositive, atLeastOneNegative);
+            }
+            xorTrees.add(xor);
+        }
+        
+        Formula result = xorTrees.getDisjunction(variable);
+        return result;
     }
 
     @Override
