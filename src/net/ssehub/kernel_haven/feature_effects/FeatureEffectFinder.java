@@ -283,6 +283,9 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         boolean simplify = simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
 
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
+        pcs = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
+
+        // Check if presence conditions have already been simplified in earlier step
         if (simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Simplification wasn't applied to separate presence conditions before, do this here
             List<Formula> tmp = new ArrayList<>(pcs.size());
@@ -291,9 +294,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             }
             pcs = tmp;
         }
-        Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
-        Formula result = createXorTree(variable, simplify, filteredFormula);
+        Formula result = createXorTree(variable, simplify, pcs);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
