@@ -280,17 +280,12 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     private Formula buildFeatureEffefct(VariableWithPcs varWithPcs) {
         String variable = varWithPcs.getVariable();
         Set<Formula> pcs = varWithPcs.getPcs();
+        boolean simplify = simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
+
+        // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
+        Collection<Formula> filteredFormula = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
         
-        List<Formula> xorTrees = new ArrayList<>(pcs.size());
-        
-        Collection<Formula> filteredFormula;
-        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
-            // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
-            filteredFormula = FeatureEffectReducer.simpleReduce(variable, pcs);
-        } else {
-            filteredFormula = pcs;
-        }
-        
+        List<Formula> xorTrees = new ArrayList<>(pcs.size());    
         for (Formula pc : filteredFormula) {
             Formula trueFormula = setToValue(pc, variable, true, true);
             Formula falseFormula = setToValue(pc, variable, false, true);
@@ -322,7 +317,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         
         Formula simplifiedResult;
-        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+        if (simplify) {
             // Perform a simplification on the final result
             simplifiedResult = simplifier.simplify(result);
         } else {
