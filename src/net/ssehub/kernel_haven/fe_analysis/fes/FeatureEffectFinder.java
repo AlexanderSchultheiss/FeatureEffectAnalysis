@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.fes;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,9 +7,11 @@ import java.util.List;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder.VariableWithFeatureEffect;
-import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
+import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;

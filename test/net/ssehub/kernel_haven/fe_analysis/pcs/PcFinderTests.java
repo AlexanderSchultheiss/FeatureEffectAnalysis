@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import java.util.List;
 
@@ -11,8 +11,9 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
-import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Variable;

@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.fes;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,9 +1,10 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.fes;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.analysis.PipelineAnalysis;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 
 /**
  * An analysis that finds feature effect formulas for variables.

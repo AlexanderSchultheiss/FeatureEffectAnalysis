@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,7 +9,7 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
-import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -22,7 +22,7 @@ import net.ssehub.kernel_haven.variability_model.VariabilityModel;
  * @author El-Sharkawy
  *
  */
-class PresenceConditionAnalysisHelper {
+public class PresenceConditionAnalysisHelper {
     
     /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.

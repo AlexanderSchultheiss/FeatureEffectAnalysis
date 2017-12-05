@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis;
 
 import java.lang.reflect.Method;
 
@@ -14,7 +14,7 @@ import net.ssehub.kernel_haven.util.logic.Formula;
  *
  */
 // TODO SE: @Adam Find a better solution if possible.
-class FormulaSimplifier {
+public class FormulaSimplifier {
     
     private Method simplifyMethod;
     
@@ -22,7 +22,7 @@ class FormulaSimplifier {
      * Sole constructor to initialize this wrapper.
      * @throws SetUpException If the CNF-Utils package is not available.
      */
-    FormulaSimplifier() throws SetUpException {
+    public FormulaSimplifier() throws SetUpException {
         try {
             // Do not make this part static, otherwise this wrapper becomes useless
             Class<?> clazz = Class.forName("net.ssehub.kernel_haven.logic_utils.LogicUtils");
@@ -39,7 +39,7 @@ class FormulaSimplifier {
      * 
      * @return The simplified formula. Not <code>null</code>.
      */
-    Formula simplify(Formula formula) {
+    public Formula simplify(Formula formula) {
         Formula result;
         try {
             result = (Formula) simplifyMethod.invoke(null, formula);

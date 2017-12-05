@@ -1,21 +1,19 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.fes;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Tests suite to load all tests of this plug-in (entry point).
+ * Tests suite to load tests specific to the detection of presence conditions.
  * @author El-Sharkawy
  *
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    PcFinderTests.class,
-    PcFinderTestsWithSimplificationTests.class,
     FeatureEffectFinderTests.class,
     FeatureEffectFinderWithSimplificationTests.class
     })
-public class AllTests {
+public class AllFeatureEffectTests {
 
 }

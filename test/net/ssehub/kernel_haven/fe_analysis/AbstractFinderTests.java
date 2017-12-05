@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,7 +11,9 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
-import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 
@@ -22,7 +24,7 @@ import net.ssehub.kernel_haven.test_utils.TestConfiguration;
  * @author El-Sharkawy
  *
  */
-abstract class AbstractFinderTests<R> {
+public abstract class AbstractFinderTests<R> {
     
     /**
      * Runs the {@link PcFinder} on the passed element and returns the result for testing.

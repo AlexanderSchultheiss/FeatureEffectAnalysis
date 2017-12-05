@@ -1,4 +1,4 @@
-package net.ssehub.kernel_haven.feature_effects;
+package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,8 +13,10 @@ import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.feature_effects.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.feature_effects.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
+import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
