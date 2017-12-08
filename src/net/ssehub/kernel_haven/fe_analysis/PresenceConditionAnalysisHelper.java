@@ -59,7 +59,8 @@ public class PresenceConditionAnalysisHelper {
                 + "but no variability model was passed.");
         }
         
-        this.nonBooleanReplacements = config.getValue(DefaultSettings.PREPARE_NON_BOOLEAN);
+        this.nonBooleanReplacements = config.getValue(DefaultSettings.PREPARATION_CLASSES)
+                .contains("net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation");
         this.replaceNonBooleanReplacements = nonBooleanReplacements || config.getValue(DefaultSettings.FUZZY_PARSING);
     }
     
