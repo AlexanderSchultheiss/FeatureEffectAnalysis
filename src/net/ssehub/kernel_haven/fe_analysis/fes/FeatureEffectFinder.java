@@ -112,11 +112,13 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         VariableWithPcs pcs;
         while ((pcs = pcFinder.getNextResult()) != null) {
-            if (helper.isRelevant(pcs.getVariable())) {
-                addResult(new VariableWithFeatureEffect(
-                        helper.doReplacements(pcs.getVariable()),
-                        helper.doReplacements(buildFeatureEffefct(pcs))
-                ));
+            String varName = pcs.getVariable();
+            if (helper.isRelevant(varName)) {
+                Formula feConstraint = helper.doReplacements(buildFeatureEffefct(pcs));
+                varName = helper.doReplacements(varName);
+                VariableWithFeatureEffect feVar = new VariableWithFeatureEffect(varName, feConstraint);
+                
+                addResult(feVar);
             }
         }
         
