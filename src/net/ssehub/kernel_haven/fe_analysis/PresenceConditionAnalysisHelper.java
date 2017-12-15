@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.fe_analysis;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -59,8 +60,14 @@ public class PresenceConditionAnalysisHelper {
                 + "but no variability model was passed.");
         }
         
-        this.nonBooleanReplacements = config.getValue(DefaultSettings.PREPARATION_CLASSES)
-                .contains("net.ssehub.kernel_haven.non_boolean.NonBooleanPreperation");
+        // Check if ANY NonBooleanPreparation-Class is specified/used
+        this.nonBooleanReplacements = false;
+        List<String> preparationClasses = config.getValue(DefaultSettings.PREPARATION_CLASSES);
+        for (int i = 0; i < preparationClasses.size() && !nonBooleanReplacements; i++) {
+            if (preparationClasses.get(i).endsWith("NonBooleanPreperation")) {
+                nonBooleanReplacements = true;
+            }
+        }
         this.replaceNonBooleanReplacements = nonBooleanReplacements || config.getValue(DefaultSettings.FUZZY_PARSING);
     }
     
