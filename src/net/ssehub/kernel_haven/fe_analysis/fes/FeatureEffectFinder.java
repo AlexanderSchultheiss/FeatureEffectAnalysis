@@ -356,21 +356,19 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             Formula atLeastOneNegative = innerElements.getDisjunction(variable);
             
             Formula xor;
-            /* 
-             * TODO SE: @Adam please check if null checks are still needed,
-             * DisjunctionQueue should not return any null values
-             */
-            if ((atLeastOnePositive == null || atLeastOnePositive == True.INSTANCE) && atLeastOneNegative != null) {
+            
+            if (atLeastOnePositive == True.INSTANCE) {
                 // TRUE AND atLeastOneNegative <-> atLeastOneNegative
                 xor = atLeastOneNegative;
-            } else if (atLeastOnePositive != null
-                && (atLeastOneNegative == null || atLeastOneNegative == True.INSTANCE)) {
                 
+            } else if (atLeastOneNegative == True.INSTANCE) {
                 // TRUE AND atLeastOnePositive <-> atLeastOnePositive
                 xor = atLeastOnePositive;
+                
             } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
                 // FALSE AND x <-> FALSE
                 xor = False.INSTANCE;
+                
             } else {
                 xor = new Conjunction(atLeastOnePositive, atLeastOneNegative);
             }
