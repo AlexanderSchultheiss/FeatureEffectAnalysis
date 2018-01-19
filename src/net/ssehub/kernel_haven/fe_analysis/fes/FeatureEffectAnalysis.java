@@ -5,6 +5,7 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.analysis.PipelineAnalysis;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
  * An analysis that finds feature effect formulas for variables.
@@ -18,7 +19,7 @@ public class FeatureEffectAnalysis extends PipelineAnalysis {
      * 
      * @param config The global configuration.
      */
-    public FeatureEffectAnalysis(Configuration config) {
+    public FeatureEffectAnalysis(@NonNull Configuration config) {
         super(config);
     }
 
