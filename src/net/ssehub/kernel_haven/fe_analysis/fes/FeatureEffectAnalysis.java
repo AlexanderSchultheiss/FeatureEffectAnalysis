@@ -24,7 +24,7 @@ public class FeatureEffectAnalysis extends PipelineAnalysis {
     }
 
     @Override
-    protected AnalysisComponent<?> createPipeline() throws SetUpException {
+    protected @NonNull AnalysisComponent<?> createPipeline() throws SetUpException {
         return new FeatureEffectFinder(config,
                 new PcFinder(config,
                         getCmComponent(),
