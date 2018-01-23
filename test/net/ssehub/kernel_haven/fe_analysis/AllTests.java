@@ -15,7 +15,8 @@ import net.ssehub.kernel_haven.fe_analysis.pcs.AllPresenceConditionTests;
 @RunWith(Suite.class)
 @SuiteClasses({
     AllPresenceConditionTests.class,
-    AllFeatureEffectTests.class
+    AllFeatureEffectTests.class,
+    StringUtilsTests.class
     })
 public class AllTests {
 

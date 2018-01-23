@@ -83,6 +83,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     private AnalysisComponent<VariableWithPcs> pcFinder;
     
     private PresenceConditionAnalysisHelper helper;
+    private boolean simplify = false;
     private SimplificationType simplifyType;
     private FormulaSimplifier simplifier = null;
     
@@ -104,6 +105,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
             simplifier = new FormulaSimplifier();
+            simplify = true;
         }
     }
 
@@ -284,7 +286,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     private Formula buildFeatureEffefct(VariableWithPcs varWithPcs) {
         String variable = varWithPcs.getVariable();
         Collection<Formula> pcs = varWithPcs.getPcs();
-        boolean simplify = simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
 
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
         pcs = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
@@ -311,10 +312,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         Formula simplifiedResult;
         if (simplify) {
-            // Perform a simplification on the final result
+            // Perform a simplification on the final result: Logical simplification
             simplifiedResult = simplifier.simplify(result);
         } else {
-            // At least try to resolve all the (unnecessary) XORs
+            // At least try to resolve all the (unnecessary) XORs: Make constraints only readable
             simplifiedResult = simplify(result);
         }
         
