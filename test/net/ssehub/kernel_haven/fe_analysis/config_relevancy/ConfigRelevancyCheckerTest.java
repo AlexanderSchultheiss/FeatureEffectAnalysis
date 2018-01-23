@@ -27,8 +27,8 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
  * Tests the {@link ConfigRelevancyChecker}.
+ * 
  * @author Adam
- *
  */
 public class ConfigRelevancyCheckerTest {
 
@@ -42,6 +42,8 @@ public class ConfigRelevancyCheckerTest {
     
     /**
      * Tests how the {@link ConfigRelevancyChecker} handles a completely configured configuration.
+     * Covers all four cases of {@link Relevance}.
+     * 
      * @throws SetUpException Not expected
      * @throws IOException Not expected
      */
@@ -82,6 +84,12 @@ public class ConfigRelevancyCheckerTest {
         assertThat(result.size(), is(4));
     }
     
+    /**
+     * Tests whether variables in the feature effect without an equal sign ("=") are treated correctly.
+     * 
+     * @throws SetUpException unwanted.
+     * @throws IOException unwanted.
+     */
     @Test
     public void testFeatureEffectVariablesWithoutEquals() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
@@ -98,6 +106,13 @@ public class ConfigRelevancyCheckerTest {
         assertThat(result.size(), is(1));
     }
     
+    /**
+     * Tests whether a not fully defined configuration can still be evaluated correctly. The result is still a defined
+     * value.
+     * 
+     * @throws SetUpException unwanted.
+     * @throws IOException unwanted.
+     */
     @Test
     public void testUnkownFeatureEffectVariableButStillDefined() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
@@ -114,6 +129,13 @@ public class ConfigRelevancyCheckerTest {
         assertThat(result.size(), is(1));
     }
     
+    /**
+     * Tests whether a not fully defined configuration can still be evaluated correctly. The result of this is
+     * undefined, since too many configuration values are missing.
+     * 
+     * @throws SetUpException unwanted.
+     * @throws IOException unwanted.
+     */
     @Test
     public void testUnkownFeatureEffectVariableAndUndefinedResult() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
@@ -130,6 +152,16 @@ public class ConfigRelevancyCheckerTest {
         assertThat(result.size(), is(1));
     }
     
+    /**
+     * Runs the {@link ConfigRelevancyChecker} on the given feature effects and input file.
+     * 
+     * @param fes The list of feature effects to run the checker on.
+     * @param inputFile The input file containing the SPL configuration in CSV.
+     * 
+     * @return The result of the checker run.
+     * 
+     * @throws SetUpException If creating the checker fails.
+     */
     private List<VariableRelevance> run(List<VariableWithFeatureEffect> fes, File inputFile) throws SetUpException {
         TestConfiguration config = new TestConfiguration(new Properties());
         config.registerSetting(ConfigRelevancyChecker.INPUT_FILE_PROPERTY);

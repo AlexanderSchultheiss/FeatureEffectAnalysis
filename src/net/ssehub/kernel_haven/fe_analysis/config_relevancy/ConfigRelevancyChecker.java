@@ -22,36 +22,43 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaEvaluator;
 import net.ssehub.kernel_haven.util.logic.VariableFinder;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * Checks feature effects of variables against a given product configuration. This requires that variable names are
- * pure Boolean, i.e., do not contain pseudo-sat formulas. For this, you may require the {@link FeAggregator}
- * to normalize pseudo-sat input. <br/>
+ * Boolean, i.e., do not contain pseudo-sat formulas. For this, you may require the {@link FeAggregator}
+ * to normalize pseudo-sat input. The feature effect themselves, however, are treated as non-Boolean. This means, that
+ * variable names in the feature effect formulas can have the format "VAR=2"; a product configuration
+ * (SPL configuration) that is checked is a mapping <code>variable name -&gt; integer</code>.
+ * <p>
  * Feature effects are not allowed to contain &gt;, &lt;, &gt;=, &lt;=, != comparisons
  * in their variable names. They must only contains variable names in the form of "VAR" or "VAR=4".
+ * </p>
  * 
  * @author Adam
  */
 public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance> {
 
-    public static final Setting<File> INPUT_FILE_PROPERTY
+    public static final Setting<@NonNull File> INPUT_FILE_PROPERTY
         = new Setting<>("analysis.config_relevancy_checker.configuration_file", Type.PATH, true, null,
             "Location an historical SPL configuration file, which should be analyses w.r.t."
             + "the relevance of the configured variables. "
             + "Can be either absolute or relative to source code tree.");
     
-    private AnalysisComponent<VariableWithFeatureEffect> featureEffectFinder;
+    private @NonNull AnalysisComponent<VariableWithFeatureEffect> featureEffectFinder;
     
-    private File inputFile;
+    private @NonNull File inputFile;
     
     /**
      * Sole constructor for this class.
+     * 
      * @param config The pipeline configuration.
      * @param featureEffectFinder Probably {@link FeatureEffectFinder} or {@link FeAggregator}.
+     * 
      * @throws SetUpException If configuration fails, e.g., if no SPL configuration was passed to this analysis.
      */
     public ConfigRelevancyChecker(@NonNull Configuration config,
-        AnalysisComponent<VariableWithFeatureEffect> featureEffectFinder) throws SetUpException {
+            @NonNull AnalysisComponent<VariableWithFeatureEffect> featureEffectFinder) throws SetUpException {
         
         super(config);
         this.featureEffectFinder = featureEffectFinder;
@@ -71,10 +78,12 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
     
     /**
      * Loads the historical SPL configuration file.
+     * 
      * @return A map containing (name of a variable, configured integer value).
+     * 
      * @throws IOException If the file could not be read.
      */
-    private Map<String, Integer> loadFile() throws IOException {
+    private @NonNull Map<String, Integer> loadFile() throws IOException {
         Map<String, Integer> variableValues = new HashMap<>();
         
         final int nameIndex = 0;
@@ -98,8 +107,10 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
     
     /**
      * Solves the given constraint while using the configuration of the map.
+     * 
      * @param featureEffect The constraint to solve.
      * @param variableValues The configuration to use.
+     * 
      * @return 
      * <ul>
      *     <li><code>true</code>: Constraint was fulfilled</li>
@@ -107,7 +118,9 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
      *     <li><code>null</code>: Constraint could not be solved since come values were missing</li>
      * </ul>
      */
-    private Boolean evaluateFeatureEffect(Formula featureEffect, Map<String, Integer> variableValues) {
+    private @Nullable Boolean evaluateFeatureEffect(@NonNull Formula featureEffect,
+            @NonNull Map<String, Integer> variableValues) {
+        
         VariableFinder varFinder = new VariableFinder();
         varFinder.visit(featureEffect);
         
