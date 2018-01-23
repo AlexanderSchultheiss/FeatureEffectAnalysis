@@ -164,8 +164,8 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
                 
                 if (var.getVariable().contains("=")) {
                     LOGGER.logWarning("Variable name still contains a '=': " + var.getVariable(),
-                            "You probably want to run the net.ssehub.kernel_haven.bosch.feature_effects.FeAggregator "
-                            + "component before this one");
+                            "You probably want to run the " + FeAggregator.class.getCanonicalName()
+                            + " component before this one");
                 }
                 
                 Boolean feEvaluation = evaluateFeatureEffect(var.getFeatureEffect(), variableValues);
