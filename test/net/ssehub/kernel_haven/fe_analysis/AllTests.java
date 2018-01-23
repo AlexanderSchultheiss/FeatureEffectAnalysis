@@ -4,6 +4,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import net.ssehub.kernel_haven.fe_analysis.config_relevancy.ConfigRelevancyCheckerTest;
 import net.ssehub.kernel_haven.fe_analysis.fes.AllFeatureEffectTests;
 import net.ssehub.kernel_haven.fe_analysis.pcs.AllPresenceConditionTests;
 
@@ -16,7 +17,8 @@ import net.ssehub.kernel_haven.fe_analysis.pcs.AllPresenceConditionTests;
 @SuiteClasses({
     AllPresenceConditionTests.class,
     AllFeatureEffectTests.class,
-    StringUtilsTests.class
+    StringUtilsTests.class,
+    ConfigRelevancyCheckerTest.class
     })
 public class AllTests {
 
