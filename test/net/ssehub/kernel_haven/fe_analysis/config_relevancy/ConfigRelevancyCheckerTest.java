@@ -27,7 +27,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
  * Tests the {@link ConfigRelevancyChecker}.
- * @author El-Sharkawy
+ * @author Adam
  *
  */
 public class ConfigRelevancyCheckerTest {
