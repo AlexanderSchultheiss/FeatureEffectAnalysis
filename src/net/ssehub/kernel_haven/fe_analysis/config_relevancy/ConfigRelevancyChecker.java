@@ -79,11 +79,12 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
     /**
      * Loads the historical SPL configuration file.
      * 
+     * @param inputFile The file to load the SPL configuration from.
      * @return A map containing (name of a variable, configured integer value).
      * 
      * @throws IOException If the file could not be read.
      */
-    private @NonNull Map<String, Integer> loadFile() throws IOException {
+    protected @NonNull Map<String, Integer> loadFile(@NonNull File inputFile) throws IOException {
         Map<String, Integer> variableValues = new HashMap<>();
         
         final int nameIndex = 0;
@@ -170,7 +171,7 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
     @Override
     protected void execute() {
         try {
-            Map<String, Integer> variableValues = loadFile();
+            Map<String, Integer> variableValues = loadFile(inputFile);
             
             VariableWithFeatureEffect var;
             while ((var = featureEffectFinder.getNextResult()) != null) {
