@@ -14,8 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.fe_analysis.config_relevancy.ConfigRelevancyChecker;
-import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance;
 import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance.Relevance;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
