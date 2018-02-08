@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.pcs;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,12 +19,13 @@ import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * A component that creates a mapping variable -> set of all PCs the variable is used in.
@@ -39,9 +42,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     @TableRow
     public static class VariableWithPcs {
         
-        private String variable;
+        private @NonNull String variable;
         
-        private Set<Formula> pcs;
+        private @NonNull Set<@NonNull Formula> pcs;
 
         /**
          * Creates a new {@link VariableWithPcs}.
@@ -49,7 +52,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * @param variable The variable name.
          * @param pcs All the PCs that the variable is used in. Must not be <code>null</code>.
          */
-        public VariableWithPcs(String variable, Set<Formula> pcs) {
+        public VariableWithPcs(@NonNull String variable, @NonNull Set<@NonNull Formula> pcs) {
             this.variable = variable;
             this.pcs = pcs;
         }
@@ -60,7 +63,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * @return The name of the variable.
          */
         @TableElement(name = "Variable", index = 0)
-        public String getVariable() {
+        public @NonNull String getVariable() {
             return variable;
         }
         
@@ -70,24 +73,23 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * @return A set of all PCs, never <code>null</code>.
          */
         @TableElement(name = "Presence conditions", index  = 1)
-        public Set<Formula> getPcs() {
+        public @NonNull Set<@NonNull Formula> getPcs() {
             return pcs;
         }
         
         @Override
-        public String toString() {
+        public @NonNull String toString() {
             return "PCs[" + variable + "] = " + pcs.toString();
         }
         
     }
     
-    private AnalysisComponent<SourceFile> sourceFiles;
+    private @NonNull AnalysisComponent<SourceFile> sourceFiles;
     
-    private AnalysisComponent<BuildModel> bmComponent;
+    private @Nullable AnalysisComponent<BuildModel> bmComponent;
     
-    private PresenceConditionAnalysisHelper helper;
-    private boolean simplify;
-    private FormulaSimplifier simplifier = null;
+    private @NonNull PresenceConditionAnalysisHelper helper;
+    private @Nullable FormulaSimplifier simplifier = null;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
@@ -97,13 +99,14 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * 
      * @throws SetUpException If setting up this component fails.
      */
-    public PcFinder(Configuration config, AnalysisComponent<SourceFile> sourceFiles) throws SetUpException {
+    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile> sourceFiles)
+            throws SetUpException {
+        
         super(config);
         this.sourceFiles = sourceFiles;
         this.helper = new PresenceConditionAnalysisHelper(config);
-        simplify = helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS;
         //simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
-        if (simplify) {
+        if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
             // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
             simplifier = new FormulaSimplifier();
         }
@@ -119,8 +122,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * 
      * @throws SetUpException If setting up this component fails.
      */
-    public PcFinder(Configuration config, AnalysisComponent<SourceFile> sourceFiles, AnalysisComponent<BuildModel> bm)
-            throws SetUpException {
+    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile> sourceFiles,
+            @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
         this(config, sourceFiles);
         this.bmComponent = bm;
     }
@@ -131,18 +134,18 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         if (bmComponent != null) {
             bm = bmComponent.getNextResult();
             if (bm != null) {
-                Logger.get().logDebug("Calculating presence conditions including information from build model");
+                LOGGER.logDebug("Calculating presence conditions including information from build model");
             } else {
-                Logger.get().logWarning("Should use build information for calculation of presence conditions, "
+                LOGGER.logWarning("Should use build information for calculation of presence conditions, "
                         + "but build model provider returned null", "Ignoring build model");
             }
         } else {
-            Logger.get().logDebug("Calculating presence conditions without considering build model");
+            LOGGER.logDebug("Calculating presence conditions without considering build model");
         }
             
         
 
-        Map<String, Set<Formula>> result = new HashMap<>();
+        Map<String, Set<@NonNull Formula>> result = new HashMap<>();
         
         SourceFile file;
         while ((file = sourceFiles.getNextResult()) != null) {
@@ -151,12 +154,12 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 filePc = bm.getPc(file.getPath());
                 
                 if (filePc != null) {
-                    Logger.get().logDebug("File PC for " + file.getPath() + ": " + filePc);
+                    LOGGER.logDebug("File PC for " + file.getPath() + ": " + filePc);
                     // add the file PC as a stand-alone PC
                     addPcToResult(result, filePc);
                     
                 } else {
-                    Logger.get().logWarning("No file PC for " + file.getPath() + " in build model");
+                    LOGGER.logWarning("No file PC for " + file.getPath() + " in build model");
                 }
             }
             
@@ -172,24 +175,25 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * However, at this point the whole analysis is almost finished and its only about (optional) filtering of
          * results and sorting.
          */
-        TreeSet<VariableWithPcs> tmpResults = new TreeSet<>(new Comparator<VariableWithPcs>() {
+        TreeSet<@NonNull VariableWithPcs> tmpResults = new TreeSet<>(new Comparator<VariableWithPcs>() {
             @Override
             public int compare(VariableWithPcs o1, VariableWithPcs o2) {
                 return  o1.getVariable().compareTo(o2.getVariable());
             }
         });
         
-        for (Map.Entry<String, Set<Formula>> entry : result.entrySet()) {
-            Set<Formula> pcs;
-            if (simplify) {
+        for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
+            Set<@NonNull Formula> pcs;
+            FormulaSimplifier simplifier = this.simplifier;
+            if (simplifier != null) {
                 pcs = new HashSet<>();
-                for (Formula formula :  entry.getValue()) {
+                for (Formula formula :  notNull(entry.getValue())) {
                     pcs.add(simplifier.simplify(formula));
                 }
             } else {
-                pcs = entry.getValue();
+                pcs = notNull(entry.getValue());
             }
-            tmpResults.add(new VariableWithPcs(entry.getKey(), pcs));
+            tmpResults.add(new VariableWithPcs(notNull(entry.getKey()), pcs));
         }
                 
         for (VariableWithPcs var : tmpResults) {
@@ -208,8 +212,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * @param parentIsRelevant Used for optimization (<tt>true</tt> parent condition is relevant and, thus, also all
      * nested conditions are relevant, <tt>false</tt> this method will check if the condition should be considered).
      */
-    private void findPcsInElement(CodeElement element, Map<String, Set<Formula>> result, Formula filePc,
-        boolean parentIsRelevant) {
+    private void findPcsInElement(@NonNull CodeElement element, @NonNull Map<String, Set<@NonNull Formula>> result,
+            @Nullable Formula filePc, boolean parentIsRelevant) {
         
         Formula pc = element.getPresenceCondition();
         
@@ -234,8 +238,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * @param result The result map to add to.
      * @param pc The presence condition that was found.
      */
-    private void addPcToResult(Map<String, Set<Formula>> result, Formula pc) {
-        Set<Variable> vars = new HashSet<>();
+    private void addPcToResult(@NonNull Map<String, Set<@NonNull Formula>> result, @NonNull Formula pc) {
+        Set<@NonNull Variable> vars = new HashSet<>();
         helper.findVars(pc, vars);
         for (Variable var : vars)  {
             result.putIfAbsent(var.getName(), new HashSet<>());
@@ -244,7 +248,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     }
 
     @Override
-    public String getResultName() {
+    public @NonNull String getResultName() {
         return "Presence Conditions";
     }
 

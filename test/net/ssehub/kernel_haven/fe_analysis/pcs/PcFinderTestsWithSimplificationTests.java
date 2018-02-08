@@ -67,6 +67,7 @@ public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<Va
     }
     
     @Override
+    @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithPcs> callAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
         

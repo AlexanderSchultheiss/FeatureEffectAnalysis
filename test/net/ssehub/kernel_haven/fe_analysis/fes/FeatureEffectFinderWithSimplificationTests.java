@@ -113,6 +113,7 @@ public class FeatureEffectFinderWithSimplificationTests extends AbstractFinderTe
     }
     
     @Override
+    @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithFeatureEffect> callAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
 

@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +18,8 @@ import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
 
 /**
@@ -33,10 +37,10 @@ public class PresenceConditionAnalysisHelper {
     private boolean replaceNonBooleanReplacements;
     
     private boolean considerVmVarsOnly;
-    private SimplificationType simplificationType;
+    private @NonNull SimplificationType simplificationType;
     
-    private Pattern relevantVarsPattern;
-    private VariabilityModel vm;
+    private @NonNull Pattern relevantVarsPattern;
+    private @Nullable VariabilityModel vm;
 
     /**
      * Sole constructor for this class.
@@ -45,7 +49,7 @@ public class PresenceConditionAnalysisHelper {
      * @throws SetUpException If reading configuration options fails or if a build model was specified,
      * but exited abnormally.
      */
-    public PresenceConditionAnalysisHelper(Configuration config) throws SetUpException {
+    public PresenceConditionAnalysisHelper(@NonNull Configuration config) throws SetUpException {
         config.registerSetting(Settings.USE_VARMODEL_VARIABLES_ONLY);
         config.registerSetting(Settings.RELEVANT_VARIABLES);
         config.registerSetting(Settings.SIMPLIFIY);
@@ -54,7 +58,7 @@ public class PresenceConditionAnalysisHelper {
         considerVmVarsOnly = config.getValue(Settings.USE_VARMODEL_VARIABLES_ONLY);
         simplificationType = config.getValue(Settings.SIMPLIFIY);
         
-        vm = considerVmVarsOnly ? PipelineConfigurator.instance().getVmProvider().getResult() : null;
+        vm = considerVmVarsOnly ? notNull(PipelineConfigurator.instance().getVmProvider()).getResult() : null;
         if (null == vm && considerVmVarsOnly) {
             throw new SetUpException(Settings.USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
                 + "but no variability model was passed.");
@@ -77,7 +81,7 @@ public class PresenceConditionAnalysisHelper {
      * @param formula The formula to find variables in.
      * @param result The resulting set to add variables to.
      */
-    public void findVars(Formula formula, Set<Variable> result) {
+    public void findVars(@NonNull Formula formula, @NonNull Set<@NonNull Variable> result) {
         
         if (formula instanceof Variable) {
             result.add((Variable) formula);
@@ -104,11 +108,11 @@ public class PresenceConditionAnalysisHelper {
      * @param formula The formula to check.
      * @return <tt>true</tt> if the formula should be kept, <tt>false</tt> if the formula should be discarded.
      */
-    public boolean isRelevant(Formula formula) {
+    public boolean isRelevant(@NonNull Formula formula) {
         boolean isRelevant = false;
         
         // Checks that at least one variable of the formula is relevant
-        Set<Variable> variables = new HashSet<>();
+        Set<@NonNull Variable> variables = new HashSet<>();
         findVars(formula, variables);
         Iterator<Variable> varItr = variables.iterator();
         while (varItr.hasNext() && !isRelevant) {
@@ -125,14 +129,15 @@ public class PresenceConditionAnalysisHelper {
      * @param variable The variable to check.
      * @return Whether the variable is relevant or not.
      */
-    public boolean isRelevant(String variable) {
+    public boolean isRelevant(@NonNull String variable) {
         boolean isRelevant;
         if (considerVmVarsOnly) {
-            isRelevant = vm.getVariableMap().containsKey(variable);
+            // vm != since considerVmVarsOnly == true
+            isRelevant = notNull(vm).getVariableMap().containsKey(variable);
             if (!isRelevant && nonBooleanReplacements) {
                 int index = variable.indexOf("_eq_");
                 if (index > -1) {
-                    isRelevant = vm.getVariableMap().containsKey(variable.substring(0, index));
+                    isRelevant = notNull(vm).getVariableMap().containsKey(variable.substring(0, index));
                 }
             }
         } else {
@@ -151,7 +156,7 @@ public class PresenceConditionAnalysisHelper {
 
      * @return The same formula, but with all necessary replacements in the variable names.
      */
-    public Formula doReplacements(Formula formula) {
+    public @NonNull Formula doReplacements(@NonNull Formula formula) {
         Formula result = formula;
         
         if (replaceNonBooleanReplacements) {
@@ -187,14 +192,14 @@ public class PresenceConditionAnalysisHelper {
 
      * @return The same formula, but with the replacements done.
      */
-    public String doReplacements(String formula) {
+    public @NonNull String doReplacements(@NonNull String formula) {
         if (replaceNonBooleanReplacements) {
-            formula = formula.replace("_eq_", "=");
-            formula = formula.replace("_ne_", "!=");
-            formula = formula.replace("_gt_", ">");
-            formula = formula.replace("_ge_", ">=");
-            formula = formula.replace("_lt_", ">");
-            formula = formula.replace("_le_", ">=");
+            formula = notNull(formula.replace("_eq_", "="));
+            formula = notNull(formula.replace("_ne_", "!="));
+            formula = notNull(formula.replace("_gt_", ">"));
+            formula = notNull(formula.replace("_ge_", ">="));
+            formula = notNull(formula.replace("_lt_", ">"));
+            formula = notNull(formula.replace("_le_", ">="));
         }
         return formula;
     }
@@ -213,7 +218,7 @@ public class PresenceConditionAnalysisHelper {
      * Returns at which (and whether) analysis step conditions should be simplified.
      * @return At which (and whether) analysis step conditions should be simplified.
      */
-    public SimplificationType getSimplificationMode() {
+    public @NonNull SimplificationType getSimplificationMode() {
         return simplificationType;
     }
 

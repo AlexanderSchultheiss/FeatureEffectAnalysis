@@ -115,6 +115,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
     }
     
     @Override
+    @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithFeatureEffect> callAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
 

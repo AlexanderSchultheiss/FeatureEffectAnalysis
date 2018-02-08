@@ -46,6 +46,7 @@ public class FeAggregatorWithSimplificationTest {
      * @throws SetUpException unwanted.
      */
     @Test
+    @SuppressWarnings("null")
     public void testSimplify() throws SetUpException {
         TestConfiguration config = new TestConfiguration(new Properties());
         config.registerSetting(Settings.SIMPLIFIY);

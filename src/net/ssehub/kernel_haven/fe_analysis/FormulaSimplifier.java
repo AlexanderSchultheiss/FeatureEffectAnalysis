@@ -1,10 +1,13 @@
 package net.ssehub.kernel_haven.fe_analysis;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.lang.reflect.Method;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
  * Wrapper to use the LogicUtils without hard dependencies to CNF-Utils package.
@@ -16,7 +19,9 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 // TODO SE: @Adam Find a better solution if possible.
 public class FormulaSimplifier {
     
-    private Method simplifyMethod;
+    private static final Logger LOGGER = Logger.get();
+    
+    private @NonNull Method simplifyMethod;
     
     /**
      * Sole constructor to initialize this wrapper.
@@ -26,7 +31,7 @@ public class FormulaSimplifier {
         try {
             // Do not make this part static, otherwise this wrapper becomes useless
             Class<?> clazz = Class.forName("net.ssehub.kernel_haven.logic_utils.LogicUtils");
-            simplifyMethod = clazz.getDeclaredMethod("simplify", Formula.class);
+            simplifyMethod = notNull(clazz.getDeclaredMethod("simplify", Formula.class));
         } catch (ReflectiveOperationException e) {
             throw new SetUpException("Could not load LogicUtils from CNF-Utils package: " + e.getLocalizedMessage(), e);
         }
@@ -39,17 +44,17 @@ public class FormulaSimplifier {
      * 
      * @return The simplified formula. Not <code>null</code>.
      */
-    public Formula simplify(Formula formula) {
+    public @NonNull Formula simplify(@NonNull Formula formula) {
         Formula result;
         try {
-            result = (Formula) simplifyMethod.invoke(null, formula);
+            result = notNull((Formula) simplifyMethod.invoke(null, formula));
         } catch (ReflectiveOperationException e) {
             // Should not be possible
-            Logger.get().logError(e.getMessage());
+            LOGGER.logError(e.getMessage());
             result = formula;
         } catch (IllegalArgumentException e) {
             // Should not be possible
-            Logger.get().logError(e.getMessage());
+            LOGGER.logError(e.getMessage());
             result = formula;
         }
         

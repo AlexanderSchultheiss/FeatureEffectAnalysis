@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.fe_analysis.fes;
 
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
  * A {@link net.ssehub.kernel_haven.util.logic.parser.SubFormulaChecker}, which does <b>not</b> consider negated
@@ -18,13 +19,13 @@ public class SubFormulaChecker extends net.ssehub.kernel_haven.util.logic.parser
      * The accept method must still be called.
      * @param nestedFormula The formula to check if it is nested inside the visited formula.
      */
-    public SubFormulaChecker(Formula nestedFormula) {
+    public SubFormulaChecker(@NonNull Formula nestedFormula) {
         super(nestedFormula);
         isNegated = false;
     }
     
     @Override
-    public void visitNegation(Negation formula) {
+    public void visitNegation(@NonNull Negation formula) {
         setNested(formula.equals(getNestedFormula()));
         
         if (!isNested()) {

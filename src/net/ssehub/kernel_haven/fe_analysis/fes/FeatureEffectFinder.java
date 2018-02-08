@@ -22,6 +22,8 @@ import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * A component that finds feature effects for variables.
@@ -38,9 +40,9 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     @TableRow
     public static class VariableWithFeatureEffect {
         
-        private String variable;
+        private @NonNull String variable;
         
-        private Formula featureEffect;
+        private @NonNull Formula featureEffect;
 
         /**
          * Creates a new feature effect result.
@@ -48,7 +50,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
          * @param variable The variable name.
          * @param featureEffect The feature effect of the given variable. Must not be <code>null</code>.
          */
-        public VariableWithFeatureEffect(String variable, Formula featureEffect) {
+        public VariableWithFeatureEffect(@NonNull String variable, @NonNull Formula featureEffect) {
             this.variable = variable;
             this.featureEffect = featureEffect;
         }
@@ -59,7 +61,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
          * @return The name of the variable.
          */
         @TableElement(name = "Variable", index = 0)
-        public String getVariable() {
+        public @NonNull String getVariable() {
             return variable;
         }
         
@@ -69,23 +71,22 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
          * @return The feature effect, never <code>null</code>.
          */
         @TableElement(name = "Feature Effect", index = 1)
-        public Formula getFeatureEffect() {
+        public @NonNull Formula getFeatureEffect() {
             return featureEffect;
         }
         
         @Override
-        public String toString() {
+        public @NonNull String toString() {
             return "FeatureEffect[" + variable + "] = " + featureEffect.toString();
         }
         
     }
     
-    private AnalysisComponent<VariableWithPcs> pcFinder;
+    private @NonNull AnalysisComponent<VariableWithPcs> pcFinder;
     
-    private PresenceConditionAnalysisHelper helper;
-    private boolean simplify = false;
-    private SimplificationType simplifyType;
-    private FormulaSimplifier simplifier = null;
+    private @NonNull PresenceConditionAnalysisHelper helper;
+    private @NonNull SimplificationType simplifyType;
+    private @Nullable FormulaSimplifier simplifier = null;
     
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
@@ -95,7 +96,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @throws SetUpException If creating this component fails.
      */
-    public FeatureEffectFinder(Configuration config, AnalysisComponent<VariableWithPcs> pcFinder)
+    public FeatureEffectFinder(@NonNull Configuration config, @NonNull AnalysisComponent<VariableWithPcs> pcFinder)
             throws SetUpException {
         
         super(config);
@@ -105,7 +106,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
             simplifier = new FormulaSimplifier();
-            simplify = true;
         }
     }
 
@@ -139,7 +139,9 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @return A new Formula equal to the given formula, but with each occurrence of the variable replaced.
      */
-    private Formula setToValue(Formula formula, String variable, boolean value, boolean exactMatch) {
+    private @NonNull Formula setToValue(@NonNull Formula formula, @NonNull String variable, boolean value,
+            boolean exactMatch) {
+        
         Formula result;
         
         if (formula instanceof Variable) {
@@ -204,7 +206,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * @param formula The formula to simplify.
      * @return A new formula equal to the original, but simplified.
      */
-    private Formula simplify(Formula formula) {
+    private @NonNull Formula simplify(@NonNull Formula formula) {
         Formula result;
         if (formula instanceof Negation) {
             Formula nested = simplify(((Negation) formula).getFormula());
@@ -283,24 +285,26 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * @param varWithPcs The variable and all presence condition that the variable appears in.
      * @return A formula representing the feature effect of the variable.
      */
-    private Formula buildFeatureEffefct(VariableWithPcs varWithPcs) {
+    private @NonNull Formula buildFeatureEffefct(@NonNull VariableWithPcs varWithPcs) {
         String variable = varWithPcs.getVariable();
-        Collection<Formula> pcs = varWithPcs.getPcs();
+        Collection<@NonNull Formula> pcs = varWithPcs.getPcs();
 
+        FormulaSimplifier simplifier = this.simplifier;
+        
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
-        pcs = simplify ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
+        pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
 
         // Check if presence conditions have already been simplified in earlier step
-        if (simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+        if (simplifier != null && simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Simplification wasn't applied to separate presence conditions before, do this here
-            List<Formula> tmp = new ArrayList<>(pcs.size());
+            List<@NonNull Formula> tmp = new ArrayList<>(pcs.size());
             for (Formula formula : pcs) {
                 tmp.add(simplifier.simplify(formula));
             }
             pcs = tmp;
         }
         
-        Formula result = createXorTree(variable, simplify, pcs);
+        Formula result = createXorTree(variable, simplifier != null, pcs);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
@@ -311,7 +315,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         
         Formula simplifiedResult;
-        if (simplify) {
+        if (simplifier != null) {
             // Perform a simplification on the final result: Logical simplification
             simplifiedResult = simplifier.simplify(result);
         } else {
@@ -329,9 +333,12 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * @param pcs The presence conditions relevant for the variable.
      * @return The feature effect constraint (pre-condition).
      */
-    private Formula createXorTree(String variable, boolean simplify, Collection<Formula> pcs) {
+    private @NonNull Formula createXorTree(@NonNull String variable, boolean simplify,
+            @NonNull Collection<@NonNull Formula> pcs) {
+        
         DisjunctionQueue innerElements;
         DisjunctionQueue xorTrees;
+        FormulaSimplifier simplifier = this.simplifier;
         if (null != simplifier) {
             innerElements = new DisjunctionQueue(true, f -> simplifier.simplify(f));
             xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));

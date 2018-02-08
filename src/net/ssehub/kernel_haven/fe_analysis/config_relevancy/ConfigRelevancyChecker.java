@@ -39,7 +39,7 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  */
 public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance> {
 
-    public static final Setting<@NonNull File> INPUT_FILE_PROPERTY
+    public static final @NonNull Setting<@NonNull File> INPUT_FILE_PROPERTY
         = new Setting<>("analysis.config_relevancy_checker.configuration_file", Type.PATH, true, null,
             "Location an historical SPL configuration file, which should be analyses w.r.t."
             + "the relevance of the configured variables. "

@@ -8,6 +8,8 @@ import net.ssehub.kernel_haven.util.logic.IVoidFormulaVisitor;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * Checks if the given <tt>original</tt> is contained in the <tt>other</tt> formula and will eliminate the doubled
@@ -17,7 +19,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  */
 class SubFormulaReplacer implements IVoidFormulaVisitor {
     
-    private Formula original;
+    private @NonNull Formula original;
     private Formula tmp;
     
     /**
@@ -25,7 +27,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
      * @param original The formula, which should be checked if it is contained inside the <tt>other</tt> formula, won't
      * be changed.
      */
-    SubFormulaReplacer(Formula original) {
+    SubFormulaReplacer(@NonNull Formula original) {
         this.original = original;
     }
     
@@ -38,20 +40,18 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
      *     <li><tt>other</tt> if <tt>original</tt> is not a sub formula of <tt>other</tt></li>
      * </ul> 
      */
-    public Formula minimize(Formula other) {
+    public @Nullable Formula minimize(@NonNull Formula other) {
         Formula result = other;
         
-        if (null != original) {
-            if (original.equals(other)) {
-                result = null;
-            } else {
-                SubFormulaChecker checker = new SubFormulaChecker(other);
-                checker.visit(original);
-                if (checker.isNested()) {
-                    // Rewrite the "other" formula
-                    visit(other);
-                    result = tmp;
-                }
+        if (original.equals(other)) {
+            result = null;
+        } else {
+            SubFormulaChecker checker = new SubFormulaChecker(other);
+            checker.visit(original);
+            if (checker.isNested()) {
+                // Rewrite the "other" formula
+                visit(other);
+                result = tmp;
             }
         }
         
@@ -59,7 +59,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitFalse(False falseConstant) {
+    public void visitFalse(@NonNull False falseConstant) {
         if (falseConstant.equals(original)) {
             tmp = null;
         } else {
@@ -68,7 +68,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitTrue(True trueConstant) {
+    public void visitTrue(@NonNull True trueConstant) {
         if (trueConstant.equals(original)) {
             tmp = null;
         } else {
@@ -77,7 +77,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitVariable(Variable variable) {
+    public void visitVariable(@NonNull Variable variable) {
         if (variable.equals(original)) {
             tmp = null;
         } else {
@@ -86,7 +86,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitNegation(Negation formula) {
+    public void visitNegation(@NonNull Negation formula) {
         if (formula.equals(original)) {
             tmp = null;
         } else {
@@ -100,7 +100,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitDisjunction(Disjunction formula) {
+    public void visitDisjunction(@NonNull Disjunction formula) {
         if (formula.equals(original)) {
             tmp = null;
         } else {
@@ -118,7 +118,7 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
     }
 
     @Override
-    public void visitConjunction(Conjunction formula) {
+    public void visitConjunction(@NonNull Conjunction formula) {
         if (formula.equals(original)) {
             tmp = null;
         } else {

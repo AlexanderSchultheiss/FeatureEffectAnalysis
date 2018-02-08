@@ -14,6 +14,7 @@ public class StringUtilsTests {
      * Tests that the last operator position is identified correctly.
      */
     @Test
+    @SuppressWarnings("null")
     public void testFindLastOperator() {
         String varName = "Something";
         String[] validSamples = {varName + "=123", varName + ">123", varName + "<123", varName + "!=123"

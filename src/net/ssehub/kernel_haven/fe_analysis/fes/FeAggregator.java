@@ -10,6 +10,8 @@ import net.ssehub.kernel_haven.fe_analysis.StringUtils;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * Aggregates feature effect constraints for values of the same variable. Only relevant in Pseudo-Boolean settings.
@@ -26,12 +28,13 @@ import net.ssehub.kernel_haven.util.logic.Formula;
  *
  */
 public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
-    static final String OPERATOR_REGEX = "^.*(=|!=|<|<=|>|>=).*$";
     
-    private AnalysisComponent<VariableWithFeatureEffect> feDetector;
+    static final @NonNull String OPERATOR_REGEX = "^.*(=|!=|<|<=|>|>=).*$";
+    
+    private @NonNull AnalysisComponent<VariableWithFeatureEffect> feDetector;
     private boolean simplify = false;
-    private SimplificationType simplifyType;
-    private FormulaSimplifier simplifier = null;
+    private @NonNull SimplificationType simplifyType;
+    private @Nullable FormulaSimplifier simplifier = null;
 
     /**
      * Creates an {@link FeAggregator}, do create one constraint for the separated values of integer variables.
@@ -40,7 +43,7 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
      * @throws SetUpException If creating this component fails, probably if simplification should is turned on, but
      *     LogicUtils are not present in plug-ins directory.
      */
-    public FeAggregator(Configuration config, AnalysisComponent<VariableWithFeatureEffect> feDetector)
+    public FeAggregator(@NonNull Configuration config, @NonNull AnalysisComponent<VariableWithFeatureEffect> feDetector)
         throws SetUpException {
         
         super(config);
@@ -106,11 +109,14 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
         Formula completeFE = conditions.getDisjunction(groupName);
         
         // Send aggregated elements and reset current group
-        addResult(new VariableWithFeatureEffect(groupName, completeFE));
+        if (groupName != null) {
+            // groupName == null means we haven't found a single element
+            addResult(new VariableWithFeatureEffect(groupName, completeFE));
+        }
     }
 
     @Override
-    public String getResultName() {
+    public @NonNull String getResultName() {
         return "FEs per Variable";
     }
 
