@@ -14,10 +14,6 @@ import net.ssehub.kernel_haven.util.null_checks.NonNull;
  */
 public class Settings {
     
-    public static final @NonNull Setting<@NonNull Boolean> USE_VARMODEL_VARIABLES_ONLY
-        = new Setting<>("analysis.consider_vm_vars_only", Type.BOOLEAN, true, "false", "Defines whether the analysis "
-            + "should only consider variables that are present in the variability model.");
-
     public static final @NonNull Setting<@NonNull Pattern> RELEVANT_VARIABLES
         = new Setting<>("analysis.relevant_variables", Type.REGEX, true, ".*", "Defines a regular expression that "
             + "specifies which variables should be present in the output.");

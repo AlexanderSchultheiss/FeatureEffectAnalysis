@@ -50,17 +50,17 @@ public class PresenceConditionAnalysisHelper {
      * but exited abnormally.
      */
     public PresenceConditionAnalysisHelper(@NonNull Configuration config) throws SetUpException {
-        config.registerSetting(Settings.USE_VARMODEL_VARIABLES_ONLY);
+        config.registerSetting(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
         config.registerSetting(Settings.RELEVANT_VARIABLES);
         config.registerSetting(Settings.SIMPLIFIY);
         
         relevantVarsPattern = config.getValue(Settings.RELEVANT_VARIABLES);
-        considerVmVarsOnly = config.getValue(Settings.USE_VARMODEL_VARIABLES_ONLY);
+        considerVmVarsOnly = config.getValue(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
         simplificationType = config.getValue(Settings.SIMPLIFIY);
         
         vm = considerVmVarsOnly ? notNull(PipelineConfigurator.instance().getVmProvider()).getResult() : null;
         if (null == vm && considerVmVarsOnly) {
-            throw new SetUpException(Settings.USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
+            throw new SetUpException(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
                 + "but no variability model was passed.");
         }
         
