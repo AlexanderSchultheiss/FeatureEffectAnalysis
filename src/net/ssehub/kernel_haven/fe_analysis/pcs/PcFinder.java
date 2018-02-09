@@ -142,8 +142,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         } else {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
         }
-            
-        
 
         Map<String, Set<@NonNull Formula>> result = new HashMap<>();
         
