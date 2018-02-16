@@ -1,5 +1,12 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
@@ -11,6 +18,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithF
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
@@ -58,64 +66,92 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
 
     @Override
     protected void execute() {
+        Map<@NonNull String, DisjunctionQueue> groupedQueues = new HashMap<>();
+        
+        VariableWithFeatureEffect var;
+        while ((var = feDetector.getNextResult()) != null) {
+            @NonNull String varName = var.getVariable();
+            int lastIndex = StringUtils.getLastOperatorIndex(varName);
+            if (-1 != lastIndex) {
+                varName = NullHelpers.notNull(varName.substring(0, lastIndex));
+            }
+            
+            DisjunctionQueue conditions = groupedQueues.get(varName);
+            if (null == conditions) {
+
+                // New variable, check if we can (partially) process already gathered values
+                if (!groupedQueues.isEmpty()) {
+                    boolean containsSimilarVariables = false;
+                    for (String otherVariable : groupedQueues.keySet()) {
+                        if (varName.startsWith(otherVariable)) {
+                            containsSimilarVariables = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!containsSimilarVariables) {
+                        // Keep the map as small as possible and facilitate multi-threading of analysis components
+                        aggregateFeatureEffects(groupedQueues);
+                    }
+                }
+                
+                // Start processing of the new (identified) variable
+                conditions = createDisjunctionQueue();
+                groupedQueues.put(varName, conditions);
+            }
+            
+            // Store effect to allow aggregation in aggregateFeatureEffects-method.
+            conditions.add(var.getFeatureEffect());
+        }
+        
+        // Process very last elements
+        aggregateFeatureEffects(groupedQueues);
+    }
+
+    /**
+     * Aggregates feature effects for the elements of the queue, clears the map, and send the results in an ordered
+     * list to the next analysis component.
+     * @param groupedQueues A list of tuples (variable name, collected feature effects).
+     */
+    private void aggregateFeatureEffects(Map<@NonNull String, DisjunctionQueue> groupedQueues) {
+        // Compute aggregated feature effects for all elements of the map
+        List<@NonNull VariableWithFeatureEffect> results = new ArrayList<>(groupedQueues.size());
+        for (Map.Entry<@NonNull String, DisjunctionQueue> entry : groupedQueues.entrySet()) {
+            Formula completeFE = entry.getValue().getDisjunction(entry.getKey());
+            results.add(new VariableWithFeatureEffect(entry.getKey(), completeFE));
+            
+        }
+        
+        // Results were ordered before through the map ordering has probably been changed -> reorder elements
+        Collections.sort(results, new Comparator<VariableWithFeatureEffect>() {
+
+            @Override
+            public int compare(VariableWithFeatureEffect var1, VariableWithFeatureEffect var2) {
+                return var1.getVariable().compareTo(var2.getVariable());
+            }
+            
+        });
+        
+        // Publish results to next component
+        for (int i = 0; i < results.size(); i++) {
+            addResult(results.get(i));            
+        }
+        groupedQueues.clear();
+    }
+
+    /**
+     * Creates a new {@link DisjunctionQueue} for a new variable (variable/value-pairs). The queue uses a simplifier if
+     * available.
+     * @return A new {@link DisjunctionQueue}, which should only be used for one variable only.
+     */
+    private DisjunctionQueue createDisjunctionQueue() {
         DisjunctionQueue conditions;
         if (null != simplifier) {
             conditions = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
         } else {
             conditions = new DisjunctionQueue(simplify);
         }
-        // The name of the variable/value pairs, which are grouped together
-        String groupName = null;
-        
-        VariableWithFeatureEffect var;
-        while ((var = feDetector.getNextResult()) != null) {
-            if (null == groupName) {
-                // Very first element
-                conditions.add(var.getFeatureEffect());
-
-                // Determine name of variables group
-                String varName = var.getVariable();
-                int lastIndex = StringUtils.getLastOperatorIndex(varName);
-                if (-1 != lastIndex) {
-                    groupName = varName.substring(0, lastIndex);
-                } else {
-                    groupName = varName;
-                }
-            } else {
-                // Determine name of variables group
-                String varName = var.getVariable();
-                int lastIndex = StringUtils.getLastOperatorIndex(varName);
-                if (-1 != lastIndex) {
-                    varName = varName.substring(0, lastIndex);
-                }
-                
-                if (varName.equals(groupName)) {
-                    conditions.add(var.getFeatureEffect());
-                } else {
-                    /*
-                     * New group started, however the group may continue,
-                     * in case that the old group is a substring of the new group.
-                     */
-                    Formula completeFE = conditions.getDisjunction(groupName);
-                    
-                    // Send aggregated elements and reset current group
-                    addResult(new VariableWithFeatureEffect(groupName, completeFE));
-                    
-                    // Start the new group
-                    groupName = varName;
-                    conditions.add(var.getFeatureEffect());
-                }
-            }
-        }
-        
-        // Process last element
-        Formula completeFE = conditions.getDisjunction(groupName);
-        
-        // Send aggregated elements and reset current group
-        if (groupName != null) {
-            // groupName == null means we haven't found a single element
-            addResult(new VariableWithFeatureEffect(groupName, completeFE));
-        }
+        return conditions;
     }
 
     @Override
