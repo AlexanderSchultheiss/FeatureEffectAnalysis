@@ -92,7 +92,10 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
                 if (varName.equals(groupName)) {
                     conditions.add(var.getFeatureEffect());
                 } else {
-                    // New group started
+                    /*
+                     * New group started, however the group may continue,
+                     * in case that the old group is a substring of the new group.
+                     */
                     Formula completeFE = conditions.getDisjunction(groupName);
                     
                     // Send aggregated elements and reset current group
