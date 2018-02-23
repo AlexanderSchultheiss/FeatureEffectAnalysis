@@ -292,7 +292,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         FormulaSimplifier simplifier = this.simplifier;
         
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
-        pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
+        // pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
 
         // Check if presence conditions have already been simplified in earlier step
         if (simplifier != null && simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {

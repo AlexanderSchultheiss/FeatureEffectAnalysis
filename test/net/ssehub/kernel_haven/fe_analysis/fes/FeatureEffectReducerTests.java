@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -78,6 +79,29 @@ public class FeatureEffectReducerTests {
         Assert.assertEquals(1, result.size());
         Formula actualResult = result.iterator().next();
         Assert.assertEquals(aANDb, actualResult);
+    }
+    
+    /**
+     * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
+     * <ul>
+     *   <li>Input PCs: A || (B && C), (A || (B && C) || D</li>
+     *   <li>Expected result: Some as input</li>
+     * </ul>
+     */
+    @Ignore
+    @Test
+    public void testComplexSubFormula() {
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        Variable varC = new Variable("C");
+        Variable varD = new Variable("D");
+        Formula bANDc = new Conjunction(varB, varC);
+        Formula first3 = new Disjunction(varA, bANDc);
+        Formula all4 = new Disjunction(first3, varD);
+        
+        @SuppressWarnings("null")
+        Collection<Formula> result = FeatureEffectReducer.simpleReduce(varA.getName(), Arrays.asList(first3, all4));
+        Assert.assertEquals(2, result.size());
     }
 
 }
