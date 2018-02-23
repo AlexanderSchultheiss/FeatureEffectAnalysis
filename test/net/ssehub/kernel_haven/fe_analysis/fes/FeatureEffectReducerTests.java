@@ -57,5 +57,27 @@ public class FeatureEffectReducerTests {
         Formula actualResult = result.iterator().next();
         Assert.assertEquals(varA, actualResult);
     }
+    
+    /**
+     * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
+     * <ul>
+     *   <li>Input PCs: A && B, A && B && C</li>
+     *   <li>Expected result: A && B</li>
+     * </ul>
+     */
+    @Test
+    public void testANDContainmentExpression() {
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        Variable varC = new Variable("C");
+        Formula aANDb = new Conjunction(varA, varB);
+        Formula allThree = new Conjunction(aANDb, varC);
+        
+        @SuppressWarnings("null")
+        Collection<Formula> result = FeatureEffectReducer.simpleReduce(varA.getName(), Arrays.asList(allThree, aANDb));
+        Assert.assertEquals(1, result.size());
+        Formula actualResult = result.iterator().next();
+        Assert.assertEquals(aANDb, actualResult);
+    }
 
 }

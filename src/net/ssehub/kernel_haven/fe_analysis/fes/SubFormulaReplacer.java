@@ -46,8 +46,8 @@ class SubFormulaReplacer implements IVoidFormulaVisitor {
         if (original.equals(other)) {
             result = null;
         } else {
-            SubFormulaChecker checker = new SubFormulaChecker(other);
-            checker.visit(original);
+            SubFormulaChecker checker = new SubFormulaChecker(original);
+            checker.visit(other);
             if (checker.isNested()) {
                 // Rewrite the "other" formula
                 visit(other);
