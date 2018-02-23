@@ -12,7 +12,13 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     FeatureEffectFinderTests.class,
+    
+    // Sub formula elimination tests
     SubFormulaCheckerTests.class,
+    SubFormulaReplacerTests.class,
+    FeatureEffectReducerTests.class,
+    
+    // Simplification & FEAggregation Tests
     FeatureEffectFinderWithSimplificationTests.class,
     FeAggregatorTest.class,
     FeAggregatorWithSimplificationTest.class
