@@ -1,7 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -19,7 +18,6 @@ import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
@@ -33,16 +31,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 @SuppressWarnings("null")
 public class FeAggregatorTest {
 
-    /**
-     * Initializes the logger.
-     */
-    @BeforeClass
-    public static void beforeClass() {
-        if (null == Logger.get()) {
-            Logger.init();
-        }
-    }
-    
     /**
      * Tests whether a single variable with two values is aggregated correctly.
      * 

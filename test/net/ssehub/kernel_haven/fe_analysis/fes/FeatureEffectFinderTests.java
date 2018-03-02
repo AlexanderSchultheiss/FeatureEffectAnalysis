@@ -3,7 +3,6 @@ package net.ssehub.kernel_haven.fe_analysis.fes;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -16,7 +15,6 @@ import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -30,14 +28,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  *
  */
 public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFeatureEffect> {
-    
-    /**
-     * Initializes the logger.
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        Logger.init();
-    }
     
     /**
      * Checks if a variable, which is used at toplevel, has no feature effect condition.

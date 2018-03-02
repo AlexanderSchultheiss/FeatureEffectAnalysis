@@ -3,7 +3,6 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -15,7 +14,6 @@ import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -25,14 +23,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  */
 public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
     
-    /**
-     * Initializes the logger.
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        Logger.init();
-    }
-
     /**
      * Checks if a single statement with only 1 variable is detected correctly.
      */

@@ -3,7 +3,6 @@ package net.ssehub.kernel_haven.fe_analysis.fes;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,7 +17,6 @@ import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
@@ -32,14 +30,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  */
 @RunWith(value = RunOnlyInANT.class)
 public class FeatureEffectFinderWithSimplificationTests extends AbstractFinderTests<VariableWithFeatureEffect> {
-    
-    /**
-     * Initializes the logger.
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        Logger.init();
-    }
     
     /**
      * Checks if a variable, which is (always) nested but still has always an effect, is handled correctly.
