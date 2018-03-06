@@ -97,7 +97,8 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
                 try {
                     variableValues.put(line[nameIndex], Integer.parseInt(line[valueIndex]));
                 } catch (NumberFormatException e) {
-                    LOGGER.logWarning("Invalid integer value in " + inputFile + ": " + line[valueIndex]);
+                    LOGGER.logWarning("Invalid integer value in " + inputFile + " at line "
+                            + in.getLineNumber() + ": " + line[valueIndex]);
                 }
             }
             
