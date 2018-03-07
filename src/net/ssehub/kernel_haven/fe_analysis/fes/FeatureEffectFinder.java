@@ -7,7 +7,6 @@ import java.util.List;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
@@ -19,11 +18,11 @@ import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
-import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * A component that finds feature effects for variables.
@@ -100,8 +99,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     private @NonNull AnalysisComponent<VariableWithPcs> pcFinder;
     
     private @NonNull PresenceConditionAnalysisHelper helper;
-    private @NonNull SimplificationType simplifyType;
-    private @Nullable FormulaSimplifier simplifier = null;
+    
+    private boolean simplify;
     
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
@@ -117,11 +116,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         super(config);
         this.pcFinder = pcFinder;
         this.helper = new PresenceConditionAnalysisHelper(config);
-        simplifyType = helper.getSimplificationMode();
-        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
-            // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
-            simplifier = new FormulaSimplifier();
-        }
+        this.simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
     }
 
     @Override
@@ -304,22 +299,20 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         String variable = varWithPcs.getVariable();
         Collection<@NonNull Formula> pcs = varWithPcs.getPcs();
 
-        FormulaSimplifier simplifier = this.simplifier;
-        
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
         // pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
 
         // Check if presence conditions have already been simplified in earlier step
-        if (simplifier != null && simplifyType.ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+        if (helper.getSimplificationMode().ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
             // Simplification wasn't applied to separate presence conditions before, do this here
             List<@NonNull Formula> tmp = new ArrayList<>(pcs.size());
             for (Formula formula : pcs) {
-                tmp.add(simplifier.simplify(formula));
+                tmp.add(FormulaSimplifier.simplify(formula));
             }
             pcs = tmp;
         }
         
-        Formula result = createXorTree(variable, simplifier != null, pcs);
+        Formula result = createXorTree(variable, simplify, pcs);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
@@ -330,9 +323,9 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         }
         
         Formula simplifiedResult;
-        if (simplifier != null) {
+        if (simplify) {
             // Perform a simplification on the final result: Logical simplification
-            simplifiedResult = simplifier.simplify(result);
+            simplifiedResult = FormulaSimplifier.simplify(result);
         } else {
             // At least try to resolve all the (unnecessary) XORs: Make constraints only readable
             simplifiedResult = simplify(result);
@@ -353,10 +346,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         DisjunctionQueue innerElements;
         DisjunctionQueue xorTrees;
-        FormulaSimplifier simplifier = this.simplifier;
-        if (null != simplifier) {
-            innerElements = new DisjunctionQueue(true, f -> simplifier.simplify(f));
-            xorTrees = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
+        
+        if (this.simplify) {
+            innerElements = new DisjunctionQueue(true, FormulaSimplifier::simplify);
+            xorTrees = new DisjunctionQueue(simplify, FormulaSimplifier::simplify);
         } else {
             innerElements = new DisjunctionQueue(true);
             xorTrees = new DisjunctionQueue(simplify);

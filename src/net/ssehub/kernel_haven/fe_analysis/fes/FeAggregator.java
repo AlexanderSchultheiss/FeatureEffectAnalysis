@@ -10,16 +10,15 @@ import java.util.Map;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
 import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.StringUtils;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
-import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * Aggregates feature effect constraints for values of the same variable. Only relevant in Pseudo-Boolean settings.
@@ -41,8 +40,6 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
     
     private @NonNull AnalysisComponent<VariableWithFeatureEffect> feDetector;
     private boolean simplify = false;
-    private @NonNull SimplificationType simplifyType;
-    private @Nullable FormulaSimplifier simplifier = null;
 
     /**
      * Creates an {@link FeAggregator}, do create one constraint for the separated values of integer variables.
@@ -56,12 +53,8 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
         
         super(config);
         this.feDetector = feDetector;
-        simplifyType = config.getValue(Settings.SIMPLIFIY);
-        if (simplifyType.ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
-            // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
-            simplifier = new FormulaSimplifier();
-            simplify = true;
-        }
+        
+        simplify = config.getValue(Settings.SIMPLIFIY).ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
     }
 
     @Override
@@ -96,7 +89,7 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
                 }
                 
                 // Start processing of the new (identified) variable
-                conditions = createDisjunctionQueue();
+                conditions = new DisjunctionQueue(simplify, FormulaSimplifier::simplify);
                 groupedQueues.put(varName, conditions);
             }
             
@@ -137,21 +130,6 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
             addResult(results.get(i));            
         }
         groupedQueues.clear();
-    }
-
-    /**
-     * Creates a new {@link DisjunctionQueue} for a new variable (variable/value-pairs). The queue uses a simplifier if
-     * available.
-     * @return A new {@link DisjunctionQueue}, which should only be used for one variable only.
-     */
-    private DisjunctionQueue createDisjunctionQueue() {
-        DisjunctionQueue conditions;
-        if (null != simplifier) {
-            conditions = new DisjunctionQueue(simplify, f -> simplifier.simplify(f));
-        } else {
-            conditions = new DisjunctionQueue(simplify);
-        }
-        return conditions;
     }
 
     @Override

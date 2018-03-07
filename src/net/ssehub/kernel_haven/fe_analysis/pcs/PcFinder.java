@@ -15,7 +15,6 @@ import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.fe_analysis.FormulaSimplifier;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
@@ -23,6 +22,7 @@ import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
@@ -89,7 +89,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     
     private @NonNull PresenceConditionAnalysisHelper helper;
-    private @Nullable FormulaSimplifier simplifier = null;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
@@ -105,11 +104,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         super(config);
         this.sourceFiles = sourceFiles;
         this.helper = new PresenceConditionAnalysisHelper(config);
-        //simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
-        if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
-            // Will throw an exception if CNF Utils are not present (but was selected by user in configuration file)
-            simplifier = new FormulaSimplifier();
-        }
     }
     
     /**
@@ -182,11 +176,10 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
         for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
             Set<@NonNull Formula> pcs;
-            FormulaSimplifier simplifier = this.simplifier;
-            if (simplifier != null) {
+            if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
                 pcs = new HashSet<>();
                 for (Formula formula :  notNull(entry.getValue())) {
-                    pcs.add(simplifier.simplify(formula));
+                    pcs.add(FormulaSimplifier.simplify(formula));
                 }
             } else {
                 pcs = notNull(entry.getValue());
