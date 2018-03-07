@@ -51,7 +51,7 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
 
     @Override
     protected void execute() {
-        try (ITableCollection collection = TableCollectionFactory.openFile(inputFile)) {
+        try (ITableCollection collection = TableCollectionFactory.INSTANCE.openFile(inputFile)) {
             
             String tableName;
             if (collection.getTableNames().size() == 1) {
