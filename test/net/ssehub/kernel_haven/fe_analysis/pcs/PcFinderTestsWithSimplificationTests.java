@@ -3,6 +3,7 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,6 +17,7 @@ import net.ssehub.kernel_haven.fe_analysis.RunOnlyInANT;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
+import net.ssehub.kernel_haven.util.StaticClassLoader;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Variable;
@@ -29,6 +31,19 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 @RunWith(value = RunOnlyInANT.class)
 public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<VariableWithPcs> {
 
+    /**
+     * Makes sure that LogicUtils has been initialized. This is only needed in test cases, because
+     * {@link StaticClassLoader} does not run.
+     * 
+     * @throws ReflectiveOperationException unwanted.
+     * @throws SecurityException unwanted.
+     */
+    @BeforeClass
+    public static void loadLogicUtils() throws ReflectiveOperationException, SecurityException {
+        Class.forName("net.ssehub.kernel_haven.logic_utils.LogicUtils").getMethod(StaticClassLoader.INIT_METHOD_NAME)
+            .invoke(null);
+    }
+    
     /**
      * Tests that a single condition in the form of <tt>A || A</tt> can be identified and simplified.
      */
