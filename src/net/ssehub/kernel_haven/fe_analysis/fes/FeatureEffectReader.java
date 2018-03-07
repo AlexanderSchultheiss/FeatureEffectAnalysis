@@ -13,7 +13,7 @@ import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.util.io.ITableCollection;
 import net.ssehub.kernel_haven.util.io.ITableReader;
-import net.ssehub.kernel_haven.util.io.TableCollectionUtils;
+import net.ssehub.kernel_haven.util.io.TableCollectionFactory;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.CStyleBooleanGrammar;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
@@ -51,7 +51,7 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
 
     @Override
     protected void execute() {
-        try (ITableCollection collection = TableCollectionUtils.openFile(inputFile)) {
+        try (ITableCollection collection = TableCollectionFactory.openFile(inputFile)) {
             
             String tableName;
             if (collection.getTableNames().size() == 1) {
