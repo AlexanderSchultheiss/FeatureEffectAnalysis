@@ -190,103 +190,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     }
     
     /**
-     * Simplifies boolean formulas a bit. The following simplification rules are done:
-     * <ul>
-     *      <li>NOT(NOT(a)) -> a</li>
-     *      <li>NOT(true) -> false</li>
-     *      <li>NOT(false) -> true</li>
-     *      
-     *      <li>true OR a -> true</li>
-     *      <li>a OR true -> true</li>
-     *      <li>false OR false -> false</li>
-     *      <li>a OR false -> a</li>
-     *      <li>false OR a -> a</li>
-     *      <li>a OR a -> a</li>
-     *      
-     *      <li>false AND a -> false</li>
-     *      <li>a AND false -> false</li>
-     *      <li>true AND true -> true</li>
-     *      <li>a AND true -> a</li>
-     *      <li>true AND a -> a</li>
-     *      <li>a AND a -> a</li>
-     * </ul>
-     * 
-     * TODO: move this to general utils.
-     * 
-     * @param formula The formula to simplify.
-     * @return A new formula equal to the original, but simplified.
-     */
-    private @NonNull Formula simplify(@NonNull Formula formula) {
-        Formula result;
-        if (formula instanceof Negation) {
-            Formula nested = simplify(((Negation) formula).getFormula());
-            
-            if (nested instanceof Negation) {
-                result = ((Negation) nested).getFormula();
-                
-            } else if (nested instanceof True) {
-                result = False.INSTANCE;
-                
-            } else if (nested instanceof False) {
-                result = True.INSTANCE;
-                
-            } else {
-                result = new Negation(nested);
-            }
-            
-        } else if (formula instanceof Disjunction) {
-            Formula left = simplify(((Disjunction) formula).getLeft());
-            Formula right = simplify(((Disjunction) formula).getRight());
-            
-            if (left instanceof True || right instanceof True) {
-                result = True.INSTANCE;
-                
-            } else if (left instanceof False && right instanceof False) {
-                result = False.INSTANCE;
-                
-            } else if (left instanceof False) {
-                result = right;
-                
-            } else if (right instanceof False) {
-                result = left;
-                
-            } else if (left.equals(right)) {
-                result = left;
-                
-            } else {
-                result = new Disjunction(left, right);
-            }
-            
-        } else if (formula instanceof Conjunction) {
-            Formula left = simplify(((Conjunction) formula).getLeft());
-            Formula right = simplify(((Conjunction) formula).getRight());
-            
-            if (left instanceof False || right instanceof False) {
-                result = False.INSTANCE;
-             
-            } else if (left instanceof True && right instanceof True) {
-                result = True.INSTANCE;
-                
-            } else if (left instanceof True) {
-                result = right;
-                
-            } else if (right instanceof True) {
-                result = left;
-                
-            } else if (left.equals(right)) {
-                result = left;
-                
-            } else {
-                result = new Conjunction(left, right);
-            }
-            
-        } else {
-            result = formula;
-        }
-        return result;
-    }
-    
-    /**
      * Creates a feature effect for the given variable and it's PCs.
      * A feature effect is defined as:
      * <code>Or over (for each PC in PCs ( PC[variable &lt;- true] XOR PC[variable &lt;- false] ))</code>.
@@ -327,8 +230,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             // Perform a simplification on the final result: Logical simplification
             simplifiedResult = FormulaSimplifier.simplify(result);
         } else {
-            // At least try to resolve all the (unnecessary) XORs: Make constraints only readable
-            simplifiedResult = simplify(result);
+            // At least remove the constants left from the XORs: Make constraints only readable
+            simplifiedResult = FormulaSimplifier.defaultSimplifier(result);
         }
         
         return simplifiedResult;
