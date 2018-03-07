@@ -1,0 +1,6 @@
+Variable;Feature Effect
+VAR_A;VAR_B || (!VAR_C)
+VAR_B;1 ||
+VAR_C;1
+VAR_D;(VAR_C && !VAR_D
+VAR_E;1

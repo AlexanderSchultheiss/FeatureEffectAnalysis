@@ -80,6 +80,21 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             return "FeatureEffect[" + variable + "] = " + featureEffect.toString();
         }
         
+        @Override
+        public int hashCode() {
+            return variable.hashCode() + featureEffect.hashCode();
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            boolean equal = false;
+            if (obj instanceof VariableWithFeatureEffect) {
+                VariableWithFeatureEffect other = (VariableWithFeatureEffect) obj;
+                equal = this.variable.equals(other.variable) && this.featureEffect.equals(other.featureEffect);
+            }
+            return equal;
+        }
+        
     }
     
     private @NonNull AnalysisComponent<VariableWithPcs> pcFinder;
