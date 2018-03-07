@@ -1,7 +1,8 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -10,7 +11,9 @@ import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
-import net.ssehub.kernel_haven.util.io.csv.CsvReader;
+import net.ssehub.kernel_haven.util.io.ITableCollection;
+import net.ssehub.kernel_haven.util.io.ITableReader;
+import net.ssehub.kernel_haven.util.io.TableCollectionUtils;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.parser.CStyleBooleanGrammar;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
@@ -48,37 +51,60 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
 
     @Override
     protected void execute() {
-        VariableCache varCache = new VariableCache();
-        Parser<@NonNull Formula> parser = new Parser<>(new CStyleBooleanGrammar(varCache));
-        
-        try (CsvReader in = new CsvReader(new FileInputStream(inputFile))) {
+        try (ITableCollection collection = TableCollectionUtils.openFile(inputFile)) {
             
-            in.readNextRow(); // skip first line (header)
+            String tableName;
+            if (collection.getTableNames().size() == 1) {
+                // if we just have one sheet / table, use it
+                // this is the case for CSV files
+                tableName = notNull(collection.getTableNames().iterator().next());
+                
+            } else {
+                // use the table name "Feature Effects"
+                tableName = "Feature Effects";
+            }
             
-            @NonNull String[] line;
-            while ((line = in.readNextRow()) != null) {
-                
-                if (line.length != 2) {
-                    LOGGER.logError("Line " + in.getLineNumber() + " in file " + inputFile + " has " + line.length
-                            + " columns, instead of 2");
-                    continue;
-                }
-                
-                try {
-                    String varName = line[0];
-                    Formula fe = parser.parse(line[1]);
-                    
-                    addResult(new VariableWithFeatureEffect(varName, fe));
-                    
-                } catch (ExpressionFormatException e) {
-                    LOGGER.logException("Can't parse formula in line " + in.getLineNumber() + " in file " + inputFile
-                            + ": \"" + line[1] + "\"", e);
-                }
-                
+            try (ITableReader in = collection.getReader(tableName)) {
+                readFile(in);
             }
             
         } catch (IOException e) {
             LOGGER.logException("Can't read input file", e);
+        }
+    }
+    
+    /**
+     * Reads the file contents.
+     * 
+     * @param in The reader to use.
+     * 
+     * @throws IOException If reading the file fails.
+     */
+    private void readFile(@NonNull ITableReader in) throws IOException {
+        VariableCache varCache = new VariableCache();
+        Parser<@NonNull Formula> parser = new Parser<>(new CStyleBooleanGrammar(varCache));
+        
+        in.readNextRow(); // skip first line (header)
+        
+        @NonNull String[] line;
+        while ((line = in.readNextRow()) != null) {
+            
+            if (line.length != 2) {
+                LOGGER.logError("Line " + in.getLineNumber() + " in file " + inputFile + " has " + line.length
+                        + " columns, instead of 2");
+                continue;
+            }
+            
+            try {
+                String varName = line[0];
+                Formula fe = parser.parse(line[1]);
+                
+                addResult(new VariableWithFeatureEffect(varName, fe));
+                
+            } catch (ExpressionFormatException e) {
+                LOGGER.logException("Can't parse formula in line " + in.getLineNumber() + " in file " + inputFile
+                        + ": \"" + line[1] + "\"", e);
+            }
         }
     }
 
