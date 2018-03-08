@@ -16,6 +16,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithF
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
+import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
@@ -56,10 +57,12 @@ public class FeatureEffectReaderTest {
     public void testWrongNumberColumns() throws SetUpException {
         List<VariableWithFeatureEffect> effects = run(new File(TESTDATA, "wrong_columns.csv"));
         
+        Formula disjunctonFE = new Disjunction(new Variable("VAR_B"), new Negation(new Variable("VAR_C")));
+        
         assertThat(effects, is(Arrays.asList(new VariableWithFeatureEffect[] {
-            new VariableWithFeatureEffect("VAR_A",
-                    new Disjunction(new Variable("VAR_B"), new Negation(new Variable("VAR_C")))),
+            new VariableWithFeatureEffect("VAR_A", disjunctonFE),
             new VariableWithFeatureEffect("VAR_C", True.INSTANCE),
+            new VariableWithFeatureEffect("VAR_D", disjunctonFE),
             new VariableWithFeatureEffect("VAR_E", True.INSTANCE)
         })));
     }
