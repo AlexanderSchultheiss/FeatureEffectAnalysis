@@ -97,6 +97,7 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @throws IOException If reading the file fails.
      */
+    @SuppressWarnings("null")
     private void readFile(@NonNull ITableReader in) throws IOException {
         VariableCache varCache = new VariableCache();
         Parser<@NonNull Formula> parser = new Parser<>(new CStyleBooleanGrammar(varCache));
@@ -113,8 +114,8 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
             }
             
             try {
-                String varName = line[0];
-                Formula fe = parser.parse(line[1]);
+                String varName = line[0].replace("=", "_eq_");
+                Formula fe = parser.parse(line[1].replace("=", "_eq_"));
                 
                 addResult(new VariableWithFeatureEffect(varName, fe));
                 
