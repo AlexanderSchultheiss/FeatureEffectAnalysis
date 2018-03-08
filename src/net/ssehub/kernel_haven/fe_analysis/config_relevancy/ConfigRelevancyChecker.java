@@ -10,7 +10,6 @@ import java.util.Map;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance.Relevance;
@@ -40,10 +39,9 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
 public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance> {
 
     public static final @NonNull Setting<@NonNull File> INPUT_FILE_PROPERTY
-        = new Setting<>("analysis.config_relevancy_checker.configuration_file", Type.PATH, true, null,
+        = new Setting<>("analysis.config_relevancy_checker.configuration_file", Type.FILE, true, null,
             "Location an historical SPL configuration file, which should be analyses w.r.t."
-            + "the relevance of the configured variables. "
-            + "Can be either absolute or relative to source code tree.");
+            + "the relevance of the configured variables.");
     
     private @NonNull AnalysisComponent<VariableWithFeatureEffect> featureEffectFinder;
     
@@ -65,15 +63,6 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
         
         config.registerSetting(INPUT_FILE_PROPERTY);
         inputFile = config.getValue(INPUT_FILE_PROPERTY);
-        if (!inputFile.exists()) {
-            // try to load the parameter as relative path
-            inputFile = new File(config.getValue(DefaultSettings.SOURCE_TREE), inputFile.getPath());
-            
-            if (!inputFile.exists()) {
-                throw new SetUpException(INPUT_FILE_PROPERTY + " = " + inputFile.getPath() 
-                    + " points to no valid location.");
-            }
-        }
     }
     
     /**

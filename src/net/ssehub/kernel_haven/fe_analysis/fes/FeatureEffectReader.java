@@ -8,7 +8,6 @@ import java.io.IOException;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
@@ -31,7 +30,7 @@ import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEffect> {
 
     public static final @NonNull Setting<@NonNull File> INPUT_FILE_SETTING
-            = new Setting<>("analysis.feature_effect.file", Type.PATH, true, null,
+            = new Setting<>("analysis.feature_effect.file", Type.FILE, true, null,
                     "A CSV file containing the feature effects to be read by the "
                     + FeatureEffectReader.class.getName());
     
@@ -49,16 +48,6 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
         
         config.registerSetting(INPUT_FILE_SETTING);
         this.inputFile = config.getValue(INPUT_FILE_SETTING);
-        
-        if (!inputFile.exists()) {
-            File srcDir = config.getValue(DefaultSettings.SOURCE_TREE);
-            inputFile = new File(srcDir, inputFile.getPath());
-            
-            if (!inputFile.exists()) {
-                throw new SetUpException(INPUT_FILE_SETTING.getKey() + " = "
-                    + inputFile.getAbsolutePath() + " does not exist.");
-            }
-        }
     }
 
     @Override
