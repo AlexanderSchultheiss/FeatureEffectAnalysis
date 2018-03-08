@@ -29,7 +29,7 @@ import net.ssehub.kernel_haven.util.null_checks.NonNull;
 public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEffect> {
 
     public static final @NonNull Setting<@NonNull File> INPUT_FILE_SETTING
-            = new Setting<>("analysis.feature_effect_file", Type.FILE, true, null,
+            = new Setting<>("analysis.feature_effect.file", Type.FILE, true, null,
                     "A CSV file containing the feature effects to be read by the "
                     + FeatureEffectReader.class.getName());
     
