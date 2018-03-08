@@ -107,10 +107,19 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
         @NonNull String[] line;
         while ((line = in.readNextRow()) != null) {
             
-            if (line.length != 2) {
+            if (line.length < 2) {
                 LOGGER.logError("Line " + in.getLineNumber() + " in file " + inputFile + " has " + line.length
                         + " columns, instead of 2");
                 continue;
+            }
+            
+            // Sometimes an FE is too long to be written into a single cell
+            if (line.length > 2) {
+                StringBuffer concat = new StringBuffer(line[1]);
+                for (int i = 2; i < line.length; i++) {
+                    concat.append(line[i]);
+                }
+                line[1] = concat.toString();
             }
             
             try {
