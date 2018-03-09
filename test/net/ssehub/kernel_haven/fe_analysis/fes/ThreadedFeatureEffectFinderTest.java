@@ -55,7 +55,7 @@ public class ThreadedFeatureEffectFinderTest extends AbstractFinderTests<Variabl
     @Test
     public void testCorrectOrder() {
         final int minElement = 10;
-        final int maxElement = 99;
+        final int maxElement = 20;
         
         CodeBlock topLevelElement = new CodeBlock(True.INSTANCE);
         Formula pc = True.INSTANCE;
