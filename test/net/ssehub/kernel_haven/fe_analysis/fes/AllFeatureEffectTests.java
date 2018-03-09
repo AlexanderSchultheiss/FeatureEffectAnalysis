@@ -13,6 +13,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     FeatureEffectFinderTests.class,
     FeatureEffectReaderTest.class,
+    ThreadedFeatureEffectFinderTest.class,
     
     // Sub formula elimination tests
     SubFormulaCheckerTests.class,

@@ -23,6 +23,7 @@ import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
  * A component that finds feature effects for variables.
@@ -96,7 +97,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
     }
     
-    private @NonNull AnalysisComponent<VariableWithPcs> pcFinder;
+    /**
+     * The component to get the input PCs from.
+     */
+    protected @NonNull AnalysisComponent<VariableWithPcs> pcFinder;
     
     private @NonNull PresenceConditionAnalysisHelper helper;
     
@@ -124,16 +128,31 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         VariableWithPcs pcs;
         while ((pcs = pcFinder.getNextResult()) != null) {
-            String varName = pcs.getVariable();
-            if (helper.isRelevant(varName)) {
-                Formula feConstraint = helper.doReplacements(buildFeatureEffefct(pcs));
-                varName = helper.doReplacements(varName);
-                VariableWithFeatureEffect feVar = new VariableWithFeatureEffect(varName, feConstraint);
-                
-                addResult(feVar);
+            VariableWithFeatureEffect result = processSingle(pcs);
+            if (result != null) {
+                addResult(result);
             }
         }
         
+    }
+    
+    /**
+     * Calculates the feature effect for a single variable.
+     * 
+     * @param pcs The variable with presence conditions to calculate the feature effect for.
+     * @return The variable with the calculated feature effect. <code>null</code> if the variable was not relevant.
+     */
+    protected @Nullable VariableWithFeatureEffect processSingle(@NonNull VariableWithPcs pcs) {
+        VariableWithFeatureEffect result = null;
+        
+        String varName = pcs.getVariable();
+        if (helper.isRelevant(varName)) {
+            Formula feConstraint = helper.doReplacements(buildFeatureEffefct(pcs));
+            varName = helper.doReplacements(varName);
+            result = new VariableWithFeatureEffect(varName, feConstraint);
+        }
+        
+        return result;
     }
     
     /**
