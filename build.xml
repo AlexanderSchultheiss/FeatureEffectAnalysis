@@ -2,7 +2,7 @@
 
 <!-- Author: Sascha El-Sharkawy -->
 <project name="FeatureEffectAnalysis" default="jenkins" basedir=".">
-	<description>Detects presence condtions and feature effects.</description>
+	<description>Analysis components for calculating presence condtions and feature effects</description>
 
 	<!-- Load Marcros on Jenkins -->
 	<include file="../../KernelHaven_Infrastructure/workspace/KernelHavenMacros.xml" as="KH_Common" optional="true" />
@@ -26,4 +26,5 @@
 		<antcall target="KH_Common.prepare.folders" />
 		<get src="${infrastructure.location}" dest="${dependencies.dir}/kernelhaven.jar" />
 	</target>
+
 </project>
