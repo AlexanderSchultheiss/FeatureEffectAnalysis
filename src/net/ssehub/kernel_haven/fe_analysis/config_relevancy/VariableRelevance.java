@@ -98,7 +98,7 @@ public class VariableRelevance {
      * 
      * @return The h(evaluated) feature effect constraint of the variable.
      */
-    @TableElement(index = 2, name = "Feature Effect")
+    @TableElement(index = 3, name = "Feature Effect")
     public @NonNull Formula getFeatureEffect() {
         return featureEffect;
     }
@@ -108,7 +108,7 @@ public class VariableRelevance {
      * 
      * @return The description of the situation.
      */
-    @TableElement(index = 3, name = "Relevance")
+    @TableElement(index = 2, name = "Relevance")
     public @NonNull Relevance getRelevance() {
         return relevance;
     }
