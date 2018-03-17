@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -18,9 +20,7 @@ import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -50,7 +50,7 @@ public class FeAggregatorTest {
 
         VariableWithFeatureEffect fe1 = ag.getNextResult();
         assertThat(fe1.getVariable(), is("A"));
-        assertThat(fe1.getFeatureEffect(), is(new Disjunction(new Variable("B"), new Variable("C"))));
+        assertThat(fe1.getFeatureEffect(), is(or("B", "C")));
         
         assertThat(ag.getNextResult(), nullValue());
     }
@@ -76,11 +76,11 @@ public class FeAggregatorTest {
 
         VariableWithFeatureEffect fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("A"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("B"), new Variable("C"))));
+        assertThat(fe.getFeatureEffect(), is(or("B", "C")));
         
         fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("B"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("D"), new Variable("E"))));
+        assertThat(fe.getFeatureEffect(), is(or("D", "E")));
         
         assertThat(ag.getNextResult(), nullValue());
     }
@@ -105,8 +105,7 @@ public class FeAggregatorTest {
 
         VariableWithFeatureEffect fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("A"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("D"),
-            new Disjunction(new Variable("B"), new Variable("C")))));
+        assertThat(fe.getFeatureEffect(), is(or("D", or("B", "C"))));
         
         assertThat(ag.getNextResult(), nullValue());
     }
@@ -133,12 +132,11 @@ public class FeAggregatorTest {
         
         VariableWithFeatureEffect fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("A"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("D"),
-            new Disjunction(new Variable("B"), new Variable("C")))));
+        assertThat(fe.getFeatureEffect(), is(or("D", or("B", "C"))));
         
         fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("B"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("C"), new Variable("D"))));
+        assertThat(fe.getFeatureEffect(), is(or("C", "D")));
         
         assertThat(ag.getNextResult(), nullValue());
     }
@@ -175,7 +173,7 @@ public class FeAggregatorTest {
         Assert.assertEquals("A", resultVarA.getVariable());
         
         // Check that the same variables are used in disjunction term (in any order)
-        Formula expectedFE = new Disjunction(new Variable("B"), new Disjunction(new Variable("C"), new Variable("D")));
+        Formula expectedFE = or("B", or("C", "D"));
         String[] usedVarsExpected = expectedFE.toString().split(" \\|\\| ");
         List<String>usedActual = Arrays.asList(resultVarA.getFeatureEffect().toString().split(" \\|\\| "));
         Assert.assertEquals(usedVarsExpected.length, usedActual.size());
@@ -197,18 +195,18 @@ public class FeAggregatorTest {
                 new VariableWithFeatureEffect("A=0", new Variable("C")),
                 new VariableWithFeatureEffect("A=1", new Variable("C")),
                 new VariableWithFeatureEffect("B=0", new Variable("D")),
-                new VariableWithFeatureEffect("B=1", new Negation(new Variable("D")))
+                new VariableWithFeatureEffect("B=1", not(new Variable("D")))
                 );
         
         FeAggregator ag = new FeAggregator(config, input);
         
         VariableWithFeatureEffect fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("A"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("C"), new Variable("C"))));
+        assertThat(fe.getFeatureEffect(), is(or("C", "C")));
         
         fe = ag.getNextResult();
         assertThat(fe.getVariable(), is("B"));
-        assertThat(fe.getFeatureEffect(), is(new Disjunction(new Variable("D"), new Negation(new Variable("D")))));
+        assertThat(fe.getFeatureEffect(), is(or("D", not("D"))));
         
         assertThat(ag.getNextResult(), nullValue());
     }

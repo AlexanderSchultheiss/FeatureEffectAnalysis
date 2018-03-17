@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.config_relevancy;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -17,8 +19,6 @@ import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance.Re
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -82,7 +82,7 @@ public class ConfigRelevancyCheckerTest {
     @Test
     public void testFeatureEffectVariablesWithoutEquals() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
-        fes.add(new VariableWithFeatureEffect("VAR_1", new Disjunction(new Variable("A"), new Variable("B=1"))));
+        fes.add(new VariableWithFeatureEffect("VAR_1", or("A", "B=1")));
         
         List<VariableRelevance> result = run(fes, new File("testdata/config_relevancy/test.csv"));
 
@@ -90,7 +90,7 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getVariable(), is("VAR_1"));
         assertThat(r1.getValue(), nullValue());
         assertThat(r1.getRelevance(), is(Relevance.NOT_SET_AND_RELEVANT));
-        assertThat(r1.getFeatureEffect(), is(new Disjunction(new Variable("A"), new Variable("B=1"))));
+        assertThat(r1.getFeatureEffect(), is(or("A", "B=1")));
         
         assertThat(result.size(), is(1));
     }
@@ -105,7 +105,7 @@ public class ConfigRelevancyCheckerTest {
     @Test
     public void testUnkownFeatureEffectVariableButStillDefined() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
-        fes.add(new VariableWithFeatureEffect("VAR_1", new Disjunction(new Variable("A=1"), new Variable("C=4"))));
+        fes.add(new VariableWithFeatureEffect("VAR_1", or("A=1", "C=4")));
         
         List<VariableRelevance> result = run(fes, new File("testdata/config_relevancy/test.csv"));
 
@@ -113,7 +113,7 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getVariable(), is("VAR_1"));
         assertThat(r1.getValue(), nullValue());
         assertThat(r1.getRelevance(), is(Relevance.NOT_SET_AND_RELEVANT));
-        assertThat(r1.getFeatureEffect(), is(new Disjunction(new Variable("A=1"), new Variable("C=4"))));
+        assertThat(r1.getFeatureEffect(), is(or("A=1", "C=4")));
         
         assertThat(result.size(), is(1));
     }
@@ -128,7 +128,7 @@ public class ConfigRelevancyCheckerTest {
     @Test
     public void testUnkownFeatureEffectVariableAndUndefinedResult() throws SetUpException, IOException {
         List<VariableWithFeatureEffect> fes = new LinkedList<>();
-        fes.add(new VariableWithFeatureEffect("VAR_1", new Conjunction(new Variable("A=1"), new Variable("C=4"))));
+        fes.add(new VariableWithFeatureEffect("VAR_1", and("A=1", "C=4")));
         
         List<VariableRelevance> result = run(fes, new File("testdata/config_relevancy/test.csv"));
 
@@ -136,7 +136,7 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getVariable(), is("VAR_1"));
         assertThat(r1.getValue(), nullValue());
         assertThat(r1.getRelevance(), is(Relevance.UNKOWN));
-        assertThat(r1.getFeatureEffect(), is(new Conjunction(new Variable("A=1"), new Variable("C=4"))));
+        assertThat(r1.getFeatureEffect(), is(and("A=1", "C=4")));
         
         assertThat(result.size(), is(1));
     }

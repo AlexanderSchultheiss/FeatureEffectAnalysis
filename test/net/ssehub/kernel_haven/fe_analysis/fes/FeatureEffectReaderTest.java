@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -14,12 +16,9 @@ import org.junit.Test;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
-import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
@@ -41,8 +40,7 @@ public class FeatureEffectReaderTest {
         List<VariableWithFeatureEffect> effects = run(new File(TESTDATA, "valid.csv"));
         
         assertThat(effects, is(Arrays.asList(new VariableWithFeatureEffect[] {
-            new VariableWithFeatureEffect("VAR_A",
-                    new Disjunction(new Variable("VAR_B"), new Negation(new Variable("VAR_C")))),
+            new VariableWithFeatureEffect("VAR_A", or("VAR_B", not("VAR_C"))),
             new VariableWithFeatureEffect("VAR_B", False.INSTANCE),
             new VariableWithFeatureEffect("VAR_C", True.INSTANCE)
         })));
@@ -57,7 +55,7 @@ public class FeatureEffectReaderTest {
     public void testWrongNumberColumns() throws SetUpException {
         List<VariableWithFeatureEffect> effects = run(new File(TESTDATA, "wrong_columns.csv"));
         
-        Formula disjunctonFE = new Disjunction(new Variable("VAR_B"), new Negation(new Variable("VAR_C")));
+        Formula disjunctonFE = or("VAR_B", not("VAR_C"));
         
         assertThat(effects, is(Arrays.asList(new VariableWithFeatureEffect[] {
             new VariableWithFeatureEffect("VAR_A", disjunctonFE),
@@ -77,8 +75,7 @@ public class FeatureEffectReaderTest {
         List<VariableWithFeatureEffect> effects = run(new File(TESTDATA, "invalid_formula.csv"));
         
         assertThat(effects, is(Arrays.asList(new VariableWithFeatureEffect[] {
-            new VariableWithFeatureEffect("VAR_A",
-                    new Disjunction(new Variable("VAR_B"), new Negation(new Variable("VAR_C")))),
+            new VariableWithFeatureEffect("VAR_A", or("VAR_B", not("VAR_C"))),
             new VariableWithFeatureEffect("VAR_C", True.INSTANCE),
             new VariableWithFeatureEffect("VAR_E", True.INSTANCE)
         })));
