@@ -5,7 +5,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -13,7 +12,6 @@ import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
-import net.ssehub.kernel_haven.fe_analysis.RunOnlyInANT;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
@@ -28,7 +26,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  * @author El-Sharkawy
  *
  */
-@RunWith(value = RunOnlyInANT.class)
 public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<VariableWithPcs> {
 
     /**

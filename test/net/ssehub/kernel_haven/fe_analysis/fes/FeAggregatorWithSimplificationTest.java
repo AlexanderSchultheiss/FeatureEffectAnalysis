@@ -8,10 +8,8 @@ import java.util.Properties;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import net.ssehub.kernel_haven.SetUpException;
-import net.ssehub.kernel_haven.fe_analysis.RunOnlyInANT;
 import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
@@ -27,7 +25,6 @@ import net.ssehub.kernel_haven.util.logic.Variable;
  * 
  * @author Adam
  */
-@RunWith(value = RunOnlyInANT.class)
 public class FeAggregatorWithSimplificationTest {
     
     /**

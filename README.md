@@ -22,7 +22,8 @@ Alternatively `analysis.class` can be set to one of
 
 ## Dependencies
 
-This plugin has no additional dependencies other than KernelHaven. However, it optionally utilizes [CnfUtils](https://github.com/KernelHaven/CnfUtils) if it is avaiable.
+In addition to KernelHaven, this plugin has the following dependencies:
+* [CnfUtils](https://github.com/KernelHaven/CnfUtils)
 
 ## License
 
