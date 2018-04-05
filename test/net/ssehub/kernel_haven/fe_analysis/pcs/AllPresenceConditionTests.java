@@ -12,6 +12,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     PcFinderTests.class,
+    PcReaderTest.class,
     PcFinderTestsWithSimplificationTests.class
     })
 public class AllPresenceConditionTests {
