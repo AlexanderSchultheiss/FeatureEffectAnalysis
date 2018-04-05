@@ -1,16 +1,19 @@
-package net.ssehub.kernel_haven.fe_analysis.fes;
+package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
-import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.util.FormatException;
 import net.ssehub.kernel_haven.util.io.ITableCollection;
 import net.ssehub.kernel_haven.util.io.ITableReader;
 import net.ssehub.kernel_haven.util.io.TableCollectionReaderFactory;
@@ -22,18 +25,22 @@ import net.ssehub.kernel_haven.util.logic.parser.VariableCache;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
- * A component that reads {@link VariableWithFeatureEffect}s from a file specified in the configuration.
+ * A component that reads {@link VariableWithPcs} from a file specified in the configuration.
  * 
  * @author Adam
  */
-public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEffect> {
+public class PcReader extends AnalysisComponent<VariableWithPcs> {
 
     public static final @NonNull Setting<@NonNull File> INPUT_FILE_SETTING
-            = new Setting<>("analysis.feature_effect.file", Type.FILE, true, null,
-                    "A file containing the feature effects to be read by the "
-                    + FeatureEffectReader.class.getName());
-    
+        = new Setting<>("analysis.presence_conditions.file", Type.FILE, true, null,
+            "A file containing the presence conditions to be read by the "
+            + PcReader.class.getName());
+
     private @NonNull File inputFile;
+    
+    private @NonNull VariableCache varCache;
+    
+    private @NonNull Parser<@NonNull Formula> parser;
     
     /**
      * Creates this component. No input required since the input file is read from the configuration.
@@ -42,11 +49,14 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @throws SetUpException If reading the configuration for the input file fails.
      */
-    public FeatureEffectReader(@NonNull Configuration config) throws SetUpException {
+    public PcReader(@NonNull Configuration config) throws SetUpException {
         super(config);
         
         config.registerSetting(INPUT_FILE_SETTING);
         this.inputFile = config.getValue(INPUT_FILE_SETTING);
+        
+        this.varCache = new VariableCache();
+        this.parser = new Parser<>(new CStyleBooleanGrammar(varCache));
     }
 
     @Override
@@ -82,8 +92,6 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
      * @throws IOException If reading the file fails.
      */
     private void readFile(@NonNull ITableReader in) throws IOException {
-        VariableCache varCache = new VariableCache();
-        Parser<@NonNull Formula> parser = new Parser<>(new CStyleBooleanGrammar(varCache));
         
         in.readNextRow(); // skip first line (header)
         
@@ -96,7 +104,7 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
                 continue;
             }
             
-            // Sometimes an FE is too long to be written into a single cell
+            // Sometimes an entry is too long to be written into a single cell
             if (line.length > 2) {
                 StringBuffer concat = new StringBuffer(line[1]);
                 for (int i = 2; i < line.length; i++) {
@@ -106,21 +114,50 @@ public class FeatureEffectReader extends AnalysisComponent<VariableWithFeatureEf
             }
             
             try {
-                String varName = notNull(line[0].replace("=", "_eq_"));
-                Formula fe = parser.parse(notNull(line[1].replace("=", "_eq_")));
-                
-                addResult(new VariableWithFeatureEffect(varName, fe));
-                
+                addResult(readSingleLine(line[0], line[1]));
+            } catch (FormatException e) {
+                LOGGER.logException("Line " + in.getLineNumber() + " can not be read", e);
+            }
+            
+        }
+    }
+    
+    /**
+     * Reads a single line from the sheet.
+     * 
+     * @param name The name of the variable (first column).
+     * @param pcList The list of presence conditions (second column).
+     * 
+     * @return The result of parsing the line.
+     * 
+     * @throws FormatException If the presence condition list has an invalid format.
+     */
+    private @NonNull VariableWithPcs readSingleLine(@NonNull String name, @NonNull String pcList)
+            throws FormatException {
+
+        if (!pcList.startsWith("[") || !pcList.endsWith("]")) {
+            throw new FormatException("List does not start with '[' or does not end with ']'");
+        }
+        
+        @SuppressWarnings("null") // String.split() returns @NonNull String @NonNull []
+        @NonNull String[] pcStrs = pcList.substring(1, pcList.length() - 1).split(",");
+        
+        Set<@NonNull Formula> pcs = new HashSet<>((int) (pcStrs.length * 1.5));
+        
+        for (String pcStr : pcStrs) {
+            try {
+                pcs.add(parser.parse(pcStr));
             } catch (ExpressionFormatException e) {
-                LOGGER.logException("Can't parse formula in line " + in.getLineNumber() + " in file " + inputFile
-                        + ": \"" + line[1] + "\"", e);
+                throw new FormatException(e);
             }
         }
+        
+        return new VariableWithPcs(name, pcs);
     }
 
     @Override
     public @NonNull String getResultName() {
-        return "Feature Effects (read from file)";
+        return "Presence Conditions (read from file)";
     }
 
 }
