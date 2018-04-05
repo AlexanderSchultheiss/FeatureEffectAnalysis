@@ -71,8 +71,8 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
                 tableName = notNull(collection.getTableNames().iterator().next());
                 
             } else {
-                // use the table name "Feature Effects"
-                tableName = "Feature Effects";
+                // use the table name "Presence Conditions"
+                tableName = "Presence Conditions";
             }
             
             try (ITableReader in = collection.getReader(tableName)) {
