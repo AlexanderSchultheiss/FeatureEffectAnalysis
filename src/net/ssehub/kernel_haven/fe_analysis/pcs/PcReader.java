@@ -155,7 +155,7 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
                         LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
                     }
                     pcs.add(simplifiedPC);
-                } catch (NullPointerException exc) {
+                } catch (Exception exc) {
                     LOGGER.logException("Simplification error for: " + pc.toString(), exc);
                     throw exc;
                 }
