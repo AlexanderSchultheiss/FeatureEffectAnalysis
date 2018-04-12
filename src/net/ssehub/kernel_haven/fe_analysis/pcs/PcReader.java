@@ -151,7 +151,7 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
                 Formula pc = parser.parse(pcStr);
                 try {
                     Formula simplifiedPC = notNull(pc.accept(simplifier));
-                    if (pc.equals(simplifiedPC)) {
+                    if (!pc.equals(simplifiedPC)) {
                         LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
                     }
                     pcs.add(simplifiedPC);
