@@ -13,6 +13,7 @@ import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.logic_utils.FormulaSimplificationVisitor;
 import net.ssehub.kernel_haven.util.FormatException;
 import net.ssehub.kernel_haven.util.io.ITableCollection;
 import net.ssehub.kernel_haven.util.io.ITableReader;
@@ -41,6 +42,7 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
     private @NonNull VariableCache varCache;
     
     private @NonNull Parser<@NonNull Formula> parser;
+    private @NonNull FormulaSimplificationVisitor simplifier = new FormulaSimplificationVisitor();
     
     /**
      * Creates this component. No input required since the input file is read from the configuration.
@@ -146,7 +148,12 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
         
         for (String pcStr : pcStrs) {
             try {
-                pcs.add(parser.parse(pcStr));
+                Formula pc = parser.parse(pcStr);
+                Formula simplifiedPC = notNull(pc.accept(simplifier));
+                if (pc.equals(simplifiedPC)) {
+                    LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
+                }
+                pcs.add(simplifiedPC);
             } catch (ExpressionFormatException e) {
                 throw new FormatException(e);
             }
