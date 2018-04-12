@@ -149,11 +149,16 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
         for (String pcStr : pcStrs) {
             try {
                 Formula pc = parser.parse(pcStr);
-                Formula simplifiedPC = notNull(pc.accept(simplifier));
-                if (pc.equals(simplifiedPC)) {
-                    LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
+                try {
+                    Formula simplifiedPC = notNull(pc.accept(simplifier));
+                    if (pc.equals(simplifiedPC)) {
+                        LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
+                    }
+                    pcs.add(simplifiedPC);
+                } catch (NullPointerException exc) {
+                    LOGGER.logException("Simplification error for: " + pc.toString(), exc);
+                    throw exc;
                 }
-                pcs.add(simplifiedPC);
             } catch (ExpressionFormatException e) {
                 throw new FormatException(e);
             }
