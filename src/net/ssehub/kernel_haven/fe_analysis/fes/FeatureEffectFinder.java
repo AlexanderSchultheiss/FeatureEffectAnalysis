@@ -1,8 +1,6 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -226,16 +224,16 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         // pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
 
         // Check if presence conditions have already been simplified in earlier step
-        if (helper.getSimplificationMode().ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
-            // Simplification wasn't applied to separate presence conditions before, do this here
-            List<@NonNull Formula> tmp = new ArrayList<>(pcs.size());
-            for (Formula formula : pcs) {
-                tmp.add(FormulaSimplifier.simplify(formula));
-            }
-            pcs = tmp;
-        }
+//        if (helper.getSimplificationMode().ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
+//            // Simplification wasn't applied to separate presence conditions before, do this here
+//            List<@NonNull Formula> tmp = new ArrayList<>(pcs.size());
+//            for (Formula formula : pcs) {
+//                tmp.add(FormulaSimplifier.simplify(formula));
+//            }
+//            pcs = tmp;
+//        }
         
-        Formula result = createXorTree(variable, simplify, pcs);
+        Formula result = createXorTree(variable, pcs);
         if (helper.isNonBooleanReplacements()) {
             int index = variable.indexOf("_eq_");
             
@@ -259,13 +257,12 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
 
     /**
      * Creates the disjunction of the XOR elements as needed by the Feature effect algorithm.
+     * 
      * @param variable The variable name for which we currently compute the feature effect.
-     * @param simplify <tt>true</tt> if the result should be simplified
      * @param pcs The presence conditions relevant for the variable.
      * @return The feature effect constraint (pre-condition).
      */
-    private @NonNull Formula createXorTree(@NonNull String variable, boolean simplify,
-            @NonNull Collection<@NonNull Formula> pcs) {
+    private @NonNull Formula createXorTree(@NonNull String variable, @NonNull Collection<@NonNull Formula> pcs) {
         
         DisjunctionQueue innerElements;
         DisjunctionQueue xorTrees;
@@ -275,7 +272,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             xorTrees = new SimplifyingDisjunctionQueue();
         } else {
             innerElements = new DisjunctionQueue(true);
-            xorTrees = new DisjunctionQueue(simplify);
+            xorTrees = new DisjunctionQueue(this.simplify);
         }
         
         for (Formula pc : pcs) {
