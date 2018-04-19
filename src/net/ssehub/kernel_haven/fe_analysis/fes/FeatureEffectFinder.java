@@ -281,6 +281,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             Formula trueFormula = setToValue(pc, variable, true, true);
             Formula falseFormula = setToValue(pc, variable, false, true);
             
+            if (trueFormula.equals(pc)) {
+                LOGGER.logWarning("Replacing variable " + variable + " had no effect on PC:", pc.toString());
+            }
+            
             // (A || B)
             innerElements.add(trueFormula);
             innerElements.add(falseFormula);
