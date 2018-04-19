@@ -297,16 +297,13 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             Formula xor;
             
+            if (variable.equals("SY_HFM2_eq_1") || variable.equals("SY_HFMKOMP_eq_6")) {
+                LOGGER.logWarning("Interesting VAR: " + variable, pc.toString(), atLeastOnePositive.toString(), atLeastOneNegative.toString());
+            }
+            
             if (atLeastOnePositive == True.INSTANCE) {
                 // TRUE AND atLeastOneNegative <-> atLeastOneNegative
                 xor = atLeastOneNegative;
-                
-                if (atLeastOneNegative == True.INSTANCE && trueFormula != True.INSTANCE
-                    && trueFormula != False.INSTANCE) {
-                    
-                    LOGGER.logWarning2("Replacing variable " + variable + " is weird:", pc.toString(), trueFormula,
-                        falseFormula);
-                }
                 
             } else if (atLeastOneNegative == True.INSTANCE) {
                 // TRUE AND atLeastOnePositive <-> atLeastOnePositive
