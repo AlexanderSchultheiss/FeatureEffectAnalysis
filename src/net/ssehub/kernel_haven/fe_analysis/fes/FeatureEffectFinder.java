@@ -297,21 +297,28 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             Formula xor;
             
-//            if (atLeastOnePositive == True.INSTANCE) {
-//                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
-//                xor = atLeastOneNegative;
-//                
-//            } else if (atLeastOneNegative == True.INSTANCE) {
-//                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
-//                xor = atLeastOnePositive;
-//                
-//            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
-//                // FALSE AND x <-> FALSE
-//                xor = False.INSTANCE;
-//                
-//            } else {
+            if (atLeastOnePositive == True.INSTANCE) {
+                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
+                xor = atLeastOneNegative;
+                
+                if (atLeastOneNegative == True.INSTANCE && trueFormula != True.INSTANCE
+                    && trueFormula != False.INSTANCE) {
+                    
+                    LOGGER.logWarning2("Replacing variable " + variable + " is weird:", pc.toString(), trueFormula,
+                        falseFormula);
+                }
+                
+            } else if (atLeastOneNegative == True.INSTANCE) {
+                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
+                xor = atLeastOnePositive;
+                
+            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
+                // FALSE AND x <-> FALSE
+                xor = False.INSTANCE;
+                
+            } else {
                 xor = new Conjunction(atLeastOnePositive, atLeastOneNegative);
-//            }
+            }
             xorTrees.add(xor);
         }
         
