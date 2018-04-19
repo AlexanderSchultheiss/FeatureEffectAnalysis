@@ -9,6 +9,7 @@ import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.logic_utils.SimplifyingDisjunctionQueue;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -267,9 +268,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         DisjunctionQueue xorTrees;
         
         if (this.simplify) {
-            innerElements = new DisjunctionQueue(true, FormulaSimplifier::simplify);
-            xorTrees = new DisjunctionQueue(true, FormulaSimplifier::simplify);
-//            xorTrees = new SimplifyingDisjunctionQueue();
+            innerElements = new DisjunctionQueue(true/*, FormulaSimplifier::simplify*/);
+            xorTrees = new SimplifyingDisjunctionQueue();
         } else {
             innerElements = new DisjunctionQueue(true);
             xorTrees = new DisjunctionQueue(true);
