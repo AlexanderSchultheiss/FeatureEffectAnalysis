@@ -299,26 +299,21 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             Formula xor;
             
-            // TODO: remove
-//            if (variable.equals("SY_HFM2_eq_1") || variable.equals("SY_HFMKOMP_eq_6")) {
-//                LOGGER.logWarning("Interesting VAR: " + variable, pc.toString(), atLeastOnePositive.toString(), atLeastOneNegative.toString());
-//            }
-            
-//            if (atLeastOnePositive == True.INSTANCE) {
-//                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
-//                xor = atLeastOneNegative;
-//                
-//            } else if (atLeastOneNegative == True.INSTANCE) {
-//                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
-//                xor = atLeastOnePositive;
-//                
-//            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
-//                // FALSE AND x <-> FALSE
-//                xor = False.INSTANCE;
-//                
-//            } else {
+            if (atLeastOnePositive == True.INSTANCE) {
+                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
+                xor = atLeastOneNegative;
+                
+            } else if (atLeastOneNegative == True.INSTANCE) {
+                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
+                xor = atLeastOnePositive;
+                
+            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
+                // FALSE AND x <-> FALSE
+                xor = False.INSTANCE;
+                
+            } else {
                 xor = new Conjunction(atLeastOnePositive, atLeastOneNegative);
-//            }
+            }
             xorTrees.add(xor);
         }
         
