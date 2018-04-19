@@ -241,7 +241,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             if (index != -1) {
                 String varBaseName = variable.substring(0, index);
-                result = setToValue(result, varBaseName + "_", false, false);
+                result = setToValue(result, varBaseName + "_eq_", false, false);
             }
         }
         
