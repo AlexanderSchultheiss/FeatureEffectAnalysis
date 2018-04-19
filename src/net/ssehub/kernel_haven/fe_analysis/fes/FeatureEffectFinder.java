@@ -268,7 +268,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         DisjunctionQueue xorTrees;
         
         if (this.simplify) {
-            innerElements = new DisjunctionQueue(true/*, FormulaSimplifier::simplify*/);
+            innerElements = new DisjunctionQueue(true, FormulaSimplifier::defaultSimplifier);
             xorTrees = new SimplifyingDisjunctionQueue();
         } else {
             innerElements = new DisjunctionQueue(true);
