@@ -221,9 +221,11 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         Collection<@NonNull Formula> pcs = varWithPcs.getPcs();
 
         // This eliminates "duplicated" formulas, this is not done in simplifications for presence conditions.
+        // TODO: remove
         // pcs = simplifier != null ? FeatureEffectReducer.simpleReduce(variable, pcs) : pcs;
 
         // Check if presence conditions have already been simplified in earlier step
+        // TODO: remove?
 //        if (helper.getSimplificationMode().ordinal() > SimplificationType.PRESENCE_CONDITIONS.ordinal()) {
 //            // Simplification wasn't applied to separate presence conditions before, do this here
 //            List<@NonNull Formula> tmp = new ArrayList<>(pcs.size());
@@ -297,25 +299,26 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             Formula xor;
             
-            if (variable.equals("SY_HFM2_eq_1") || variable.equals("SY_HFMKOMP_eq_6")) {
-                LOGGER.logWarning("Interesting VAR: " + variable, pc.toString(), atLeastOnePositive.toString(), atLeastOneNegative.toString());
-            }
+            // TODO: remove
+//            if (variable.equals("SY_HFM2_eq_1") || variable.equals("SY_HFMKOMP_eq_6")) {
+//                LOGGER.logWarning("Interesting VAR: " + variable, pc.toString(), atLeastOnePositive.toString(), atLeastOneNegative.toString());
+//            }
             
-            if (atLeastOnePositive == True.INSTANCE) {
-                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
-                xor = atLeastOneNegative;
-                
-            } else if (atLeastOneNegative == True.INSTANCE) {
-                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
-                xor = atLeastOnePositive;
-                
-            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
-                // FALSE AND x <-> FALSE
-                xor = False.INSTANCE;
-                
-            } else {
+//            if (atLeastOnePositive == True.INSTANCE) {
+//                // TRUE AND atLeastOneNegative <-> atLeastOneNegative
+//                xor = atLeastOneNegative;
+//                
+//            } else if (atLeastOneNegative == True.INSTANCE) {
+//                // TRUE AND atLeastOnePositive <-> atLeastOnePositive
+//                xor = atLeastOnePositive;
+//                
+//            } else if (False.INSTANCE == atLeastOnePositive || False.INSTANCE == atLeastOneNegative) {
+//                // FALSE AND x <-> FALSE
+//                xor = False.INSTANCE;
+//                
+//            } else {
                 xor = new Conjunction(atLeastOnePositive, atLeastOneNegative);
-            }
+//            }
             xorTrees.add(xor);
         }
         
