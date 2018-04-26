@@ -12,13 +12,15 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
+import net.ssehub.kernel_haven.fe_analysis.Settings;
+import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.logic_utils.FormulaSimplificationVisitor;
 import net.ssehub.kernel_haven.util.FormatException;
 import net.ssehub.kernel_haven.util.io.ITableCollection;
 import net.ssehub.kernel_haven.util.io.ITableReader;
 import net.ssehub.kernel_haven.util.io.TableCollectionReaderFactory;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.parser.CStyleBooleanGrammar;
 import net.ssehub.kernel_haven.util.logic.parser.ExpressionFormatException;
 import net.ssehub.kernel_haven.util.logic.parser.Parser;
@@ -42,7 +44,8 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
     private @NonNull VariableCache varCache;
     
     private @NonNull Parser<@NonNull Formula> parser;
-    private @NonNull FormulaSimplificationVisitor simplifier = new FormulaSimplificationVisitor();
+    
+    private boolean simplify;
     
     /**
      * Creates this component. No input required since the input file is read from the configuration.
@@ -59,6 +62,9 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
         
         this.varCache = new VariableCache();
         this.parser = new Parser<>(new CStyleBooleanGrammar(varCache));
+        
+        config.registerSetting(Settings.SIMPLIFIY);
+        this.simplify = config.getValue(Settings.SIMPLIFIY) == SimplificationType.PRESENCE_CONDITIONS;
     }
 
     @Override
@@ -149,16 +155,13 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
         for (String pcStr : pcStrs) {
             try {
                 Formula pc = parser.parse(pcStr);
-                try {
-                    Formula simplifiedPC = notNull(pc.accept(simplifier));
-                    if (!pc.equals(simplifiedPC)) {
-                        LOGGER.logInfo2(pc, " simplified to :", simplifiedPC);
-                    }
-                    pcs.add(simplifiedPC);
-                } catch (Exception exc) {
-                    LOGGER.logException("Simplification error for: " + pc.toString(), exc);
-                    throw exc;
+                
+                if (simplify) {
+                    pc = FormulaSimplifier.simplify(pc);
                 }
+                
+                pcs.add(pc);
+                
             } catch (ExpressionFormatException e) {
                 throw new FormatException(e);
             }
