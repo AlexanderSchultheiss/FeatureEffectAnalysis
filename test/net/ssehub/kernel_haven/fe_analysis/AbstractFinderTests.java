@@ -11,6 +11,7 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
+import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
@@ -34,14 +35,30 @@ public abstract class AbstractFinderTests<R> {
      * @return The detected presence conditions.
      */
     protected List<R> runAnalysis(CodeElement element, SimplificationType simplification) {
+        return runAnalysis(element, simplification, null);
+    }
+    
+    /**
+     * Runs the {@link PcFinder} on the passed element and returns the result for testing.
+     * @param element A mocked element, which should be analyzed by the {@link PcFinder}.
+     * @param simplification The simplification strategy to apply. Anything, except for
+     * {@link SimplificationType#NO_SIMPLIFICATION}, works only from ANT. 
+     * @param prop Optional configuration settings
+     * @return The detected presence conditions.
+     */
+    protected List<R> runAnalysis(CodeElement element, SimplificationType simplification, Properties prop) {
         // Generate configuration
         TestConfiguration tConfig = null;
         Properties config = new Properties();
         if (null != simplification) {
             config.setProperty(Settings.SIMPLIFIY.getKey(), simplification.name());
         }
+        if (null != prop) {
+            config.putAll(prop);
+        }
         try {
             tConfig = new TestConfiguration(config);
+            tConfig.registerSetting(DefaultSettings.PREPARATION_CLASSES);
         } catch (SetUpException e) {
             Assert.fail("Could not generate test configuration: " + e.getMessage());
         }
@@ -67,7 +84,7 @@ public abstract class AbstractFinderTests<R> {
         } catch (SetUpException e) {
             Assert.fail("Setting up the " + PcFinder.class.getSimpleName() + " failed: " + e.getMessage());
         }   
-
+        
         return results;
     }
 

@@ -105,6 +105,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     
     private boolean simplify;
     
+    private @Nullable FeatureEffectStorage storage;
+    
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
      * 
@@ -120,6 +122,10 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         this.pcFinder = pcFinder;
         this.helper = new PresenceConditionAnalysisHelper(config);
         this.simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
+        
+        if (helper.isNonBooleanMode()) {
+            storage = new FeatureEffectStorage();
+        }
     }
 
     @Override
@@ -148,8 +154,21 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         if (helper.isRelevant(varName)) {
             Formula feConstraint = helper.doReplacements(buildFeatureEffefct(pcs));
             varName = helper.doReplacements(varName);
+            
+            if (helper.isNonBooleanMode() && null != storage) {
+                VariableWithFeatureEffect baseVar = storage.getBaseVariable(varName);
+                if (null != baseVar && baseVar.featureEffect != feConstraint) {
+                    feConstraint = new Disjunction(baseVar.featureEffect, feConstraint);
+                }
+            }
+            
             result = new VariableWithFeatureEffect(varName, feConstraint);
+            
+            if (helper.isNonBooleanMode() && null != storage) {
+                storage.add(result);
+            }
         }
+        
         
         return result;
     }

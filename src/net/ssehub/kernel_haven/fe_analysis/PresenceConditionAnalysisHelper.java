@@ -13,6 +13,8 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
+import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
@@ -222,4 +224,11 @@ public class PresenceConditionAnalysisHelper {
         return simplificationType;
     }
 
+    /**
+     * Returns whether the {@link PcFinder} or the {@link FeatureEffectFinder} operate in a non-Boolean mode.
+     * @return <tt>true</tt> This helper and the related analyses operate in non-Boolean modes.
+     */
+    public boolean isNonBooleanMode() {
+        return replaceNonBooleanReplacements;
+    }
 }
