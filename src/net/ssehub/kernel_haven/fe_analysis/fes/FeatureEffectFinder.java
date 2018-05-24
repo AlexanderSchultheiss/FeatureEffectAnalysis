@@ -123,9 +123,9 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         this.helper = new PresenceConditionAnalysisHelper(config);
         this.simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
         
-//        if (helper.isNonBooleanMode()) {
-//            storage = new FeatureEffectStorage();
-//        }
+        if (helper.isNonBooleanMode()) {
+            storage = new FeatureEffectStorage();
+        }
     }
 
     @Override
