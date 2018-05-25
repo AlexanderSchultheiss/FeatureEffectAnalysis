@@ -186,7 +186,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
      * 
      * @return A new Formula equal to the given formula, but with each occurrence of the variable replaced.
      */
-    private @NonNull Formula setToValue(@NonNull Formula formula, @NonNull String variable, boolean value,
+    private static @NonNull Formula setToValue(@NonNull Formula formula, @NonNull String variable, boolean value,
             boolean exactMatch) {
         
         Formula result;
