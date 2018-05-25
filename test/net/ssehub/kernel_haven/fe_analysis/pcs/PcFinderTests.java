@@ -226,7 +226,7 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
         if (bm == null) {
             finder = new PcFinder(tConfig, cmComponent);
         } else {
-            TestAnalysisComponentProvider<BuildModel> bmProvider = new TestAnalysisComponentProvider<>(bm);
+            TestAnalysisComponentProvider<BuildModel> bmProvider = new TestAnalysisComponentProvider<BuildModel>(bm);
             finder = new PcFinder(tConfig, cmComponent, bmProvider);
         }
         
