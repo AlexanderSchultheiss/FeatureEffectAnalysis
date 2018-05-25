@@ -2,7 +2,6 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -167,13 +166,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
          * However, at this point the whole analysis is almost finished and its only about (optional) filtering of
          * results and sorting.
          */
-        TreeSet<@NonNull VariableWithPcs> tmpResults = new TreeSet<>(new Comparator<VariableWithPcs>() {
-            @Override
-            public int compare(VariableWithPcs o1, VariableWithPcs o2) {
-                return  o1.getVariable().compareTo(o2.getVariable());
-            }
-        });
-        
+        TreeSet<@NonNull VariableWithPcs> tmpResults = new TreeSet<>(
+            (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
+                
         for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
             Set<@NonNull Formula> pcs;
             if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
