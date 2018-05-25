@@ -116,12 +116,11 @@ public class FeatureEffectFinderWithSimplificationTests extends AbstractFinderTe
     
     @Override
     @SuppressWarnings("null")
-    protected AnalysisComponent<VariableWithFeatureEffect> callAnalysor(TestConfiguration tConfig,
+    protected AnalysisComponent<VariableWithFeatureEffect> createAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
 
         PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
         FeatureEffectFinder feFinder = new FeatureEffectFinder(tConfig, pcFinder);
-        feFinder.execute();
         return feFinder;
     }
 

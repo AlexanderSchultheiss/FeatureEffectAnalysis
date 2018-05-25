@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,6 +15,8 @@ import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.Setting;
+import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
@@ -32,6 +35,11 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  * @author Adam
  */
 public class PcFinder extends AnalysisComponent<VariableWithPcs> {
+    
+    public static final @NonNull Setting<@NonNull Boolean> CONSIDER_ALL_BM = new Setting<>(
+            "analysis.pc_finder.add_all_bm_pcs", Type.BOOLEAN, true, "false", "Whether the " + PcFinder.class.getName()
+            + " should consider all presence conditions from the build model. If true, then all PCs from the build"
+            + " model will be considered, even if no real file for it exists.");
     
     /**
      * A variable together with all presence conditions it is used in.
@@ -88,6 +96,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     
     private @NonNull PresenceConditionAnalysisHelper helper;
+    
+    private boolean addAllBmPcs;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
@@ -103,6 +113,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         super(config);
         this.sourceFiles = sourceFiles;
         this.helper = new PresenceConditionAnalysisHelper(config);
+        
+        config.registerSetting(CONSIDER_ALL_BM);
+        addAllBmPcs = config.getValue(CONSIDER_ALL_BM);
     }
     
     /**
@@ -158,6 +171,11 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
+        }
+        
+        // consider all presence conditions from the build model, if configured
+        if (null != bm && addAllBmPcs) {
+            findPcsInBuildModel(bm, result);
         }
         
         /*
@@ -230,6 +248,21 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         for (Variable var : vars)  {
             result.putIfAbsent(var.getName(), new HashSet<>());
             result.get(var.getName()).add(pc);
+        }
+    }
+    
+    /**
+     * Adds all PCs found in the build model to the result set.
+     * 
+     * @param bm The build model to walk through.
+     * @param result The result set to add PCs to.
+     */
+    private void findPcsInBuildModel(@NonNull BuildModel bm, @NonNull Map<String, Set<@NonNull Formula>> result) {
+        for (File f : bm) {
+            Formula pc = bm.getPc(f);
+            if (pc != null) {
+                addPcToResult(result, pc);
+            }
         }
     }
 

@@ -111,12 +111,11 @@ public class ThreadedFeatureEffectFinderTest extends AbstractFinderTests<Variabl
     }
     
     @Override
-    protected AnalysisComponent<VariableWithFeatureEffect> callAnalysor(TestConfiguration tConfig,
+    protected AnalysisComponent<VariableWithFeatureEffect> createAnalysor(TestConfiguration tConfig,
             AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
         
         PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
         ThreadedFeatureEffectFinder feFinder = new ThreadedFeatureEffectFinder(tConfig, pcFinder);
-        feFinder.execute();
         return feFinder;
     }
 

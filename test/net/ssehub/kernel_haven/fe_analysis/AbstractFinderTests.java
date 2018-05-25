@@ -73,7 +73,7 @@ public abstract class AbstractFinderTests<R> {
         List<R> results = new ArrayList<>();
         try {
             AnalysisComponent<SourceFile> cmComponent = new TestAnalysisComponentProvider<SourceFile>(sourceFile1);
-            AnalysisComponent<R> finder = callAnalysor(tConfig, cmComponent);
+            AnalysisComponent<R> finder = createAnalysor(tConfig, cmComponent);
             R result;
             do {
                 result = finder.getNextResult();
@@ -96,6 +96,6 @@ public abstract class AbstractFinderTests<R> {
      * @return The analysis component.
      * @throws SetUpException If analysis fails.
      */
-    protected abstract AnalysisComponent<R> callAnalysor(TestConfiguration tConfig,
+    protected abstract AnalysisComponent<R> createAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException;
 }

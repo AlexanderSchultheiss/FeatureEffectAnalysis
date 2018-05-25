@@ -70,11 +70,10 @@ public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<Va
     
     @Override
     @SuppressWarnings("null")
-    protected AnalysisComponent<VariableWithPcs> callAnalysor(TestConfiguration tConfig,
+    protected AnalysisComponent<VariableWithPcs> createAnalysor(TestConfiguration tConfig,
         AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
         
         PcFinder finder = new PcFinder(tConfig, cmComponent);
-        finder.execute();
         return finder;
     }
 }
