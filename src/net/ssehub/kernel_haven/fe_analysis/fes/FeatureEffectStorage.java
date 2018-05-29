@@ -21,7 +21,7 @@ public class FeatureEffectStorage {
      * Adds a new {@link VariableWithFeatureEffect} and removes all old variables, which are no longer needed.
      * @param variable the variable to add.
      */
-    public void add(VariableWithFeatureEffect variable) {
+    public synchronized void add(VariableWithFeatureEffect variable) {
         removeUnlessSimilarVariablesExist(variable.getVariable());
         effects.put(variable.getVariable(), variable);
     }
@@ -32,14 +32,14 @@ public class FeatureEffectStorage {
      *     non-Boolean mode.
      * @return The specified variable or <tt>null</tt> if it does not exist or was already removed.
      */
-    public @Nullable VariableWithFeatureEffect getFeatureEffect(String variable) {
+    public synchronized @Nullable VariableWithFeatureEffect getFeatureEffect(String variable) {
         return effects.get(variable);
     }
 
     /**
      * Clears the storage.
      */
-    public void clear() {
+    public synchronized void clear() {
         effects.clear();
     }
     
@@ -74,7 +74,7 @@ public class FeatureEffectStorage {
      * </ul>
      * @param variable A variable to be added, which serves as a reference for which variables must not be deleted.
      */
-    private void removeUnlessSimilarVariablesExist(String variable) {
+    private synchronized void removeUnlessSimilarVariablesExist(String variable) {
         boolean containsSimilarVariables = false;
         for (String otherVariable : effects.keySet()) {
             if (variable.startsWith(otherVariable)) {
