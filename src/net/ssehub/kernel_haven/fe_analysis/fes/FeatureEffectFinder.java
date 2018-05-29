@@ -155,7 +155,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             Formula feConstraint = helper.doReplacements(buildFeatureEffefct(pcs));
             varName = helper.doReplacements(varName);
             
-            if (helper.isNonBooleanMode() && null != storage) {
+            if (null != storage) {
                 VariableWithFeatureEffect baseVar = storage.getBaseVariable(varName);
                 if (null != baseVar && baseVar.featureEffect != feConstraint) {
                     feConstraint = new Disjunction(baseVar.featureEffect, feConstraint);
@@ -164,7 +164,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             result = new VariableWithFeatureEffect(varName, feConstraint);
             
-            if (helper.isNonBooleanMode() && null != storage) {
+            if (null != storage) {
                 storage.add(result);
             }
         }
