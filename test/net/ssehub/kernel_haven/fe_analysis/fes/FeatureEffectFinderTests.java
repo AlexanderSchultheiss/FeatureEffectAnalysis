@@ -1,5 +1,11 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -13,6 +19,7 @@ import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
+import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
@@ -152,6 +159,108 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
         Assert.assertEquals(varB.getName(), resultB.getVariable());
         Assert.assertEquals(True.INSTANCE, resultB.getFeatureEffect());
     }
+    
+    /**
+     * Tests that irrelevant variables are not present in the output.
+     */
+    @Test
+    public void testIrrelevantVariable() {
+        CodeElement base = new CodeBlock(True.INSTANCE);
+        base.addNestedElement(new CodeBlock(new Variable("CONFIG_A")));
+        base.addNestedElement(new CodeBlock(new Variable("A")));
+        
+        Properties config = new Properties();
+        config.put(Settings.RELEVANT_VARIABLES.getKey(), "CONFIG_.+");
+        
+        List<VariableWithFeatureEffect> results = detectFEs(base, config);
+        
+        assertThat(results.get(0).getVariable(), is("CONFIG_A"));
+        assertThat(results.get(0).getFeatureEffect(), is(True.INSTANCE));
+        
+        assertThat(results.size(), is(1));
+    }
+    
+    /**
+     * Tests that an unsatisfiable PC leads to the FE false.
+     */
+    @Test
+    public void testUnsatisfiableCondition() {
+        CodeElement base = new CodeBlock(True.INSTANCE);
+        base.addNestedElement(new CodeBlock(and("A", not("A"))));
+        
+        Properties config = new Properties();
+        config.setProperty(Settings.SIMPLIFIY.getKey(), SimplificationType.FEATURE_EFFECTS.toString());
+        
+        List<VariableWithFeatureEffect> results = detectFEs(base, config);
+        
+        assertThat(results.get(0).getVariable(), is("A"));
+        assertThat(results.get(0).getFeatureEffect(), is(False.INSTANCE));
+        
+        assertThat(results.size(), is(1));
+    }
+    
+    /**
+     * Tests that other _eq_ variables of the same name are set to false.
+     */
+    @Test
+    public void testSetOtherEqToFalse() {
+        CodeElement base = new CodeBlock(True.INSTANCE);
+        base.addNestedElement(new CodeBlock(and("A_eq_1", "A_eq_2")));
+        
+        Properties config = new Properties();
+        config.setProperty(DefaultSettings.PREPARATION_CLASSES.getKey() + ".0", "NonBooleanPreperation");
+        
+        List<VariableWithFeatureEffect> results = detectFEs(base, config);
+        
+        assertThat(results.get(0).getVariable(), is("A=1"));
+        assertThat(results.get(0).getFeatureEffect(), is(False.INSTANCE));
+        assertThat(results.get(1).getVariable(), is("A=2"));
+        assertThat(results.get(1).getFeatureEffect(), is(False.INSTANCE));
+        
+        assertThat(results.size(), is(2));
+    }
+    
+    /**
+     * Tests that other _eq_ variables of a different name are not set to false.
+     */
+    @Test
+    public void testSetOtherEqNotToFalse() {
+        CodeElement base = new CodeBlock(True.INSTANCE);
+        base.addNestedElement(new CodeBlock(and("A_eq_1", "B_eq_2")));
+        
+        Properties config = new Properties();
+        config.setProperty(DefaultSettings.PREPARATION_CLASSES.getKey() + ".0", "NonBooleanPreperation");
+        
+        List<VariableWithFeatureEffect> results = detectFEs(base, config);
+        
+        assertThat(results.get(0).getVariable(), is("A=1"));
+        assertThat(results.get(0).getFeatureEffect(), is(new Variable("B=2")));
+        assertThat(results.get(1).getVariable(), is("B=2"));
+        assertThat(results.get(1).getFeatureEffect(), is(new Variable("A=1")));
+        
+        assertThat(results.size(), is(2));
+    }
+    
+    /**
+     * Tests that other non-_eq_ variables are not set to false.
+     */
+    @Test
+    public void testSetNonEqNotToFalse() {
+        CodeElement base = new CodeBlock(True.INSTANCE);
+        base.addNestedElement(new CodeBlock(and("A_eq_1", "A")));
+        
+        Properties config = new Properties();
+        config.setProperty(DefaultSettings.PREPARATION_CLASSES.getKey() + ".0", "NonBooleanPreperation");
+        
+        List<VariableWithFeatureEffect> results = detectFEs(base, config);
+        
+        assertThat(results.get(0).getVariable(), is("A"));
+        assertThat(results.get(0).getFeatureEffect(), is(new Variable("A=1")));
+        assertThat(results.get(1).getVariable(), is("A=1"));
+        assertThat(results.get(1).getFeatureEffect(), is(or("A=1", "A")));
+        
+        assertThat(results.size(), is(2));
+    }
 
     /**
      * Runs the {@link FeatureEffectFinder} on the passed element and returns the result for testing.
@@ -171,6 +280,18 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
         Properties config = new Properties();
         config.put(DefaultSettings.FUZZY_PARSING.getKey(), "true");
         
+        return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION, config);
+    }
+    
+    /**
+     * Runs the {@link FeatureEffectFinder} on the passed element and returns the result for testing.
+     * 
+     * @param element A mocked element, which should be analyzed by the {@link FeatureEffectFinder}.
+     * @param config The configuration to use.
+     *  
+     * @return The detected feature effects.
+     */
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement element, Properties config) {
         return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION, config);
     }
     
