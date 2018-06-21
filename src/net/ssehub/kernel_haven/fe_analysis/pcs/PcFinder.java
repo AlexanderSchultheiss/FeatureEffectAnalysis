@@ -3,8 +3,12 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -136,8 +140,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
 
     @Override
     protected void execute() {
-        LOGGER.logInfo("Getting build model"); // TODO: temporary debug logging
-        
         BuildModel bm = null;
         if (bmComponent != null) {
             bm = bmComponent.getNextResult();
@@ -153,12 +155,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
 
         Map<String, Set<@NonNull Formula>> result = new HashMap<>();
         
-        LOGGER.logInfo("Start polling source files"); // TODO: temporary debug logging
-        
         SourceFile file;
         while ((file = sourceFiles.getNextResult()) != null) {
-            LOGGER.logInfo("Got source file " + file.getPath().getPath()); // TODO: temporary debug logging
-            
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
@@ -173,37 +171,27 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 }
             }
             
-            LOGGER.logInfo("Walking through " + file.getTopElementCount() + " top blocks"); // TODO: temporary debug logging
-            
             for (CodeElement b : file) {
                 // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
         }
         
-        LOGGER.logInfo("Source files done", "Intermediate result size: " + result.size()); // TODO: temporary debug logging
-        
         // consider all presence conditions from the build model, if configured
         if (null != bm && addAllBmPcs) {
             LOGGER.logInfo("Adding all build model PCs"); // TODO: temporary debug logging
             
             findPcsInBuildModel(bm, result);
-            
-            LOGGER.logInfo("Build model done", "Intermediate result size: " + result.size()); // TODO: temporary debug logging
         }
         
         LOGGER.logInfo("Sorting result"); // TODO: temporary debug logging
         
-        /*
-         * Temporary List for sorting the results (TreeList automatically sorts at insertion)
-         * This breaks the pipeline concept, as all results need to be finished before we can sort and send the results.
-         * However, at this point the whole analysis is almost finished and its only about (optional) filtering of
-         * results and sorting.
-         */
-        TreeSet<@NonNull VariableWithPcs> tmpResults = new TreeSet<>(
-            (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
-                
+        
+        @NonNull VariableWithPcs[] list = new @NonNull VariableWithPcs[result.size()];
+        int i = 0;
         for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
+            LOGGER.logInfo("(" + (i + 1) + "/" + list.length + ") Calculating PC set for " + entry.getKey()); // TODO: temporary debug logging
+            
             Set<@NonNull Formula> pcs;
             if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
                 pcs = new HashSet<>();
@@ -213,12 +201,15 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             } else {
                 pcs = notNull(entry.getValue());
             }
-            tmpResults.add(new VariableWithPcs(notNull(entry.getKey()), pcs));
+            
+            list[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
         }
         
-        LOGGER.logInfo("Got " + tmpResults.size() + " sorted results"); // TODO: temporary debug logging
+        Arrays.sort(list, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
         
-        for (VariableWithPcs var : tmpResults) {
+        LOGGER.logInfo("Got " + list.length + " sorted results"); // TODO: temporary debug logging
+        
+        for (VariableWithPcs var : list) {
             addResult(var);
         }
         
