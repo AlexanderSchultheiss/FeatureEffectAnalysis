@@ -3,15 +3,12 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -192,14 +189,11 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
             LOGGER.logInfo("(" + (i + 1) + "/" + list.length + ") Calculating PC set for " + entry.getKey()); // TODO: temporary debug logging
             
-            Set<@NonNull Formula> pcs;
+            Set<@NonNull Formula> pcs = notNull(entry.getValue());
+            
             if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
-                pcs = new HashSet<>();
-                for (Formula formula :  notNull(entry.getValue())) {
-                    pcs.add(FormulaSimplifier.simplify(formula));
-                }
-            } else {
-                pcs = notNull(entry.getValue());
+                // Stream-based simplification of formulas and re-creation of set in multiple threads.
+                pcs = notNull(pcs.parallelStream().map(FormulaSimplifier::simplify).collect(Collectors.toSet()));
             }
             
             list[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
