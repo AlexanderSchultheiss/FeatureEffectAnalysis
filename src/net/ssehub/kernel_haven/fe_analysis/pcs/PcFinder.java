@@ -181,13 +181,13 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             findPcsInBuildModel(bm, result);
         }
         
-        LOGGER.logInfo("Sorting result"); // TODO: temporary debug logging
+        LOGGER.logInfo("Creating VariableWithPcs elements"); // TODO: temporary debug logging
         
         
         @NonNull VariableWithPcs[] list = new @NonNull VariableWithPcs[result.size()];
         int i = 0;
         for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
-            LOGGER.logInfo("(" + (i + 1) + "/" + list.length + ") Calculating PC set for " + entry.getKey()); // TODO: temporary debug logging
+            LOGGER.logInfo("(" + (i + 1) + "/" + list.length + ") Calculating PC set for " + entry.getKey() + " with " + entry.getValue().size() + " PCs"); // TODO: temporary debug logging
             
             Set<@NonNull Formula> pcs = notNull(entry.getValue());
             
@@ -199,6 +199,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             list[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
         }
         
+        LOGGER.logInfo2("Sorting ", list.length, " elements"); // TODO: temporary debug logging
         Arrays.sort(list, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
         
         LOGGER.logInfo("Got " + list.length + " sorted results"); // TODO: temporary debug logging
