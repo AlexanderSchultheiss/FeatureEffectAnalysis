@@ -136,6 +136,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
 
     @Override
     protected void execute() {
+        LOGGER.logInfo("Getting build model"); // TODO: temporary debug logging
+        
         BuildModel bm = null;
         if (bmComponent != null) {
             bm = bmComponent.getNextResult();
@@ -151,8 +153,12 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
 
         Map<String, Set<@NonNull Formula>> result = new HashMap<>();
         
+        LOGGER.logInfo("Start polling source files"); // TODO: temporary debug logging
+        
         SourceFile file;
         while ((file = sourceFiles.getNextResult()) != null) {
+            LOGGER.logInfo("Got source file " + file.getPath().getPath()); // TODO: temporary debug logging
+            
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
@@ -167,19 +173,29 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 }
             }
             
+            LOGGER.logInfo("Walking through " + file.getTopElementCount() + " top blocks"); // TODO: temporary debug logging
+            
             for (CodeElement b : file) {
                 // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
         }
         
+        LOGGER.logInfo("Source files done", "Intermediate result size: " + result.size()); // TODO: temporary debug logging
+        
         // consider all presence conditions from the build model, if configured
         if (null != bm && addAllBmPcs) {
+            LOGGER.logInfo("Adding all build model PCs"); // TODO: temporary debug logging
+            
             findPcsInBuildModel(bm, result);
+            
+            LOGGER.logInfo("Build model done", "Intermediate result size: " + result.size()); // TODO: temporary debug logging
         }
         
+        LOGGER.logInfo("Sorting result"); // TODO: temporary debug logging
+        
         /*
-         * Temporary List for sorting the results (TreeList automatically sorts add insertion)
+         * Temporary List for sorting the results (TreeList automatically sorts at insertion)
          * This breaks the pipeline concept, as all results need to be finished before we can sort and send the results.
          * However, at this point the whole analysis is almost finished and its only about (optional) filtering of
          * results and sorting.
@@ -199,10 +215,14 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             }
             tmpResults.add(new VariableWithPcs(notNull(entry.getKey()), pcs));
         }
-                
+        
+        LOGGER.logInfo("Got " + tmpResults.size() + " sorted results"); // TODO: temporary debug logging
+        
         for (VariableWithPcs var : tmpResults) {
-            addResult(var);            
+            addResult(var);
         }
+        
+        LOGGER.logInfo("Sent all results away"); // TODO: temporary debug logging
     }
     
     /**
