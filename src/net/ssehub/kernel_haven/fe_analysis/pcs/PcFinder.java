@@ -181,26 +181,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             findPcsInBuildModel(bm, result);
         }
         
-        LOGGER.logInfo("Creating VariableWithPcs elements"); // TODO: temporary debug logging
-        
-        
-        @NonNull VariableWithPcs[] list = new @NonNull VariableWithPcs[result.size()];
-        int i = 0;
-        for (Map.Entry<String, Set<@NonNull Formula>> entry : result.entrySet()) {
-            LOGGER.logInfo("(" + (i + 1) + "/" + list.length + ") Calculating PC set for " + entry.getKey() + " with " + entry.getValue().size() + " PCs"); // TODO: temporary debug logging
-            
-            Set<@NonNull Formula> pcs = notNull(entry.getValue());
-            
-            if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
-                // Stream-based simplification of formulas and re-creation of set in multiple threads.
-                pcs = notNull(pcs.parallelStream().map(FormulaSimplifier::simplify).collect(Collectors.toSet()));
-            }
-            
-            list[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
-        }
-        
-        LOGGER.logInfo2("Sorting ", list.length, " elements"); // TODO: temporary debug logging
-        Arrays.sort(list, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
+        @NonNull VariableWithPcs[] list = sortResults(result);
         
         LOGGER.logInfo("Got " + list.length + " sorted results"); // TODO: temporary debug logging
         
@@ -209,6 +190,39 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         }
         
         LOGGER.logInfo("Sent all results away"); // TODO: temporary debug logging
+    }
+
+    /**
+     * Turns the map of collected PCs into a sorted array of {@link VariableWithPcs}s. The results are sorted by
+     * variable name. If enabled in the config, this also simplifies the presence conditions.
+     * 
+     * @param pcMap The map of collected presence conditions.
+     * 
+     * @return A sorted array of {@link VariableWithPcs}s created from the map.
+     */
+    @SuppressWarnings("null") // stream API and null annotations don't work so nicely together :-/
+    private @NonNull VariableWithPcs @NonNull [] sortResults(Map<String, Set<@NonNull Formula>> pcMap) {
+        LOGGER.logInfo("Creating VariableWithPcs elements"); // TODO: temporary debug logging
+        
+        @NonNull VariableWithPcs[] result = new @NonNull VariableWithPcs[pcMap.size()];
+        int i = 0;
+        for (Map.Entry<String, Set<@NonNull Formula>> entry : pcMap.entrySet()) {
+            LOGGER.logInfo("(" + (i + 1) + "/" + result.length + ") Calculating PC set for " + entry.getKey() + " with " + entry.getValue().size() + " PCs"); // TODO: temporary debug logging
+            
+            Set<@NonNull Formula> pcs = notNull(entry.getValue());
+            
+            if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
+                // Stream-based simplification of formulas and re-creation of set in multiple threads.
+                pcs = notNull(pcs.parallelStream().map(FormulaSimplifier::simplify).collect(Collectors.toSet()));
+            }
+            
+            result[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
+        }
+        
+        LOGGER.logInfo2("Sorting ", result.length, " elements"); // TODO: temporary debug logging
+        Arrays.sort(result, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
+        
+        return result;
     }
     
     /**
