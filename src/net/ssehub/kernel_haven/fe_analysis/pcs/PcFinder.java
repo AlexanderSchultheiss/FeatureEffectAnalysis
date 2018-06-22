@@ -176,20 +176,14 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
         // consider all presence conditions from the build model, if configured
         if (null != bm && addAllBmPcs) {
-            LOGGER.logInfo("Adding all build model PCs"); // TODO: temporary debug logging
-            
             findPcsInBuildModel(bm, result);
         }
         
         @NonNull VariableWithPcs[] list = sortResults(result);
         
-        LOGGER.logInfo("Got " + list.length + " sorted results"); // TODO: temporary debug logging
-        
         for (VariableWithPcs var : list) {
             addResult(var);
         }
-        
-        LOGGER.logInfo("Sent all results away"); // TODO: temporary debug logging
     }
 
     /**
@@ -202,16 +196,16 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      */
     @SuppressWarnings("null") // stream API and null annotations don't work so nicely together :-/
     private @NonNull VariableWithPcs @NonNull [] sortResults(Map<String, Set<@NonNull Formula>> pcMap) {
-        LOGGER.logInfo("Creating VariableWithPcs elements"); // TODO: temporary debug logging
+        boolean simplify = helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS;
+        
+        LOGGER.logInfo("Sorting " + (simplify ? "and simplifying " : "") + "PCs; this may take a long time");
         
         @NonNull VariableWithPcs[] result = new @NonNull VariableWithPcs[pcMap.size()];
         int i = 0;
         for (Map.Entry<String, Set<@NonNull Formula>> entry : pcMap.entrySet()) {
-            LOGGER.logInfo("(" + (i + 1) + "/" + result.length + ") Calculating PC set for " + entry.getKey() + " with " + entry.getValue().size() + " PCs"); // TODO: temporary debug logging
-            
             Set<@NonNull Formula> pcs = notNull(entry.getValue());
             
-            if (helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS) {
+            if (simplify) {
                 // Stream-based simplification of formulas and re-creation of set in multiple threads.
                 pcs = notNull(pcs.parallelStream().map(FormulaSimplifier::simplify).collect(Collectors.toSet()));
             }
@@ -219,7 +213,6 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             result[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
         }
         
-        LOGGER.logInfo2("Sorting ", result.length, " elements"); // TODO: temporary debug logging
         Arrays.sort(result, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
         
         return result;
