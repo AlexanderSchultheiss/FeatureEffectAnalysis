@@ -93,7 +93,7 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
             } else {
                 addResult(new FeatureDependencyRelation(var.getVariable(), "TRUE"));
             }
-            varFinder.getVariableNames().clear();
+            varFinder.clear();
         }
         
     }
