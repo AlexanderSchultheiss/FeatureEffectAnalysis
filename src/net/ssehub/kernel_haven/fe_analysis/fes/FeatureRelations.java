@@ -1,5 +1,8 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
@@ -87,8 +90,23 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
         while ((var = feFinder.getNextResult()) != null) {
             var.getFeatureEffect().accept(varFinder);
             if (!varFinder.getVariableNames().isEmpty()) {
+                Set<String> dependentVars = new HashSet<>();
                 for (String dependsOnVar : varFinder.getVariableNames()) {
-                    addResult(new FeatureDependencyRelation(var.getVariable(), dependsOnVar));                    
+                    // Do not track dependencies to value comparisons and keep only the assigned feature
+                    // For instance: FEATURE=VALUE -> FEATURE
+                    int pos = dependsOnVar.indexOf("=");
+                    if (pos != -1) {
+                        // Keep only Feature
+                        dependsOnVar = dependsOnVar.substring(0, pos);
+                    }
+                    if (dependsOnVar != null && !dependsOnVar.isEmpty()) {
+                        // dependsOnVar is trimmed to Feature
+                        dependentVars.add(dependsOnVar);
+                    }
+                }
+                for (String dependsOnVar : dependentVars) {
+                    // Add all distinct features
+                    addResult(new FeatureDependencyRelation(var.getVariable(), dependsOnVar));
                 }
             } else {
                 addResult(new FeatureDependencyRelation(var.getVariable(), "TRUE"));
