@@ -4,7 +4,7 @@
 
 An analysis plugin for [KernelHaven](https://github.com/KernelHaven/KernelHaven).
 
-Analysis components for calculating presence condtions and feature effects as proposed by [Nadi, Berger, Kästner, and Czarnecki](https://www.cs.cmu.edu/~ckaestne/pdf/tse15.pdf).
+Analysis components for calculating presence condtions and feature effects as proposed by [Nadi, Berger, Kästner, and Czarnecki](https://www.cs.cmu.edu/~ckaestne/pdf/tse15.pdf) and extended by [El-Sharkawy, Dhar, Krafczyk, Duszynski, Beichter, and Schmid](https://doi.org/10.1145/3233027.3233047).
 
 ## Usage
 
