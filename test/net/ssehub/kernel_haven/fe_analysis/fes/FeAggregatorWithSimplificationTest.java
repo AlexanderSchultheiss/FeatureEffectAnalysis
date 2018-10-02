@@ -13,6 +13,7 @@ import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.logic_utils.LogicUtils;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.StaticClassLoader;
@@ -31,13 +32,11 @@ public class FeAggregatorWithSimplificationTest {
      * Makes sure that LogicUtils has been initialized. This is only needed in test cases, because
      * {@link StaticClassLoader} does not run.
      * 
-     * @throws ReflectiveOperationException unwanted.
-     * @throws SecurityException unwanted.
+     * @throws SetUpException unwanted.
      */
     @BeforeClass
-    public static void loadLogicUtils() throws ReflectiveOperationException, SecurityException {
-        Class.forName("net.ssehub.kernel_haven.logic_utils.LogicUtils").getMethod(StaticClassLoader.INIT_METHOD_NAME)
-            .invoke(null);
+    public static void loadLogicUtils() throws SetUpException {
+        LogicUtils.initialize(new TestConfiguration(new Properties()));
     }
     
     /**
