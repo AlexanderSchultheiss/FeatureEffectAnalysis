@@ -91,6 +91,7 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
         
         VariableWithFeatureEffect var;
         while ((var = feFinder.getNextResult()) != null) {
+            String variable = normalizeVariable(var.getVariable());
             var.getFeatureEffect().accept(varFinder);
             if (!varFinder.getVariableNames().isEmpty()) {
                 Set<String> dependentVars = new HashSet<>();
@@ -103,11 +104,6 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
                         // Keep only Feature
                         dependsOnVar = dependsOnVar.substring(0, pos);
                     }
-//                    int pos = dependsOnVar.indexOf("=");
-//                    if (pos != -1) {
-//                        // Keep only Feature
-//                        dependsOnVar = dependsOnVar.substring(0, pos);
-//                    }
                     if (dependsOnVar != null && !dependsOnVar.isEmpty()) {
                         // dependsOnVar is trimmed to Feature
                         dependentVars.add(dependsOnVar);
@@ -115,14 +111,30 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
                 }
                 for (String dependsOnVar : dependentVars) {
                     // Add all distinct features
-                    addResult(new FeatureDependencyRelation(var.getVariable(), dependsOnVar));
+                    addResult(new FeatureDependencyRelation(variable, dependsOnVar));
                 }
             } else {
-                addResult(new FeatureDependencyRelation(var.getVariable(), "TRUE"));
+                addResult(new FeatureDependencyRelation(variable, "TRUE"));
             }
             varFinder.clear();
         }
         
+    }
+    
+    /**
+     * Cuts off all elements which come behind an operator.
+     * @param variable A feature variable, maybe in the form of <tt>VARIABLE=CONSTANT</tt>.
+     * @return Maybe the same instance of a shorter string without any comparison / arithmetic operation.
+     */
+    private String normalizeVariable(String variable) {
+        Matcher matcher = OPERATOR_PATTERN.matcher(variable);
+        if (matcher.find()) {
+            int pos = matcher.start();
+            // Keep only Feature
+            variable = variable.substring(0, pos);
+        }
+        
+        return variable;
     }
 
     @Override
