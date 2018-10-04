@@ -103,12 +103,8 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
                         int pos = matcher.start();
                         // Keep only Feature
                         dependsOnVar = dependsOnVar.substring(0, pos);
-                        if (dependsOnVar.equals(variable)) {
-                            // Avoid artificial creation of circles
-                            dependsOnVar = null;
-                        }
                     }
-                    if (dependsOnVar != null && !dependsOnVar.isEmpty()) {
+                    if (dependsOnVar != null && !dependsOnVar.isEmpty() && !dependsOnVar.equals(variable)) {
                         // dependsOnVar is trimmed to Feature
                         dependentVars.add(dependsOnVar);
                     }
@@ -135,7 +131,7 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
         if (matcher.find()) {
             int pos = matcher.start();
             // Keep only Feature
-            variable = variable.substring(0, pos);
+            variable = variable.substring(0, pos).trim();
         }
         
         return variable;
