@@ -5,6 +5,7 @@ import java.util.Set;
 
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectComputer;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.fe_analysis.relations.VariableWithPotentialParents.PotentialParent;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -40,6 +41,8 @@ public class PotentialParentFinder extends AnalysisComponent<VariableWithPotenti
 
     @Override
     protected void execute() {
+        FeatureEffectComputer computer = new FeatureEffectComputer(true);
+        
         VariableWithPcs varPcs;
         while ((varPcs = pcFinder.getNextResult()) != null) {
             
@@ -50,6 +53,12 @@ public class PotentialParentFinder extends AnalysisComponent<VariableWithPotenti
             for (Formula pc : varPcs.getPcs()) {
                 seenVariables.clear();
                 seenVariables.add(varPcs.getVariable()); // don't visit self
+                
+                // create a temporary VariableWithPcs to calculate the FE for a single PC
+                Set<Formula> tmpPc = new HashSet<>();
+                tmpPc.add(pc);
+                VariableWithPcs tmp = new VariableWithPcs(varPcs.getVariable(), tmpPc);
+                pc = computer.buildFeatureEffefct(tmp);
                 
                 pc.accept(new IVoidFormulaVisitor() {
                     

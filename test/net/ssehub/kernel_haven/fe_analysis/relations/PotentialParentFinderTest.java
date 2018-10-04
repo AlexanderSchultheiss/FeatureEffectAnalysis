@@ -51,9 +51,9 @@ public class PotentialParentFinderTest {
         VariableWithPcs c = new VariableWithPcs("C", pcs);
         
         pcs = new HashSet<>();
-        pcs.add(new Variable("A"));
-        pcs.add(and("A", "B"));
-        pcs.add(and(and("A", "B"), "C"));
+        pcs.add(and("D", "A"));
+        pcs.add(and("D", and("A", "B")));
+        pcs.add(and("D", and(and("A", "B"), "C")));
         VariableWithPcs d = new VariableWithPcs("D", pcs);
         
         TestConfiguration config = new TestConfiguration(new Properties());
