@@ -206,7 +206,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         boolean simplify = helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS;
         
         ProgressLogger progress = new ProgressLogger(getClass().getSimpleName() + " Sorting"
-                + (simplify ? " and simplifying" : ""));
+                + (simplify ? " and simplifying" : ""), pcMap.size());
         
         LOGGER.logInfo("Sorting " + (simplify ? "and simplifying " : "") + "PCs; this may take a long time");
         
