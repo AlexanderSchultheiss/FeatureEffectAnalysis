@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.config_relevancy;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance.Re
 import net.ssehub.kernel_haven.fe_analysis.fes.FeAggregator;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.csv.CsvReader;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaEvaluator;
@@ -160,6 +163,8 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
 
     @Override
     protected void execute() {
+        ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
+        
         try {
             Map<String, Integer> variableValues = loadFile(inputFile);
             
@@ -193,10 +198,14 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
                         var.getFeatureEffect(), value);
                 
                 addResult(varRelevance);
+                
+                progress.oneDone();
             }
             
         } catch (IOException e) {
             LOGGER.logException("Can't read file with product configuration", e);
+        } finally {
+            progress.close();
         }
     }
 

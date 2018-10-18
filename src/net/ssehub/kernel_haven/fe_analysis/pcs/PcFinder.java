@@ -21,6 +21,7 @@ import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
@@ -152,6 +153,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
 
         Map<String, Set<@NonNull Formula>> result = new HashMap<>();
         
+        ProgressLogger progress = new ProgressLogger(getClass().getSimpleName() + " Collecting");
+        
         SourceFile file;
         while ((file = sourceFiles.getNextResult()) != null) {
             Formula filePc = null;
@@ -172,12 +175,16 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
+            
+            progress.oneDone();
         }
         
         // consider all presence conditions from the build model, if configured
         if (null != bm && addAllBmPcs) {
             findPcsInBuildModel(bm, result);
         }
+        
+        progress.close();
         
         @NonNull VariableWithPcs[] list = sortResults(result);
         
@@ -198,6 +205,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private @NonNull VariableWithPcs @NonNull [] sortResults(Map<String, Set<@NonNull Formula>> pcMap) {
         boolean simplify = helper.getSimplificationMode() == SimplificationType.PRESENCE_CONDITIONS;
         
+        ProgressLogger progress = new ProgressLogger(getClass().getSimpleName() + " Sorting"
+                + (simplify ? " and simplifying" : ""));
+        
         LOGGER.logInfo("Sorting " + (simplify ? "and simplifying " : "") + "PCs; this may take a long time");
         
         @NonNull VariableWithPcs[] result = new @NonNull VariableWithPcs[pcMap.size()];
@@ -211,9 +221,13 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             }
             
             result[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
+            
+            progress.oneDone();
         }
         
         Arrays.sort(result, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
+        
+        progress.close();
         
         return result;
     }

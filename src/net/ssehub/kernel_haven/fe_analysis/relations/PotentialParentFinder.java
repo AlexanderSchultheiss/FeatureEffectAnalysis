@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.relations;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +10,7 @@ import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectComputer;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.fe_analysis.relations.VariableWithPotentialParents.PotentialParent;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.False;
@@ -42,6 +45,8 @@ public class PotentialParentFinder extends AnalysisComponent<VariableWithPotenti
     @Override
     protected void execute() {
         FeatureEffectComputer computer = new FeatureEffectComputer(true);
+        
+        ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
         
         VariableWithPcs varPcs;
         while ((varPcs = pcFinder.getNextResult()) != null) {
@@ -100,8 +105,11 @@ public class PotentialParentFinder extends AnalysisComponent<VariableWithPotenti
             
             result.sort();
             addResult(result);
-            
+
+            progress.oneDone();
         }
+        
+        progress.close();
     }
 
     @Override

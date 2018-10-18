@@ -1,10 +1,13 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.OrderPreservingParallelizer;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
@@ -32,11 +35,16 @@ public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
     
     @Override
     protected void execute() {
+        ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
+        
         OrderPreservingParallelizer<VariableWithPcs, VariableWithFeatureEffect> parallelizer
             = new OrderPreservingParallelizer<>(this::processSingle, (result) -> {
                 if (result != null) {
                     addResult(result);
                 }
+                
+                progress.oneDone();
+                
             }, NUM_THREADS);
         
         VariableWithPcs pcs;
@@ -46,6 +54,8 @@ public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
         
         parallelizer.end();
         parallelizer.join();
+        
+        progress.close();
     }
 
 }

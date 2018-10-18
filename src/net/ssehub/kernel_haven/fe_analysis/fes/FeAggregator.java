@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +16,7 @@ import net.ssehub.kernel_haven.fe_analysis.Settings;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.StringUtils;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
@@ -61,6 +64,8 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
     protected void execute() {
         Map<@NonNull String, DisjunctionQueue> groupedQueues = new HashMap<>();
         
+        ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
+        
         VariableWithFeatureEffect var;
         while ((var = feDetector.getNextResult()) != null) {
             @NonNull String varName = var.getVariable();
@@ -95,10 +100,14 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
             
             // Store effect to allow aggregation in aggregateFeatureEffects-method.
             conditions.add(var.getFeatureEffect());
+            
+            progress.oneDone();
         }
         
         // Process very last elements
         aggregateFeatureEffects(groupedQueues);
+        
+        progress.close();
     }
 
     /**

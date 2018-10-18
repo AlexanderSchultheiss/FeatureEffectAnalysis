@@ -1,5 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -10,6 +12,7 @@ import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureRelations.FeatureDependencyRelation;
+import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.VariableFinder;
@@ -89,6 +92,8 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
     protected void execute() {
         VariableFinder varFinder = new VariableFinder();
         
+        ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
+        
         VariableWithFeatureEffect var;
         while ((var = feFinder.getNextResult()) != null) {
             String variable = normalizeVariable(var.getVariable());
@@ -117,7 +122,11 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
                 addResult(new FeatureDependencyRelation(variable, "TRUE"));
             }
             varFinder.clear();
+            
+            progress.oneDone();
         }
+
+        progress.close();
         
     }
     
