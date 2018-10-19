@@ -176,7 +176,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 findPcsInElement(b, result, filePc, false);
             }
             
-            progress.oneDone();
+            progress.processedOne();
         }
         
         // consider all presence conditions from the build model, if configured
@@ -222,7 +222,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             
             result[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
             
-            progress.oneDone();
+            progress.processedOne();
         }
         
         Arrays.sort(result, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));

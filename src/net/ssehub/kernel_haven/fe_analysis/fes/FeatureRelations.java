@@ -123,7 +123,7 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
             }
             varFinder.clear();
             
-            progress.oneDone();
+            progress.processedOne();
         }
 
         progress.close();

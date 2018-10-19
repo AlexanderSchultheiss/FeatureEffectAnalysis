@@ -101,7 +101,7 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
             // Store effect to allow aggregation in aggregateFeatureEffects-method.
             conditions.add(var.getFeatureEffect());
             
-            progress.oneDone();
+            progress.processedOne();
         }
         
         // Process very last elements

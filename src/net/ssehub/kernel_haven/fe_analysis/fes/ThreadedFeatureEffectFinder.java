@@ -43,7 +43,7 @@ public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
                     addResult(result);
                 }
                 
-                progress.oneDone();
+                progress.processedOne();
                 
             }, NUM_THREADS);
         

@@ -135,7 +135,7 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
                 addResult(result);
             }
             
-            progress.oneDone();
+            progress.processedOne();
         }
         
         progress.close();

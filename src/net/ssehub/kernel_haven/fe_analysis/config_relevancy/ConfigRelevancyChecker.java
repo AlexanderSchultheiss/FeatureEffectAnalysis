@@ -199,7 +199,7 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
                 
                 addResult(varRelevance);
                 
-                progress.oneDone();
+                progress.processedOne();
             }
             
         } catch (IOException e) {

@@ -106,7 +106,7 @@ public class PotentialParentFinder extends AnalysisComponent<VariableWithPotenti
             result.sort();
             addResult(result);
 
-            progress.oneDone();
+            progress.processedOne();
         }
         
         progress.close();
