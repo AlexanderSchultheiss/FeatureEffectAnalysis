@@ -39,8 +39,6 @@ import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
  */
 public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
     
-    static final @NonNull String OPERATOR_REGEX = "^.*(=|!=|<|<=|>|>=).*$";
-    
     private @NonNull AnalysisComponent<VariableWithFeatureEffect> feDetector;
     private boolean simplify = false;
 
