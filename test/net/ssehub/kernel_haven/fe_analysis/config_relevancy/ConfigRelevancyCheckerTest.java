@@ -19,6 +19,7 @@ import net.ssehub.kernel_haven.fe_analysis.config_relevancy.VariableRelevance.Re
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
+import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
 /**
@@ -92,7 +93,19 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getRelevance(), is(Relevance.NOT_SET_AND_RELEVANT));
         assertThat(r1.getFeatureEffect(), is(or("A", "B=1")));
         
-        assertThat(result.size(), is(1));
+        VariableRelevance r2 = result.get(1);
+        assertThat(r2.getVariable(), is("A"));
+        assertThat(r2.getValue(), is(1));
+        assertThat(r2.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r2.getFeatureEffect(), is(False.INSTANCE));
+        
+        VariableRelevance r3 = result.get(2);
+        assertThat(r3.getVariable(), is("B"));
+        assertThat(r3.getValue(), is(2));
+        assertThat(r3.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r3.getFeatureEffect(), is(False.INSTANCE));
+        
+        assertThat(result.size(), is(3));
     }
     
     /**
@@ -114,8 +127,20 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getValue(), nullValue());
         assertThat(r1.getRelevance(), is(Relevance.NOT_SET_AND_RELEVANT));
         assertThat(r1.getFeatureEffect(), is(or("A=1", "C=4")));
+
+        VariableRelevance r2 = result.get(1);
+        assertThat(r2.getVariable(), is("A"));
+        assertThat(r2.getValue(), is(1));
+        assertThat(r2.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r2.getFeatureEffect(), is(False.INSTANCE));
         
-        assertThat(result.size(), is(1));
+        VariableRelevance r3 = result.get(2);
+        assertThat(r3.getVariable(), is("B"));
+        assertThat(r3.getValue(), is(2));
+        assertThat(r3.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r3.getFeatureEffect(), is(False.INSTANCE));
+        
+        assertThat(result.size(), is(3));
     }
     
     /**
@@ -137,8 +162,20 @@ public class ConfigRelevancyCheckerTest {
         assertThat(r1.getValue(), nullValue());
         assertThat(r1.getRelevance(), is(Relevance.UNKOWN));
         assertThat(r1.getFeatureEffect(), is(and("A=1", "C=4")));
+
+        VariableRelevance r2 = result.get(1);
+        assertThat(r2.getVariable(), is("A"));
+        assertThat(r2.getValue(), is(1));
+        assertThat(r2.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r2.getFeatureEffect(), is(False.INSTANCE));
         
-        assertThat(result.size(), is(1));
+        VariableRelevance r3 = result.get(2);
+        assertThat(r3.getVariable(), is("B"));
+        assertThat(r3.getValue(), is(2));
+        assertThat(r3.getRelevance(), is(Relevance.NOT_FOUND_IN_CODE));
+        assertThat(r3.getFeatureEffect(), is(False.INSTANCE));
+        
+        assertThat(result.size(), is(3));
     }
     
     /**

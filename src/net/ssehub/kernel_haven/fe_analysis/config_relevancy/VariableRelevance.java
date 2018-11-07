@@ -14,8 +14,8 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  *     <li>The (evaluated) feature effect constraint</li>
  *     <li>A description/rating of the situation</li>
  * </ul>
+ * 
  * @author Adam
- *
  */
 @TableRow
 public class VariableRelevance {
@@ -29,6 +29,7 @@ public class VariableRelevance {
         SET_AND_IRRELEVANT("Configured, but not relevant"),
         NOT_SET_AND_RELEVANT("Not Configured, but relevant"),
         NOT_SET_AND_IRRELEVANT("Not Configured, not relevant"),
+        NOT_FOUND_IN_CODE("Not found in any code condition"),
         UNKOWN("Unkown (couldn't solve feature effect)");
         
         private @NonNull String name;

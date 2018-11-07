@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
@@ -20,6 +22,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.csv.CsvReader;
+import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaEvaluator;
 import net.ssehub.kernel_haven.util.logic.VariableFinder;
@@ -167,6 +170,7 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
         
         try {
             Map<String, Integer> variableValues = loadFile(inputFile);
+            Set<String> allVariables = new HashSet<>(variableValues.keySet());
             
             VariableWithFeatureEffect var;
             while ((var = featureEffectFinder.getNextResult()) != null) {
@@ -198,8 +202,16 @@ public class ConfigRelevancyChecker extends AnalysisComponent<VariableRelevance>
                         var.getFeatureEffect(), value);
                 
                 addResult(varRelevance);
+                allVariables.remove(var.getVariable());
                 
                 progress.processedOne();
+            }
+            
+            // everything left in allVariables was not found in any PC, and thus we got no FE for it
+            for (String leftOver : allVariables) {
+                Integer value = variableValues.get(leftOver);
+                
+                addResult(new VariableRelevance(notNull(leftOver), Relevance.NOT_FOUND_IN_CODE, False.INSTANCE, value));
             }
             
         } catch (IOException e) {
