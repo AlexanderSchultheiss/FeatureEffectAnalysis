@@ -70,7 +70,7 @@ public class NonBooleanFeExpander extends AnalysisComponent<VariableWithFeatureE
 
     @Override
     public @NonNull String getResultName() {
-        return "Feature Effects (non-boolean expanded)";
+        return "Feature Effects" + (storage != null ? " (non-boolean expanded)" : "");
     }
 
 }

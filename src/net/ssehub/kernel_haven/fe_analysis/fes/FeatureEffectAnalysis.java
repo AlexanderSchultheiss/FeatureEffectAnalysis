@@ -25,10 +25,12 @@ public class FeatureEffectAnalysis extends PipelineAnalysis {
 
     @Override
     protected @NonNull AnalysisComponent<?> createPipeline() throws SetUpException {
-        return new FeatureEffectFinder(config,
-                new PcFinder(config,
-                        getCmComponent(),
-                        getBmComponent()
+        return new NonBooleanFeExpander(config,
+                new FeatureEffectFinder(config,
+                    new PcFinder(config,
+                            getCmComponent(),
+                            getBmComponent()
+                    )
                 )
         );
     }
