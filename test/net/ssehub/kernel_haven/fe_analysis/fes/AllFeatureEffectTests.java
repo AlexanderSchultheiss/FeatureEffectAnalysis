@@ -23,7 +23,10 @@ import org.junit.runners.Suite.SuiteClasses;
     // Simplification & FEAggregation Tests
     FeatureEffectFinderWithSimplificationTests.class,
     FeAggregatorTest.class,
-    FeAggregatorWithSimplificationTest.class
+    FeAggregatorWithSimplificationTest.class,
+    
+    // Dependency Graph
+    FeatureRelationsTests.class
     })
 public class AllFeatureEffectTests {
 

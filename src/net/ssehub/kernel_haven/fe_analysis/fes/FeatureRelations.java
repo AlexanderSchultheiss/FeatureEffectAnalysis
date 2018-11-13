@@ -17,6 +17,7 @@ import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.VariableFinder;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 
 /**
  * A component that prints only depends on relationships between two features.
@@ -90,13 +91,14 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
 
     @Override
     protected void execute() {
+        FeatureRelationStorage storage = new FeatureRelationStorage();
         VariableFinder varFinder = new VariableFinder();
         
         ProgressLogger progress = new ProgressLogger(notNull(getClass().getSimpleName()));
         
         VariableWithFeatureEffect var;
         while ((var = feFinder.getNextResult()) != null) {
-            String variable = normalizeVariable(var.getVariable());
+            @NonNull String variable = normalizeVariable(var.getVariable());
             var.getFeatureEffect().accept(varFinder);
             if (!varFinder.getVariableNames().isEmpty()) {
                 Set<String> dependentVars = new HashSet<>();
@@ -116,10 +118,14 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
                 }
                 for (String dependsOnVar : dependentVars) {
                     // Add all distinct features
-                    addResult(new FeatureDependencyRelation(variable, dependsOnVar));
+                    if (!storage.elementNotProcessed(variable, dependsOnVar)) {
+                        addResult(new FeatureDependencyRelation(variable, dependsOnVar));
+                    }
                 }
             } else {
-                addResult(new FeatureDependencyRelation(variable, "TRUE"));
+                if (!storage.elementNotProcessed(variable, "TRUE")) {
+                    addResult(new FeatureDependencyRelation(variable, "TRUE"));
+                }
             }
             varFinder.clear();
             
@@ -135,12 +141,12 @@ public class FeatureRelations extends AnalysisComponent<FeatureDependencyRelatio
      * @param variable A feature variable, maybe in the form of <tt>VARIABLE=CONSTANT</tt>.
      * @return Maybe the same instance of a shorter string without any comparison / arithmetic operation.
      */
-    private String normalizeVariable(String variable) {
+    private @NonNull String normalizeVariable(@NonNull String variable) {
         Matcher matcher = OPERATOR_PATTERN.matcher(variable);
         if (matcher.find()) {
             int pos = matcher.start();
             // Keep only Feature
-            variable = variable.substring(0, pos).trim();
+            variable = NullHelpers.notNull(variable.substring(0, pos).trim());
         }
         
         return variable;
