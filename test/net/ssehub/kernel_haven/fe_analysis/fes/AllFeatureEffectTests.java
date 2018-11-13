@@ -14,6 +14,7 @@ import org.junit.runners.Suite.SuiteClasses;
     FeatureEffectFinderTests.class,
     FeatureEffectReaderTest.class,
     ThreadedFeatureEffectFinderTest.class,
+    NonBooleanFeExpanderTest.class,
     
     // Sub formula elimination tests
     SubFormulaCheckerTests.class,

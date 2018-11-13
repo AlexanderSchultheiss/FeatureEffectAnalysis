@@ -12,7 +12,6 @@ import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
@@ -98,8 +97,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     
     private @NonNull FeatureEffectComputer computer;
     
-    private @Nullable FeatureEffectStorage storage;
-    
     /**
      * Creates a new {@link FeatureEffectFinder} for the given PC finder.
      * 
@@ -117,10 +114,6 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
         
         boolean simplify = helper.getSimplificationMode().ordinal() >= SimplificationType.PRESENCE_CONDITIONS.ordinal();
         this.computer = new FeatureEffectComputer(simplify, helper.isNonBooleanReplacements());
-        
-        if (helper.isNonBooleanMode()) {
-            storage = new FeatureEffectStorage();
-        }
     }
 
     @Override
@@ -155,20 +148,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             Formula feConstraint = helper.doReplacements(computer.buildFeatureEffefct(pcs));
             varName = helper.doReplacements(varName);
             
-            if (null != storage) {
-                VariableWithFeatureEffect baseVar = storage.getBaseVariable(varName);
-                if (null != baseVar && baseVar.featureEffect != feConstraint) {
-                    feConstraint = new Disjunction(baseVar.featureEffect, feConstraint);
-                }
-            }
-            
             result = new VariableWithFeatureEffect(varName, feConstraint);
-            
-            if (null != storage) {
-                storage.add(result);
-            }
         }
-        
         
         return result;
     }
