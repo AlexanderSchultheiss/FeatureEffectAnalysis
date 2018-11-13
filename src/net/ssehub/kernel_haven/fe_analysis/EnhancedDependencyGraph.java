@@ -11,6 +11,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureRelations;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.fe_analysis.relations.PotentialParentFinder;
+import net.ssehub.kernel_haven.fe_analysis.relations.PotentialParentRelationFinder;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
@@ -37,7 +38,8 @@ public class EnhancedDependencyGraph extends PipelineAnalysis {
         // "Final" Analysis components of the analysis branches
         FeatureRelations relationsComponent = new FeatureRelations(config,
             new FeatureEffectFinder(config, pcSplit.createOutputComponent()));
-        PotentialParentFinder parentComponent = new PotentialParentFinder(config, pcSplit.createOutputComponent());
+        PotentialParentRelationFinder parentComponent = new PotentialParentRelationFinder(config,
+            new PotentialParentFinder(config, pcSplit.createOutputComponent()));
         
         // Automatically prints results of PotentialParentFinder & FeatureRelations
         // Other results must be printed via the analysis.output.intermediate_results config

@@ -3,8 +3,10 @@ package net.ssehub.kernel_haven.fe_analysis.relations;
 import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import net.ssehub.kernel_haven.fe_analysis.relations.VariableWithPotentialParents.PotentialParent;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
@@ -16,7 +18,7 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  * @author Adam
  */
 @TableRow
-public class VariableWithPotentialParents {
+public class VariableWithPotentialParents implements Iterable<PotentialParent> {
 
     /**
      * Stores a parent variable and the probability that this is a parent.
@@ -153,5 +155,9 @@ public class VariableWithPotentialParents {
     public String toString() {
         return "PotentialParents for " + variable + ": " + getPotentialParentsString();
     }
-    
+
+    @Override
+    public Iterator<PotentialParent> iterator() {
+        return potentialParents.iterator();
+    }
 }
