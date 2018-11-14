@@ -5,6 +5,8 @@ import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.Setting;
+import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.OrderPreservingParallelizer;
 import net.ssehub.kernel_haven.util.ProgressLogger;
@@ -18,7 +20,11 @@ import net.ssehub.kernel_haven.util.null_checks.NonNull;
  */
 public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
 
-    private static final int NUM_THREADS = 6;
+    public static final @NonNull Setting<@NonNull Integer> THREAD_SETTING = new Setting<>(
+            "analysis.fe_finder.threads", Type.INTEGER, true, "4", "Defines the number of threads the "
+            + ThreadedFeatureEffectFinder.class.getSimpleName() + " should use.");
+    
+    private int numThreads;
     
     /**
      * Creates a new {@link ThreadedFeatureEffectFinder} for the given PC finder.
@@ -31,6 +37,13 @@ public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
     public ThreadedFeatureEffectFinder(@NonNull Configuration config,
             @NonNull AnalysisComponent<VariableWithPcs> pcFinder) throws SetUpException {
         super(config, pcFinder);
+        
+        config.registerSetting(THREAD_SETTING);
+        numThreads = config.getValue(THREAD_SETTING);
+        
+        if (numThreads < 1) {
+            throw new SetUpException("Number of threads can't be " + numThreads);
+        }
     }
     
     @Override
@@ -45,7 +58,7 @@ public class ThreadedFeatureEffectFinder extends FeatureEffectFinder {
                 
                 progress.processedOne();
                 
-            }, NUM_THREADS);
+            }, numThreads);
         
         VariableWithPcs pcs;
         while ((pcs = pcFinder.getNextResult()) != null) {
