@@ -1,5 +1,10 @@
 package net.ssehub.kernel_haven.fe_analysis.fes;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -12,6 +17,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureRelations.FeatureDependenc
 import net.ssehub.kernel_haven.test_utils.AnalysisComponentExecuter;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
 import net.ssehub.kernel_haven.util.logic.True;
+import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
@@ -36,6 +42,37 @@ public class FeatureRelationsTests {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(result.get(0).getFeature(), input[0].getVariable());
         Assert.assertEquals(result.get(0).getDependsOn(), "TRUE");
+    }
+    
+    /**
+     * Tests that context calculation works correctly.
+     */
+    @Test
+    public void testContext() {
+        // Run Analysis
+        VariableWithFeatureEffect[] input = new VariableWithFeatureEffect[2];
+        input[0] = new VariableWithFeatureEffect("A", or("B", "C"));
+        input[1] = new VariableWithFeatureEffect("B", and("C", "D"));
+        List<FeatureDependencyRelation> result = executeAnalysis(input);
+        
+        // Check result
+        assertThat(result.size(), is(4));
+        
+        assertThat(result.get(0).getFeature(), is("A"));
+        assertThat(result.get(0).getDependsOn(), is("B"));
+        assertThat(result.get(0).getContext(), is(True.INSTANCE));
+        
+        assertThat(result.get(1).getFeature(), is("A"));
+        assertThat(result.get(1).getDependsOn(), is("C"));
+        assertThat(result.get(1).getContext(), is(True.INSTANCE));
+        
+        assertThat(result.get(2).getFeature(), is("B"));
+        assertThat(result.get(2).getDependsOn(), is("C"));
+        assertThat(result.get(2).getContext(), is(new Variable("D")));
+        
+        assertThat(result.get(3).getFeature(), is("B"));
+        assertThat(result.get(3).getDependsOn(), is("D"));
+        assertThat(result.get(3).getContext(), is(new Variable("C")));
     }
     
     /**
