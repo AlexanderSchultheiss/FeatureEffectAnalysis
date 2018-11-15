@@ -227,8 +227,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             result = containsVariable(((Disjunction) formula).getLeft(), varName)
                     || containsVariable(((Disjunction) formula).getRight(), varName);
         } else if (formula instanceof Conjunction) {
-            result = containsVariable(((Disjunction) formula).getLeft(), varName)
-                    || containsVariable(((Disjunction) formula).getRight(), varName);
+            result = containsVariable(((Conjunction) formula).getLeft(), varName)
+                    || containsVariable(((Conjunction) formula).getRight(), varName);
         }
         // TRUE and FALSE return false
         
