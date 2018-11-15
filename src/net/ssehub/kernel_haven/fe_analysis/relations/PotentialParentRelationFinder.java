@@ -22,18 +22,24 @@ public class PotentialParentRelationFinder extends AnalysisComponent<PotentialPa
      */
     @TableRow(isRelation = true)
     public static class PotentialParentRelation {
+        
         private String feature;
         
         private String parent;
+        
+        private double probability;
 
         /**
          * Creates this object.
+         * 
          * @param feature Value 1.
          * @param parent Value 2.
+         * @param probability Value 3.
          */
-        public PotentialParentRelation(String feature, String parent) {
+        public PotentialParentRelation(String feature, String parent, double probability) {
             this.feature = feature;
             this.parent = parent;
+            this.probability = probability;
         }
 
         /**
@@ -55,6 +61,17 @@ public class PotentialParentRelationFinder extends AnalysisComponent<PotentialPa
         public String getParent() {
             return parent;
         }
+        
+        /**
+         * Returns the probability that this parent-child relation is correct.
+         * 
+         * @return The probability.
+         */
+        @TableElement(index = 3, name = "Probability")
+        public double getProbability() {
+            return probability;
+        }
+        
     }
 
     private @NonNull AnalysisComponent<VariableWithPotentialParents> parentFinder;
@@ -77,7 +94,7 @@ public class PotentialParentRelationFinder extends AnalysisComponent<PotentialPa
         VariableWithPotentialParents var;
         while ((var = parentFinder.getNextResult()) != null) {
             for (PotentialParent pp : var) {
-                addResult(new PotentialParentRelation(var.getVariable(), pp.toString()));
+                addResult(new PotentialParentRelation(var.getVariable(), pp.getVariable(), pp.getProbability()));
             }
         }
     }
