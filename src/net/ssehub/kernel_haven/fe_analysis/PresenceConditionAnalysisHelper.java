@@ -205,7 +205,69 @@ public class PresenceConditionAnalysisHelper {
         }
         return formula;
     }
+    
+    /**
+     * <b>Removes</b> non-boolean replacements from the given formula. This simply deletes the _eq_ extensions from
+     * variables.
+     * 
+     * @param formula The formula to remove replacements in.
 
+     * @return The same formula, but with all replacements removed in the variable names.
+     */
+    public @NonNull Formula removeReplacements(@NonNull Formula formula) {
+        Formula result = formula;
+        
+        if (formula instanceof Variable) {
+            result = new Variable(removeReplacements(((Variable) formula).getName()));
+            
+        } else if (formula instanceof Negation) {
+            result = new Negation(
+                    removeReplacements(((Negation) formula).getFormula()));
+            
+        } else if (formula instanceof Disjunction) {
+            result = new Disjunction(
+                    removeReplacements(((Disjunction) formula).getLeft()),
+                    removeReplacements(((Disjunction) formula).getRight()));
+            
+        } else if (formula instanceof Conjunction) {
+            result = new Conjunction(
+                    removeReplacements(((Conjunction) formula).getLeft()),
+                    removeReplacements(((Conjunction) formula).getRight()));
+        }
+        // ignore true and false
+        
+        return result;
+    }
+    
+    /**
+     * <b>Removes</b> non-boolean replacements from the given variable name. This simply deletes the _eq_ extensions.
+     * 
+     * @param formula The variable name to remove replacements from.
+
+     * @return The same variable name, but with all replacements removed.
+     */
+    public @NonNull String removeReplacements(@NonNull String formula) {
+        int index;
+        
+        // CHECKSTYLE:OFF // inner assignments
+        if ((index = formula.indexOf("_eq_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        } else if ((index = formula.indexOf("_ne_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        } else if ((index = formula.indexOf("_gt_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        } else if ((index = formula.indexOf("_ge_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        } else if ((index = formula.indexOf("_lt_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        } else if ((index = formula.indexOf("_le_")) != -1) {
+            formula = notNull(formula.substring(0, index));
+        }
+        // CHECKSTYLE:ON
+        
+        return formula;
+    }
+    
     /**
      * Whether non boolean replacements in variable names (e.g. _gt_) are used and should be turned back into the
      * human readable form.

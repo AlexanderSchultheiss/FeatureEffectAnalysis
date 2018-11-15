@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -185,6 +186,37 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
         r = results.get(2);
         assertThat(r.getVariable(), is("C"));
         assertThat(r.getPcs(), is(set(new Variable("C"))));
+        
+        Assert.assertEquals(3,  results.size());
+    }
+    
+    /**
+     * Checks if non-boolean collapsing works.
+     */
+    @Test
+    public void testCombineNonBoolean() {
+        CodeBlock c1 = new CodeBlock(or("A", "B"));
+        CodeBlock c2 = new CodeBlock(and("A_eq_1", "C_lt_1"));
+        
+        CodeBlock top = new CodeBlock(True.INSTANCE);
+        top.addNestedElement(c1);
+        top.addNestedElement(c2);
+        
+        Properties props = new Properties();
+        props.put(PcFinder.COMBINE_NON_BOOLEAN.getKey(), "true");
+        List<VariableWithPcs> results = super.runAnalysis(top, SimplificationType.NO_SIMPLIFICATION, props);
+
+        VariableWithPcs r = results.get(0);
+        assertThat(r.getVariable(), is("A"));
+        assertThat(r.getPcs(), is(set(or("A", "B"), and("A", "C"))));
+        
+        r = results.get(1);
+        assertThat(r.getVariable(), is("B"));
+        assertThat(r.getPcs(), is(set(or("A", "B"))));
+        
+        r = results.get(2);
+        assertThat(r.getVariable(), is("C"));
+        assertThat(r.getPcs(), is(set(and("A", "C"))));
         
         Assert.assertEquals(3,  results.size());
     }

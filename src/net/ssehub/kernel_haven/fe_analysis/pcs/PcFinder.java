@@ -43,6 +43,11 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             + " should consider all presence conditions from the build model. If true, then all PCs from the build"
             + " model will be considered, even if no real file for it exists.");
     
+    public static final @NonNull Setting<@NonNull Boolean> COMBINE_NON_BOOLEAN = new Setting<>(
+            "analysis.pc_finder.combine_non_boolean", Type.BOOLEAN, true, "false", "Whether the "
+            + PcFinder.class.getSimpleName() + " should collapse all non-boolean replacements to a single variable ("
+            + "i.e. VAR and VAR_eq_1 will be treated as the same variable VAR)");
+    
     /**
      * A variable together with all presence conditions it is used in.
      * 
@@ -100,6 +105,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
     private @NonNull PresenceConditionAnalysisHelper helper;
     
     private boolean addAllBmPcs;
+    
+    private boolean combineNonBoolean;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
@@ -118,6 +125,9 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
         config.registerSetting(CONSIDER_ALL_BM);
         addAllBmPcs = config.getValue(CONSIDER_ALL_BM);
+        
+        config.registerSetting(COMBINE_NON_BOOLEAN);
+        combineNonBoolean = config.getValue(COMBINE_NON_BOOLEAN);
     }
     
     /**
@@ -270,6 +280,10 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * @param pc The presence condition that was found.
      */
     private void addPcToResult(@NonNull Map<String, Set<@NonNull Formula>> result, @NonNull Formula pc) {
+        if (combineNonBoolean) {
+            pc = helper.removeReplacements(pc);
+        }
+        
         Set<@NonNull Variable> vars = new HashSet<>();
         helper.findVars(pc, vars);
         for (Variable var : vars)  {
