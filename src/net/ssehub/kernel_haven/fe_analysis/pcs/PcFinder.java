@@ -25,10 +25,8 @@ import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
-import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.Variable;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
@@ -201,38 +199,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         @NonNull VariableWithPcs[] list = sortResults(result);
         
         for (VariableWithPcs var : list) {
-            // sortResults may simplify away all PCs for a variable -> check if empty
-            if (!var.getPcs().isEmpty()) {
-                addResult(var);
-            }
+            addResult(var);
         }
-    }
-    
-    /**
-     * Checks if the given formula contains the given variable name.
-     * 
-     * @param formula The formula to check.
-     * @param varName The variable name to search.
-     * 
-     * @return Whether the given variable name appears anywhere in the given formula.
-     */
-    private static boolean containsVariable(@NonNull Formula formula, @NonNull String varName) {
-        boolean result = false;
-        
-        if (formula instanceof Variable) {
-            result = ((Variable) formula).getName().equals(varName);
-        } else if (formula instanceof Negation) {
-            result = containsVariable(((Negation) formula).getFormula(), varName);
-        } else if (formula instanceof Disjunction) {
-            result = containsVariable(((Disjunction) formula).getLeft(), varName)
-                    || containsVariable(((Disjunction) formula).getRight(), varName);
-        } else if (formula instanceof Conjunction) {
-            result = containsVariable(((Conjunction) formula).getLeft(), varName)
-                    || containsVariable(((Conjunction) formula).getRight(), varName);
-        }
-        // TRUE and FALSE return false
-        
-        return result;
     }
 
     /**
@@ -259,10 +227,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             
             if (simplify) {
                 // Stream-based simplification of formulas and re-creation of set in multiple threads.
-                pcs = notNull(pcs.parallelStream()
-                        .map(FormulaSimplifier::simplify)
-                        .filter(formula -> containsVariable(formula, entry.getKey()))
-                        .collect(Collectors.toSet()));
+                pcs = notNull(pcs.parallelStream().map(FormulaSimplifier::simplify).collect(Collectors.toSet()));
             }
             
             result[i++] = new VariableWithPcs(notNull(entry.getKey()), pcs);
