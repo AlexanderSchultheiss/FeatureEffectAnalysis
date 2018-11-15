@@ -1,6 +1,7 @@
 package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
 import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -23,8 +24,10 @@ import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.logic_utils.LogicUtils;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.logic.Variable;
 
@@ -219,6 +222,33 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
         assertThat(r.getPcs(), is(set(and("A", "C"))));
         
         Assert.assertEquals(3,  results.size());
+    }
+    
+    /**
+     * Checks that a PC does not appear for a variable that is simplified away.
+     */
+    @Test
+    public void testSimplifiedAwayVariable() {
+        try {
+            // A && (B || !B) will be simplified to A
+            CodeElement element = new CodeBlock(and("A", or("B", not("B"))));
+            
+            // set up proper simplifier
+            FormulaSimplifier.setSimplifier(LogicUtils::simplifyWithVisitor);
+            
+            List<VariableWithPcs> results = super.runAnalysis(element, SimplificationType.PRESENCE_CONDITIONS);
+            
+            // Test the expected outcome
+            Assert.assertEquals(1,  results.size());
+            VariableWithPcs result1 = results.get(0);
+            Assert.assertEquals("A", result1.getVariable());
+            Assert.assertEquals(1, result1.getPcs().size());
+            Assert.assertTrue(result1.getPcs().contains(new Variable("A")));
+            
+        } finally {
+            // re-set simplifier
+            FormulaSimplifier.setSimplifier(FormulaSimplifier::defaultSimplifier);
+        }
     }
     
     /**
