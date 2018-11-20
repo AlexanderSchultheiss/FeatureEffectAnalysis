@@ -3,7 +3,6 @@ package net.ssehub.kernel_haven.fe_analysis.fes;
 import java.util.Collection;
 
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
-import net.ssehub.kernel_haven.logic_utils.SimplifyingDisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
@@ -163,8 +162,8 @@ public class FeatureEffectComputer {
         DisjunctionQueue xorTrees;
         
         if (this.simplify) {
-            innerElements = new DisjunctionQueue(true, FormulaSimplifier::simplify);
-            xorTrees = new SimplifyingDisjunctionQueue();
+            innerElements = new DisjunctionQueue(true);
+            xorTrees = new DisjunctionQueue(true);
         } else {
             innerElements = new DisjunctionQueue(true);
             xorTrees = new DisjunctionQueue(true);
