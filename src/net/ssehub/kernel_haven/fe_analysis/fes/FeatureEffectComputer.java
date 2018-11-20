@@ -162,8 +162,8 @@ public class FeatureEffectComputer {
         DisjunctionQueue xorTrees;
         
         if (this.simplify) {
-            innerElements = new DisjunctionQueue(true);
-            xorTrees = new DisjunctionQueue(true);
+            innerElements = new DisjunctionQueue(true, FormulaSimplifier::simplify);
+            xorTrees = new DisjunctionQueue(true, FormulaSimplifier::simplify);
         } else {
             innerElements = new DisjunctionQueue(true);
             xorTrees = new DisjunctionQueue(true);
