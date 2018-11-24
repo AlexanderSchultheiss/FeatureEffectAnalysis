@@ -114,7 +114,7 @@ public class PcReader extends AnalysisComponent<VariableWithPcs> {
             
             // Sometimes an entry is too long to be written into a single cell
             if (line.length > 2) {
-                StringBuffer concat = new StringBuffer(line[1]);
+                StringBuilder concat = new StringBuilder(line[1]);
                 for (int i = 2; i < line.length; i++) {
                     concat.append(line[i]);
                 }
