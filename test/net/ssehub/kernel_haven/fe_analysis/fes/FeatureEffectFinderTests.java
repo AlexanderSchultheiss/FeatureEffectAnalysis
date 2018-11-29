@@ -61,8 +61,8 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
     public void testSimpleNestedFeature() {
         Variable varA = new Variable("A");
         Variable varB = new Variable("B");
-        CodeElement element = new CodeBlock(varA);
-        CodeElement nestedElement = new CodeBlock(new Conjunction(varB, varA));
+        CodeBlock element = new CodeBlock(varA);
+        CodeBlock nestedElement = new CodeBlock(new Conjunction(varB, varA));
         element.addNestedElement(nestedElement);
         List<VariableWithFeatureEffect> results = detectFEs(element);
         
@@ -84,11 +84,11 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
         Variable varA = new Variable("A");
         Variable varB = new Variable("B");
         Formula notA = new Negation(varA);
-        CodeElement element1 = new CodeBlock(varA);
+        CodeBlock element1 = new CodeBlock(varA);
         element1.addNestedElement(new CodeBlock(new Conjunction(varB, varA)));
-        CodeElement element2 = new CodeBlock(notA);
+        CodeBlock element2 = new CodeBlock(notA);
         element2.addNestedElement(new CodeBlock(new Conjunction(varB, notA)));
-        CodeElement element = new CodeBlock(True.INSTANCE);
+        CodeBlock element = new CodeBlock(True.INSTANCE);
         element.addNestedElement(element1);
         element.addNestedElement(element2);
         List<VariableWithFeatureEffect> results = detectFEs(element);
@@ -109,7 +109,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      */
     @Test
     public void testIrrelevantVariable() {
-        CodeElement base = new CodeBlock(True.INSTANCE);
+        CodeBlock base = new CodeBlock(True.INSTANCE);
         base.addNestedElement(new CodeBlock(new Variable("CONFIG_A")));
         base.addNestedElement(new CodeBlock(new Variable("A")));
         
@@ -129,7 +129,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      */
     @Test
     public void testUnsatisfiableCondition() {
-        CodeElement base = new CodeBlock(True.INSTANCE);
+        CodeBlock base = new CodeBlock(True.INSTANCE);
         base.addNestedElement(new CodeBlock(and("A", not("A"))));
         
         Properties config = new Properties();
@@ -148,7 +148,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      */
     @Test
     public void testSetOtherEqToFalse() {
-        CodeElement base = new CodeBlock(True.INSTANCE);
+        CodeBlock base = new CodeBlock(True.INSTANCE);
         base.addNestedElement(new CodeBlock(and("A_eq_1", "A_eq_2")));
         
         Properties config = new Properties();
@@ -169,7 +169,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      */
     @Test
     public void testSetOtherEqNotToFalse() {
-        CodeElement base = new CodeBlock(True.INSTANCE);
+        CodeBlock base = new CodeBlock(True.INSTANCE);
         base.addNestedElement(new CodeBlock(and("A_eq_1", "B_eq_2")));
         
         Properties config = new Properties();
@@ -190,7 +190,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      */
     @Test
     public void testSetNonEqNotToFalse() {
-        CodeElement base = new CodeBlock(True.INSTANCE);
+        CodeBlock base = new CodeBlock(True.INSTANCE);
         base.addNestedElement(new CodeBlock(and("A_eq_1", "A")));
         
         Properties config = new Properties();
