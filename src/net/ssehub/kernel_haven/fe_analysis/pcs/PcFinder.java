@@ -98,7 +98,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
     }
     
-    private @NonNull AnalysisComponent<SourceFile> sourceFiles;
+    private @NonNull AnalysisComponent<SourceFile<?>> sourceFiles;
     
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     
@@ -116,7 +116,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * 
      * @throws SetUpException If setting up this component fails.
      */
-    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile> sourceFiles)
+    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles)
             throws SetUpException {
         
         super(config);
@@ -140,7 +140,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * 
      * @throws SetUpException If setting up this component fails.
      */
-    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile> sourceFiles,
+    public PcFinder(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
             @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
         this(config, sourceFiles);
         this.bmComponent = bm;
@@ -165,7 +165,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
         ProgressLogger progress = new ProgressLogger(getClass().getSimpleName() + " Collecting");
         
-        SourceFile file;
+        SourceFile<?> file;
         while ((file = sourceFiles.getNextResult()) != null) {
             Formula filePc = null;
             if (null != bm) {
@@ -181,7 +181,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
                 }
             }
             
-            for (CodeElement b : file) {
+            for (CodeElement<?> b : file) {
                 // TODO: check if parentIsRelevant should be true if we added the file PC to the result above
                 findPcsInElement(b, result, filePc, false);
             }
@@ -253,7 +253,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
      * @param parentIsRelevant Used for optimization (<tt>true</tt> parent condition is relevant and, thus, also all
      * nested conditions are relevant, <tt>false</tt> this method will check if the condition should be considered).
      */
-    private void findPcsInElement(@NonNull CodeElement element, @NonNull Map<String, Set<@NonNull Formula>> result,
+    private void findPcsInElement(@NonNull CodeElement<?> element, @NonNull Map<String, Set<@NonNull Formula>> result,
             @Nullable Formula filePc, boolean parentIsRelevant) {
         
         Formula pc = element.getPresenceCondition();
@@ -268,7 +268,7 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             addPcToResult(result, pc);
         }
         
-        for (CodeElement child : element.iterateNestedElements()) {
+        for (CodeElement<?> child : element) {
             findPcsInElement(child, result, filePc, parentIsRelevant);
         }
     }

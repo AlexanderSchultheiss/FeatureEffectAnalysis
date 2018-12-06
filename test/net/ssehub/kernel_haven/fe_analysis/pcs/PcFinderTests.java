@@ -46,7 +46,7 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
     @Test
     public void testRetrievalOfSingleStatement() {
         Variable varA = new Variable("A");
-        CodeElement element = new CodeBlock(varA);
+        CodeBlock element = new CodeBlock(varA);
         List<VariableWithPcs> results = detectPCs(element);
         
         // Test the expected outcome
@@ -243,13 +243,13 @@ public class PcFinderTests extends AbstractFinderTests<VariableWithPcs> {
      * @param element A mocked element, which should be analyzed by the {@link PcFinder}. 
      * @return The detected presence conditions.
      */
-    private List<VariableWithPcs> detectPCs(CodeElement element) {
+    private List<VariableWithPcs> detectPCs(CodeElement<?> element) {
         return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION);
     }
     
     @Override
     protected AnalysisComponent<VariableWithPcs> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException {
         
         tConfig.registerSetting(PcFinder.CONSIDER_ALL_BM);
         tConfig.setValue(PcFinder.CONSIDER_ALL_BM, considerAll);

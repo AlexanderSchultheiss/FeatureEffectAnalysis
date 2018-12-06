@@ -34,7 +34,7 @@ public abstract class AbstractFinderTests<R> {
      * {@link SimplificationType#NO_SIMPLIFICATION}, works only from ANT. 
      * @return The detected presence conditions.
      */
-    protected List<R> runAnalysis(CodeElement element, SimplificationType simplification) {
+    protected List<R> runAnalysis(CodeElement<?> element, SimplificationType simplification) {
         return runAnalysis(element, simplification, null);
     }
     
@@ -46,7 +46,7 @@ public abstract class AbstractFinderTests<R> {
      * @param prop Optional configuration settings
      * @return The detected presence conditions.
      */
-    protected List<R> runAnalysis(CodeElement element, SimplificationType simplification, Properties prop) {
+    protected List<R> runAnalysis(CodeElement<?> element, SimplificationType simplification, Properties prop) {
         // Generate configuration
         TestConfiguration tConfig = null;
         Properties config = new Properties();
@@ -65,14 +65,14 @@ public abstract class AbstractFinderTests<R> {
         
         // Create virtual files
         File file1 = new File("file1.c");
-        SourceFile sourceFile1 = new SourceFile(file1);
+        SourceFile<CodeElement<?>> sourceFile1 = new SourceFile<>(file1);
         if (element != null) {
             sourceFile1.addElement(element);
         }
         
         List<R> results = new ArrayList<>();
         try {
-            AnalysisComponent<SourceFile> cmComponent = new TestAnalysisComponentProvider<SourceFile>(sourceFile1);
+            AnalysisComponent<SourceFile<?>> cmComponent = new TestAnalysisComponentProvider<>(sourceFile1);
             AnalysisComponent<R> finder = createAnalysor(tConfig, cmComponent);
             R result;
             do {
@@ -97,5 +97,5 @@ public abstract class AbstractFinderTests<R> {
      * @throws SetUpException If analysis fails.
      */
     protected abstract AnalysisComponent<R> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile> cmComponent) throws SetUpException;
+        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException;
 }

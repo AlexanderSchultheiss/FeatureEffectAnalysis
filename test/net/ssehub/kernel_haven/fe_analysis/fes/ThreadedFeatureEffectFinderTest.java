@@ -39,7 +39,7 @@ public class ThreadedFeatureEffectFinderTest extends AbstractFinderTests<Variabl
     @Test
     public void testSingleFeatureEffect() {
         Variable varA = new Variable("A");
-        CodeElement element = new CodeBlock(varA);
+        CodeBlock element = new CodeBlock(varA);
         List<VariableWithFeatureEffect> results = detectFEs(element);
         
         // Test the expected outcome
@@ -106,13 +106,13 @@ public class ThreadedFeatureEffectFinderTest extends AbstractFinderTests<Variabl
      * 
      * @return The detected feature effects.
      */
-    private List<VariableWithFeatureEffect> detectFEs(CodeElement element) {
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement<?> element) {
         return super.runAnalysis(element, SimplificationType.FEATURE_EFFECTS);
     }
     
     @Override
     protected AnalysisComponent<VariableWithFeatureEffect> createAnalysor(TestConfiguration tConfig,
-            AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+            AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException {
         
         PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
         ThreadedFeatureEffectFinder feFinder = new ThreadedFeatureEffectFinder(tConfig, pcFinder);

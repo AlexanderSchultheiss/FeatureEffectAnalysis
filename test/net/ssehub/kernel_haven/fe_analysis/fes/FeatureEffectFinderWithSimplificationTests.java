@@ -110,14 +110,14 @@ public class FeatureEffectFinderWithSimplificationTests extends AbstractFinderTe
      * @param element A mocked element, which should be analyzed by the {@link FeatureEffectFinder}. 
      * @return The detected feature effects.
      */
-    private List<VariableWithFeatureEffect> detectFEs(CodeElement element) {
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement<?> element) {
         return super.runAnalysis(element, SimplificationType.FEATURE_EFFECTS);
     }
     
     @Override
     @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithFeatureEffect> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException {
 
         PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
         FeatureEffectFinder feFinder = new FeatureEffectFinder(tConfig, pcFinder);

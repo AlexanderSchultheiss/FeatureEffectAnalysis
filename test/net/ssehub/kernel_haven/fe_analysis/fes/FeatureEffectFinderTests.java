@@ -44,7 +44,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
     @Test
     public void testAlwaysOnFeature() {
         Variable varA = new Variable("A");
-        CodeElement element = new CodeBlock(varA);
+        CodeBlock element = new CodeBlock(varA);
         List<VariableWithFeatureEffect> results = detectFEs(element);
         
         // Test the expected outcome
@@ -211,7 +211,7 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      * @param element A mocked element, which should be analyzed by the {@link FeatureEffectFinder}. 
      * @return The detected feature effects.
      */
-    private List<VariableWithFeatureEffect> detectFEs(CodeElement element) {
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement<?> element) {
         return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION);
     }
     
@@ -223,14 +223,14 @@ public class FeatureEffectFinderTests extends AbstractFinderTests<VariableWithFe
      *  
      * @return The detected feature effects.
      */
-    private List<VariableWithFeatureEffect> detectFEs(CodeElement element, Properties config) {
+    private List<VariableWithFeatureEffect> detectFEs(CodeElement<?> element, Properties config) {
         return super.runAnalysis(element, SimplificationType.NO_SIMPLIFICATION, config);
     }
     
     @Override
     @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithFeatureEffect> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException {
 
         PcFinder pcFinder = new PcFinder(tConfig, cmComponent);
         FeatureEffectFinder feFinder = new FeatureEffectFinder(tConfig, pcFinder);

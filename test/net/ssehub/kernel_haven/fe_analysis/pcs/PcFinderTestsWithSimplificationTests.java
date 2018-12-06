@@ -48,7 +48,7 @@ public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<Va
     public void testSimplificationOfSingleStatement() {
         Variable varA = new Variable("A");
         Formula tooComplex = new Disjunction(varA, varA);
-        CodeElement element = new CodeBlock(tooComplex);
+        CodeBlock element = new CodeBlock(tooComplex);
         List<VariableWithPcs> results = detectPCs(element);
         
         // Test the expected outcome
@@ -64,14 +64,14 @@ public class PcFinderTestsWithSimplificationTests extends AbstractFinderTests<Va
      * @param element A mocked element, which should be analyzed by the {@link PcFinder}. 
      * @return The detected presence conditions.
      */
-    private List<VariableWithPcs> detectPCs(CodeElement element) {
+    private List<VariableWithPcs> detectPCs(CodeElement<?> element) {
         return super.runAnalysis(element, SimplificationType.PRESENCE_CONDITIONS);
     }
     
     @Override
     @SuppressWarnings("null")
     protected AnalysisComponent<VariableWithPcs> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile> cmComponent) throws SetUpException {
+        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException {
         
         PcFinder finder = new PcFinder(tConfig, cmComponent);
         return finder;
