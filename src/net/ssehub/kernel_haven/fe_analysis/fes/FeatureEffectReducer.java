@@ -10,6 +10,7 @@ import java.util.List;
 
 import net.ssehub.kernel_haven.util.Logger;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaLiteralCounter;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
@@ -36,6 +37,7 @@ class FeatureEffectReducer {
     static @NonNull Collection<@NonNull Formula> simpleReduce(@NonNull String variable,
             @NonNull Collection<@NonNull Formula> pcs) {
         
+        FormulaLiteralCounter litCounter = new FormulaLiteralCounter();
         List<@NonNull Formula> result = new ArrayList<>();
         List<@NonNull Formula> orderedPCs = new ArrayList<>(pcs);
         Collections.sort(orderedPCs, new Comparator<@NonNull Formula>() {
@@ -43,9 +45,9 @@ class FeatureEffectReducer {
             @Override
             public int compare(@NonNull Formula formula1, @NonNull Formula formula2) {
                 int result = 0;
-                if (formula1.getLiteralSize() < formula2.getLiteralSize()) {
+                if (formula1.accept(litCounter) < formula2.accept(litCounter)) {
                     result = -1;
-                } else if (formula1.getLiteralSize() > formula2.getLiteralSize()) {
+                } else if (formula1.accept(litCounter) > formula2.accept(litCounter)) {
                     result = 1;
                 }
                 return result;
