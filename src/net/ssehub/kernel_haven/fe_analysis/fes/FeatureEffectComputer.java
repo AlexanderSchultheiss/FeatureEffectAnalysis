@@ -5,14 +5,13 @@ import java.util.Collection;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.logic_utils.SimplifyingDisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.Disjunction;
 import net.ssehub.kernel_haven.util.logic.DisjunctionQueue;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.Negation;
 import net.ssehub.kernel_haven.util.logic.True;
-import net.ssehub.kernel_haven.util.logic.Variable;
+import net.ssehub.kernel_haven.util.logic.VariableValueReplacer;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
@@ -47,58 +46,6 @@ public class FeatureEffectComputer {
         this.hasNonBooleanReplacement = hasNonBooleanReplacement;
     }
 
-    /**
-     * Replaces each occurrence of a variable with a constant.
-     * 
-     * TODO: move this to general utils.
-     * 
-     * @param formula The formula to replace the variable in; this formula is not altered.
-     * @param variable The variable to replace.
-     * @param value Which constant the variable should be replaced with.
-     * @param exactMatch Whether the variable name has to match exactly. If <code>false</code>, then startsWith()
-     *      is used to find matches to replace.
-     * 
-     * @return A new Formula equal to the given formula, but with each occurrence of the variable replaced.
-     */
-    private static @NonNull Formula setToValue(@NonNull Formula formula, @NonNull String variable, boolean value,
-            boolean exactMatch) {
-        
-        Formula result;
-        
-        if (formula instanceof Variable) {
-            Variable var = (Variable) formula;
-            boolean replace;
-            
-            if (exactMatch) {
-                replace = var.getName().equals(variable);
-            } else {
-                replace = var.getName().startsWith(variable);
-            }
-            
-            if (replace) {
-                result = (value ? True.INSTANCE : False.INSTANCE);
-            } else {
-                result = var;
-            }
-            
-        } else if (formula instanceof Negation) {
-            result = new Negation(setToValue(((Negation) formula).getFormula(), variable, value, exactMatch));
-            
-        } else if (formula instanceof Disjunction) {
-            result = new Disjunction(
-                    setToValue(((Disjunction) formula).getLeft(), variable, value, exactMatch),
-                    setToValue(((Disjunction) formula).getRight(), variable, value, exactMatch));
-            
-        } else if (formula instanceof Conjunction) {
-            result = new Conjunction(
-                    setToValue(((Conjunction) formula).getLeft(), variable, value, exactMatch),
-                    setToValue(((Conjunction) formula).getRight(), variable, value, exactMatch));
-        } else {
-            result = formula;
-        }
-        
-        return result;
-    }
     
     /**
      * Creates a feature effect for the given variable and it's PCs.
@@ -134,7 +81,7 @@ public class FeatureEffectComputer {
             
             if (index != -1) {
                 String varBaseName = variable.substring(0, index);
-                result = setToValue(result, varBaseName + "_eq_", false, false);
+                result = result.accept(new VariableValueReplacer(varBaseName + "_eq_", false, false));
             }
         }
         
@@ -173,8 +120,8 @@ public class FeatureEffectComputer {
         for (Formula pc : pcs) {
             //      A xor B
             // <==> (A || B) && (!A || !B)
-            Formula trueFormula = setToValue(pc, variable, true, true);
-            Formula falseFormula = setToValue(pc, variable, false, true);
+            Formula trueFormula = pc.accept(new VariableValueReplacer(variable, true, true));
+            Formula falseFormula = pc.accept(new VariableValueReplacer(variable, false, true));
             
             // (A || B)
             innerElements.add(trueFormula);
