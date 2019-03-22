@@ -7,6 +7,7 @@ import java.util.List;
 
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.variability_model.SourceLocation;
 import net.ssehub.kernel_haven.variability_model.VariabilityModel;
@@ -24,6 +25,8 @@ public class DummyArchComponentStorageCreator extends AnalysisComponent<ArchComp
 
     private @NonNull AnalysisComponent<VariabilityModel> varModelInput;
     
+    private @NonNull String preferredArch;
+    
     /**
      * Creates a new {@link DummyArchComponentStorageCreator}.
      * 
@@ -35,6 +38,12 @@ public class DummyArchComponentStorageCreator extends AnalysisComponent<ArchComp
         super(config);
         
         this.varModelInput = varModelInput;
+        
+        String arch = config.getValue(DefaultSettings.ARCH);
+        if (arch == null) {
+            arch = "x86";
+        }
+        this.preferredArch = arch;
     }
 
     /**
@@ -73,10 +82,10 @@ public class DummyArchComponentStorageCreator extends AnalysisComponent<ArchComp
             if (sourceLocations != null && !sourceLocations.isEmpty()) {
                 File f = notNull(sourceLocations.get(0)).getSource();
                 
-                // prefer the x86 variant if multiple source locations are found
+                // prefer the arch setting variant if multiple source locations are found
                 if (sourceLocations.size() > 1) {
                     for (SourceLocation l : sourceLocations) {
-                        if (l.getSource().getPath().contains("x86")) {
+                        if (l.getSource().getPath().contains(preferredArch)) {
                             f = l.getSource();
                             break;
                         }
