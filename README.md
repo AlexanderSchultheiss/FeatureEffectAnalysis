@@ -1,6 +1,6 @@
 # FeatureEffectAnalysis
 
-![Build Status](https://jenkins.sse.uni-hildesheim.de/buildStatus/icon?job=KernelHaven_FeatureEffectAnalysis)
+![Build Status](https://jenkins-2.sse.uni-hildesheim.de/buildStatus/icon?job=KH_FeatureEffectAnalysis)
 
 An analysis plugin for [KernelHaven](https://github.com/KernelHaven/KernelHaven).
 
@@ -8,7 +8,7 @@ Analysis components for calculating presence condtions and feature effects as pr
 
 ## Usage
 
-Place [`FeatureEffectAnalysis.jar`](https://jenkins.sse.uni-hildesheim.de/view/KernelHaven/job/KernelHaven_FeatureEffectAnalysis/lastSuccessfulBuild/artifact/build/jar/FeatureEffectAnalysis.jar) in the plugins folder of KernelHaven.
+Place [`FeatureEffectAnalysis.jar`](https://jenkins-2.sse.uni-hildesheim.de/view/KernelHaven/job/KH_FeatureEffectAnalysis/lastSuccessfulBuild/artifact/build/jar/FeatureEffectAnalysis.jar) in the plugins folder of KernelHaven.
 
 The following analysis components can be used as part of a `ConfiguredPipelineAnalysis`:
 * `net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder` to calculate presence conditions for variables
