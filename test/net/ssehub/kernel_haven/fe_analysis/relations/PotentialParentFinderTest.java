@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -95,7 +96,7 @@ public class PotentialParentFinderTest {
         assertThat(pp.getPotentialParent("C").getVariable(), is("C"));
         assertThat(pp.getPotentialParent("C").getProbability(), is(1.0 / 3.0));
         // test sorting:
-        assertThat(pp.toString(), is("PotentialParents for D: [A (100,00%), B (66,67%), C (33,33%)]"));
+        Assert.assertEquals("PotentialParents for D: [A (100,00%), B (66,67%), C (33,33%)]", pp.toString());
     }
     
 }
