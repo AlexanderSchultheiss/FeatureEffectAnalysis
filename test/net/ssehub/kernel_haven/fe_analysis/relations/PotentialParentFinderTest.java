@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
@@ -95,8 +96,12 @@ public class PotentialParentFinderTest {
         assertThat(pp.getPotentialParent("B").getProbability(), is(2.0 / 3.0));
         assertThat(pp.getPotentialParent("C").getVariable(), is("C"));
         assertThat(pp.getPotentialParent("C").getProbability(), is(1.0 / 3.0));
+        
         // test sorting:
+        Locale old = Locale.getDefault();
+        Locale.setDefault(Locale.GERMANY);
         Assert.assertEquals("PotentialParents for D: [A (100,00%), B (66,67%), C (33,33%)]", pp.toString());
+        Locale.setDefault(old);
     }
     
 }
