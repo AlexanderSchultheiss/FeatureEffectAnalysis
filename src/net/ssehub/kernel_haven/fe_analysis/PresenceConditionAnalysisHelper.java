@@ -12,6 +12,7 @@ import net.ssehub.kernel_haven.PipelineConfigurator;
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.config.Configuration;
 import net.ssehub.kernel_haven.config.DefaultSettings;
+import net.ssehub.kernel_haven.config.DefaultSettings.USAGE_OF_VM_VARS;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
@@ -38,7 +39,7 @@ public class PresenceConditionAnalysisHelper {
     
     private boolean replaceNonBooleanReplacements;
     
-    private boolean considerVmVarsOnly;
+    private boolean onlyVMVars;
     private @NonNull SimplificationType simplificationType;
     
     private @NonNull Pattern relevantVarsPattern;
@@ -57,13 +58,16 @@ public class PresenceConditionAnalysisHelper {
         config.registerSetting(Settings.SIMPLIFIY);
         
         relevantVarsPattern = config.getValue(Settings.RELEVANT_VARIABLES);
-        considerVmVarsOnly = config.getValue(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
+        USAGE_OF_VM_VARS considerVmVarsOnly = config.getValue(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
+        
         simplificationType = config.getValue(Settings.SIMPLIFIY);
         
-        vm = considerVmVarsOnly ? notNull(PipelineConfigurator.instance().getVmProvider()).getResult() : null;
-        if (null == vm && considerVmVarsOnly) {
-            throw new SetUpException(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
-                + "but no variability model was passed.");
+        onlyVMVars = (considerVmVarsOnly != USAGE_OF_VM_VARS.ALL_ELEMENTS);
+        vm = onlyVMVars ? notNull(PipelineConfigurator.instance().getVmProvider()).getResult() : null;
+        
+        if (null == vm && onlyVMVars) {
+            throw new SetUpException(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY + " = "
+                + considerVmVarsOnly.name() + " was specified, but no variability model was passed.");
         }
         
         // Check if ANY NonBooleanPreparation-Class is specified/used
@@ -133,7 +137,7 @@ public class PresenceConditionAnalysisHelper {
      */
     public boolean isRelevant(@NonNull String variable) {
         boolean isRelevant;
-        if (considerVmVarsOnly) {
+        if (onlyVMVars) {
             // vm != since considerVmVarsOnly == true
             isRelevant = notNull(vm).getVariableMap().containsKey(variable);
             if (!isRelevant && nonBooleanReplacements) {
