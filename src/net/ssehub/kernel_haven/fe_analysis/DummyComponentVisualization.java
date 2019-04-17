@@ -15,6 +15,8 @@
  */
 package net.ssehub.kernel_haven.fe_analysis;
 
+import static net.ssehub.kernel_haven.util.null_checks.NullHelpers.notNull;
+
 import net.ssehub.kernel_haven.SetUpException;
 import net.ssehub.kernel_haven.analysis.AnalysisComponent;
 import net.ssehub.kernel_haven.analysis.JoinComponent;
@@ -56,7 +58,22 @@ public class DummyComponentVisualization extends PipelineAnalysis {
         AnalysisComponent<VariableWithFeatureEffect> fes = new ThreadedFeatureEffectFinder(config, pcs);
         FeatureRelations feRels = new FeatureRelations(config, fes);
         
-        return new JoinComponent(config, archComponentOut, feRels);
+        AnalysisComponent<?> pssm;
+        // get ProblemSolutionSpaceMapper via reflection, so this plugin doesn't depend on it
+        try {
+            Class<?> pssmClass = ClassLoader.getSystemClassLoader().loadClass(
+                    "net.ssehub.kernel_haven.pss_mapper.ProblemSolutionSpaceMapper");
+            
+            pssm = (AnalysisComponent<?>) pssmClass.getConstructor(
+                    Configuration.class, AnalysisComponent.class, AnalysisComponent.class, AnalysisComponent.class)
+                    .newInstance(config, getCmComponent(), getBmComponent(), getVmComponent());
+            pssm = notNull(pssm); // newInstance never returns null
+            
+        } catch (ReflectiveOperationException | ClassCastException | SecurityException e) {
+            throw new SetUpException("Can't instantiate PSS-Mapper via reflection", e);
+        }
+        
+        return new JoinComponent(config, archComponentOut, feRels, pssm);
     }
 
 }
