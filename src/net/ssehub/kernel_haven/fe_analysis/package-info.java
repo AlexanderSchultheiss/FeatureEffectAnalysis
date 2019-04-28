@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 /**
- * Root package for this plug-in.<br/>
+ * Root package for this plug-in.
+ * <p>
  * Sub packages are divided into:
  * <ul>
  *   <li>Detection of Presence Conditions.</li>

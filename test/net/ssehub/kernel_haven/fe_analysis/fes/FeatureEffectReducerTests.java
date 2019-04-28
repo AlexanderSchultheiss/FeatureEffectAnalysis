@@ -37,8 +37,8 @@ public class FeatureEffectReducerTests {
     /**
      * Test the correct handling of an <tt>or</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Input PCs: A; A || B</li>
-     *   <li>Expected result: A</li>
+     *   <li>Input PCs: {@code A; A || B}</li>
+     *   <li>Expected result: {@code A}</li>
      * </ul>
      */
     @Test
@@ -57,8 +57,8 @@ public class FeatureEffectReducerTests {
     /**
      * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Input PCs: A; A && B</li>
-     *   <li>Expected result: A</li>
+     *   <li>Input PCs: {@code A; A && B}</li>
+     *   <li>Expected result: {@code A}</li>
      * </ul>
      */
     @Test
@@ -77,8 +77,8 @@ public class FeatureEffectReducerTests {
     /**
      * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Input PCs: A && B, A && B && C</li>
-     *   <li>Expected result: A && B</li>
+     *   <li>Input PCs: {@code A && B, A && B && C}</li>
+     *   <li>Expected result: {@code A && B}</li>
      * </ul>
      */
     @Test
@@ -99,8 +99,8 @@ public class FeatureEffectReducerTests {
     /**
      * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Input PCs: A || (B && C), (A || (B && C) || D</li>
-     *   <li>Expected result: Some as input</li>
+     *   <li>Input PCs: {@code A || (B && C), (A || (B && C) || D}</li>
+     *   <li>Expected result: Same as input</li>
      * </ul>
      */
     @Ignore

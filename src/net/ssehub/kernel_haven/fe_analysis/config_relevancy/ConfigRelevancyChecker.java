@@ -53,7 +53,6 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  * <p>
  * Feature effects are not allowed to contain &gt;, &lt;, &gt;=, &lt;=, != comparisons
  * in their variable names. They must only contains variable names in the form of "VAR" or "VAR=4".
- * </p>
  * 
  * @author Adam
  */

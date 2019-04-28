@@ -157,7 +157,8 @@ public class FeAggregatorTest {
     }
     
     /**
-     * Tests whether variables without values and variables with similar names are not mixed. <br/>
+     * Tests whether variables without values and variables with similar names are not mixed.
+     * <p>
      * Tests a bug reported at 15.02.2018
      * 
      * @throws SetUpException unwanted.

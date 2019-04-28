@@ -40,7 +40,7 @@ import net.ssehub.kernel_haven.util.logic.Variable;
 public class NonBooleanFeExpanderTest {
 
     /**
-     * Tests the simple case: A -> B; A=1 -> C.
+     * Tests the simple case: {@code A -> B; A=1 -> C}.
      * 
      * @throws SetUpException unwanted.
      */

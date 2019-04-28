@@ -40,14 +40,14 @@ import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 
 /**
  * Aggregates feature effect constraints for values of the same variable. Only relevant in Pseudo-Boolean settings.
- * <br /><br />
+ * <p>
  * Example:
- * <code><pre>
+ * <pre>{@code
  * VAR=1 -> A
  * VAR=2 -> B
  * 
  * => Var -> A || B
- * </pre></code>
+ * }</pre>
  * 
  * @author El-Sharkawy
  *
@@ -60,7 +60,7 @@ public class FeAggregator extends AnalysisComponent<VariableWithFeatureEffect> {
     /**
      * Creates an {@link FeAggregator}, do create one constraint for the separated values of integer variables.
      * @param config The global configuration.
-     * @param feDetector Probably {@link net.ssehub.kernel_haven.feature_effects.FeatureEffectFinder}.
+     * @param feDetector Probably {@link FeatureEffectFinder}.
      * @throws SetUpException If creating this component fails, probably if simplification should is turned on, but
      *     LogicUtils are not present in plug-ins directory.
      */

@@ -33,9 +33,9 @@ public class SubFormulaCheckerTests {
     /**
      * Test the correct handling of an <tt>or</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Nested: A</li>
-     *   <li>Other: A || B</li>
-     *   <li>Expected result: true</li>
+     *   <li>Nested: {@code A}</li>
+     *   <li>Other: {@code A || B}</li>
+     *   <li>Expected result: {@code true}</li>
      * </ul>
      */
     @Test
@@ -52,9 +52,9 @@ public class SubFormulaCheckerTests {
     /**
      * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Nested: A</li>
-     *   <li>Other: A && B</li>
-     *   <li>Expected result: false</li>
+     *   <li>Nested: {@code A}</li>
+     *   <li>Other: {@code A && B}</li>
+     *   <li>Expected result: {@code false}</li>
      * </ul>
      */
     @Test

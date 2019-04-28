@@ -47,7 +47,7 @@ import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 /**
- * A component that creates a mapping variable -> set of all PCs the variable is used in.
+ * A component that creates a mapping {@code variable -> set of all PCs the variable is used in}.
  * 
  * @author Adam
  */

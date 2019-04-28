@@ -34,9 +34,9 @@ public class SubFormulaReplacerTests {
     /**
      * Test the correct handling of an <tt>or</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Nested: A</li>
-     *   <li>Other: A || B</li>
-     *   <li>Expected result: A</li>
+     *   <li>Nested: {@code A}</li>
+     *   <li>Other: {@code A || B}</li>
+     *   <li>Expected result: {@code A}</li>
      * </ul>
      */
     @Ignore
@@ -55,9 +55,9 @@ public class SubFormulaReplacerTests {
     /**
      * Test the correct handling of an <tt>and</tt> expression as sub formula. It tests:
      * <ul>
-     *   <li>Nested: A</li>
-     *   <li>Other: A && B</li>
-     *   <li>Expected result: A</li>
+     *   <li>Nested: {@code A}</li>
+     *   <li>Other: {@code A && B}</li>
+     *   <li>Expected result: {@code A}</li>
      * </ul>
      */
     @Ignore
