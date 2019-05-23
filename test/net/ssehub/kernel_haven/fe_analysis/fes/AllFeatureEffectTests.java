@@ -31,11 +31,6 @@ import org.junit.runners.Suite.SuiteClasses;
     ThreadedFeatureEffectFinderTest.class,
     NonBooleanFeExpanderTest.class,
     
-    // Sub formula elimination tests
-    SubFormulaCheckerTests.class,
-    SubFormulaReplacerTests.class,
-    FeatureEffectReducerTests.class,
-    
     // Simplification & FEAggregation Tests
     FeatureEffectFinderWithSimplificationTests.class,
     FeAggregatorTest.class,
