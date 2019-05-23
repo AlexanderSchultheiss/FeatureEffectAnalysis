@@ -33,12 +33,13 @@ import net.ssehub.kernel_haven.fe_analysis.relations.AllRelationsTests;
 @RunWith(Suite.class)
 @SuiteClasses({
     AllArchComponentTests.class,
-    AllPresenceConditionTests.class,
+    ConfigRelevancyCheckerTest.class,
     AllFeatureEffectTests.class,
+    AllPresenceConditionTests.class,
     AllRelationsTests.class,
     
+    PresenceConditionAnalysisHelperTest.class,
     StringUtilsTests.class,
-    ConfigRelevancyCheckerTest.class,
     })
 public class AllTests {
 

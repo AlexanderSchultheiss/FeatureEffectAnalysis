@@ -49,7 +49,7 @@ public class PresenceConditionAnalysisHelper {
     /**
      * Whether non-boolean replacements are enabled. This is true if the NonBooleanPreperation ran on the source tree.
      */
-    protected boolean nonBooleanReplacements;
+    private boolean nonBooleanMode;
     
     private boolean replaceNonBooleanReplacements;
     
@@ -67,7 +67,6 @@ public class PresenceConditionAnalysisHelper {
      * but exited abnormally.
      */
     public PresenceConditionAnalysisHelper(@NonNull Configuration config) throws SetUpException {
-        config.registerSetting(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
         config.registerSetting(Settings.RELEVANT_VARIABLES);
         config.registerSetting(Settings.SIMPLIFIY);
         
@@ -75,21 +74,31 @@ public class PresenceConditionAnalysisHelper {
         considerVmVarsOnly = config.getValue(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY);
         simplificationType = config.getValue(Settings.SIMPLIFIY);
         
-        vm = considerVmVarsOnly ? notNull(PipelineConfigurator.instance().getVmProvider()).getResult() : null;
+        vm = considerVmVarsOnly ? getVariabilityModel() : null;
         if (null == vm && considerVmVarsOnly) {
             throw new SetUpException(DefaultSettings.ANALYSIS_USE_VARMODEL_VARIABLES_ONLY + "[true] was specified,"
                 + "but no variability model was passed.");
         }
         
         // Check if ANY NonBooleanPreparation-Class is specified/used
-        this.nonBooleanReplacements = false;
+        this.nonBooleanMode = false;
         List<String> preparationClasses = config.getValue(DefaultSettings.PREPARATION_CLASSES);
-        for (int i = 0; i < preparationClasses.size() && !nonBooleanReplacements; i++) {
+        for (int i = 0; i < preparationClasses.size() && !nonBooleanMode; i++) {
             if (preparationClasses.get(i).endsWith("NonBooleanPreperation")) {
-                nonBooleanReplacements = true;
+                nonBooleanMode = true;
             }
         }
-        this.replaceNonBooleanReplacements = nonBooleanReplacements || config.getValue(DefaultSettings.FUZZY_PARSING);
+        
+        this.replaceNonBooleanReplacements = nonBooleanMode || config.getValue(DefaultSettings.FUZZY_PARSING);
+    }
+    
+    /**
+     * Queries the variability model from the variability model extractor. May be overridden for test cases.
+     * 
+     * @return The {@link VariabilityModel} or <code>null</code> if none is supplied.
+     */
+    protected @Nullable VariabilityModel getVariabilityModel() {
+        return notNull(PipelineConfigurator.instance().getVmProvider()).getResult();
     }
     
     /**
@@ -151,7 +160,7 @@ public class PresenceConditionAnalysisHelper {
         if (considerVmVarsOnly) {
             // vm != since considerVmVarsOnly == true
             isRelevant = notNull(vm).getVariableMap().containsKey(variable);
-            if (!isRelevant && nonBooleanReplacements) {
+            if (!isRelevant && replaceNonBooleanReplacements) {
                 int index = variable.indexOf("_eq_");
                 if (index > -1) {
                     isRelevant = notNull(vm).getVariableMap().containsKey(variable.substring(0, index));
@@ -215,8 +224,8 @@ public class PresenceConditionAnalysisHelper {
             formula = notNull(formula.replace("_ne_", "!="));
             formula = notNull(formula.replace("_gt_", ">"));
             formula = notNull(formula.replace("_ge_", ">="));
-            formula = notNull(formula.replace("_lt_", ">"));
-            formula = notNull(formula.replace("_le_", ">="));
+            formula = notNull(formula.replace("_lt_", "<"));
+            formula = notNull(formula.replace("_le_", "<="));
         }
         return formula;
     }
@@ -290,7 +299,7 @@ public class PresenceConditionAnalysisHelper {
      * @return Whether to do non boolean replacements or not.
      */
     public boolean isNonBooleanReplacements() {
-        return nonBooleanReplacements;
+        return replaceNonBooleanReplacements;
     }
     
     /**
@@ -306,6 +315,6 @@ public class PresenceConditionAnalysisHelper {
      * @return <tt>true</tt> This helper and the related analyses operate in non-Boolean modes.
      */
     public boolean isNonBooleanMode() {
-        return replaceNonBooleanReplacements;
+        return nonBooleanMode;
     }
 }

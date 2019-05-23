@@ -56,7 +56,7 @@ public class NonBooleanFeExpander extends AnalysisComponent<VariableWithFeatureE
         
         PresenceConditionAnalysisHelper helper = new PresenceConditionAnalysisHelper(config);
         
-        if (helper.isNonBooleanMode()) {
+        if (helper.isNonBooleanReplacements()) {
             storage = new FeatureEffectStorage();
         }
     }
