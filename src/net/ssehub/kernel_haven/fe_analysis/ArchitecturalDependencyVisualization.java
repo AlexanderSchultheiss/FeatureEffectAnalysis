@@ -36,14 +36,14 @@ import net.ssehub.kernel_haven.util.null_checks.NonNull;
  * 
  * @author Adam
  */
-public class DummyComponentVisualization extends PipelineAnalysis {
+public class ArchitecturalDependencyVisualization extends PipelineAnalysis {
 
     /**
      * Creates this pipeline.
      * 
      * @param config The pipeline configuration.
      */
-    public DummyComponentVisualization(@NonNull Configuration config) {
+    public ArchitecturalDependencyVisualization(@NonNull Configuration config) {
         super(config);
     }
 
