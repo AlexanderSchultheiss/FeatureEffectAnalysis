@@ -24,6 +24,7 @@ import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder.VariableWithFeatureEffect;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.util.PerformanceProbe;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
@@ -158,6 +159,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
     protected @Nullable VariableWithFeatureEffect processSingle(@NonNull VariableWithPcs pcs) {
         VariableWithFeatureEffect result = null;
         
+        PerformanceProbe p = new PerformanceProbe("FeatureEffectFinder processSingle");
+        
         String varName = pcs.getVariable();
         if (helper.isRelevant(varName)) {
             Formula feConstraint = helper.doReplacements(computer.buildFeatureEffefct(pcs));
@@ -165,6 +168,8 @@ public class FeatureEffectFinder extends AnalysisComponent<VariableWithFeatureEf
             
             result = new VariableWithFeatureEffect(varName, feConstraint);
         }
+        
+        p.close();
         
         return result;
     }

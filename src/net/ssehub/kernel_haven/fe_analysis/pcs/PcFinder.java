@@ -36,6 +36,7 @@ import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
+import net.ssehub.kernel_haven.util.PerformanceProbe;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
@@ -235,6 +236,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
         
         LOGGER.logInfo("Sorting " + (simplify ? "and simplifying " : "") + "PCs; this may take a long time");
         
+        PerformanceProbe p = new PerformanceProbe("PcFinder simplification");
+        
         @NonNull VariableWithPcs[] result = new @NonNull VariableWithPcs[pcMap.size()];
         int i = 0;
         for (Map.Entry<String, Set<@NonNull Formula>> entry : pcMap.entrySet()) {
@@ -249,6 +252,8 @@ public class PcFinder extends AnalysisComponent<VariableWithPcs> {
             
             progress.processedOne();
         }
+        
+        p.close();
         
         Arrays.sort(result, (o1, o2) -> o1.getVariable().compareTo(o2.getVariable()));
         
