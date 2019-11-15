@@ -58,8 +58,8 @@ public class ArchitecturalDependencyVisualization extends PipelineAnalysis {
         AnalysisComponent<VariableWithFeatureEffect> fes = new ThreadedFeatureEffectFinder(config, pcs);
         FeatureRelations feRels = new FeatureRelations(config, fes);
         
+        // Mandatory: Get ProblemSolutionSpaceMapper via reflection, so this plug-in doesn't depend on it
         AnalysisComponent<?> pssm;
-        // get ProblemSolutionSpaceMapper via reflection, so this plugin doesn't depend on it
         try {
             Class<?> pssmClass = ClassLoader.getSystemClassLoader().loadClass(
                     "net.ssehub.kernel_haven.pss_mapper.ProblemSolutionSpaceMapper");
@@ -73,7 +73,25 @@ public class ArchitecturalDependencyVisualization extends PipelineAnalysis {
             throw new SetUpException("Can't instantiate PSS-Mapper via reflection", e);
         }
         
-        return new JoinComponent(config, archComponentOut, feRels, pssm);
+        // Optionally: Try to get VariableInMailingListLocator via reflection to avoid plug-in dependency
+        AnalysisComponent<?> vimll = null;
+        try {
+            Class<?> vimllClass = ClassLoader.getSystemClassLoader().loadClass(
+                    "net.ssehub.kernel_haven.entity_locator.VariableInMailingListLocator");
+            
+            vimll = (AnalysisComponent<?>) vimllClass.getConstructor(Configuration.class).newInstance(config);
+        } catch (ReflectiveOperationException | ClassCastException | SecurityException e) {
+            throw new SetUpException("Can't instantiate PSS-Mapper via reflection", e);
+        }
+        
+        JoinComponent result;
+        if (null != vimll) {
+            result = new JoinComponent(config, archComponentOut, feRels, pssm, vimll);
+        } else {
+            result = new JoinComponent(config, archComponentOut, feRels, pssm);
+        }
+        
+        return result;
     }
 
 }
