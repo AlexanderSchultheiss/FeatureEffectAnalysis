@@ -21,7 +21,8 @@ import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
-import net.ssehub.kernel_haven.fe_analysis.PresenceConditionAnalysisHelper;
+import net.ssehub.kernel_haven.config.Setting;
+import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.pcs.CodeBlockAnalysis.CodeBlock;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.ProgressLogger;
@@ -29,6 +30,7 @@ import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
 import net.ssehub.kernel_haven.util.logic.Formula;
+import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
@@ -40,6 +42,10 @@ import net.ssehub.kernel_haven.util.null_checks.Nullable;
  * @author El-Sharkawy
  */
 public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
+    
+    public static final @NonNull Setting<@NonNull Boolean> ORDER_RESULTS = new Setting<>(
+        "analysis.code_block.order", Type.BOOLEAN, true, "false", "Whether " + CodeBlockAnalysis.class.getName()
+        + " should order the results, which will block until all results are finished.");
     
     /**
      * An entry that stores a condition of a <b>code block</b> of a code file.
@@ -152,17 +158,26 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     
     private @NonNull AnalysisComponent<SourceFile<?>> sourceFiles;
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
+    private boolean orderResults;
+    private CodeBlockStore results;
 
     /**
      * Creates a {@link PcFinder} for the given code model.
      * 
      * @param config The global configuration.
      * @param sourceFiles The code model provider component.
+     * @throws SetUpException If setting up this component fails.
 
      */
-    public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles) {
+    public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles)
+        throws SetUpException {
+        
         super(config);
         this.sourceFiles = sourceFiles;
+        
+        config.registerSetting(ORDER_RESULTS);
+        orderResults = config.getValue(ORDER_RESULTS);
+        results = new CodeBlockStore();
     }
     
     /**
@@ -173,9 +188,11 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * @param sourceFiles The code model provider component.
      * @param bm The build model provider component.
      * 
+     * @throws SetUpException If setting up this component fails.
+     * 
      */
     public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
-        @NonNull AnalysisComponent<BuildModel> bm) {
+        @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
         
         this(config, sourceFiles);
         this.bmComponent = bm;
@@ -220,6 +237,11 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             progress.processedOne();
         }
         
+        if (orderResults) {
+            results.getOrderedStream()
+                .forEach(this::addResult);
+        }
+        
         // All files processed
         progress.close();
     }
@@ -234,11 +256,25 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         Formula blockCondition = getCondition(block.getCondition());
         Formula pcCondition = computePresenceCondition(block.getPresenceCondition(), fileCondition);
         
-        addResult(new CodeBlock(path, fileCondition, blockCondition, pcCondition, block.getLineStart(),
+        progressResult(new CodeBlock(path, fileCondition, blockCondition, pcCondition, block.getLineStart(),
             block.getLineEnd()));
         
         for (CodeElement<?> nested : block) {
             analyzeBlock(nested, path, fileCondition);
+        }
+    }
+    
+    /**
+     * Processes a new result.
+     * Depending whether all results should be processed immediately or stores and sorted,
+     * this method will pass them to the next analysis component or stores them inside the {@link CodeBlockStore}.
+     * @param result A newly computed {@link CodeBlock} result.
+     */
+    private void progressResult(@NonNull CodeBlock result) {
+        if (!orderResults) {
+            addResult(result);
+        } else {
+            results.add(result);
         }
     }
     
@@ -259,7 +295,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             result = null != fileCondition ? fileCondition : True.INSTANCE;
         }
         
-        return result;
+        return FormulaSimplifier.simplify(result);
     }
     
     /**
@@ -268,7 +304,8 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * @return The condition if it is not <tt>null</tt>, <tt>true</tt> otherwise.
      */
     private @NonNull Formula getCondition(@Nullable Formula condition) {
-        return null != condition ? condition : True.INSTANCE;
+        Formula result = null != condition ? condition : True.INSTANCE;
+        return FormulaSimplifier.simplify(result);
     }
 
     @Override
