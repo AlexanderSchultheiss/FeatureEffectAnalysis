@@ -26,6 +26,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+    CodeBlockAnalysisTests.class,
     PcFinderTests.class,
     PcReaderTest.class,
     PcFinderTestsWithSimplificationTests.class

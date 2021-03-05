@@ -32,6 +32,7 @@ import net.ssehub.kernel_haven.fe_analysis.fes.FeatureEffectFinder;
 import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
+import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 /**
  * Common part for the two different kind of {@link PcFinder} tests.
@@ -79,7 +80,12 @@ public abstract class AbstractFinderTests<R> {
         }
         
         // Create virtual files
-        File file1 = new File("file1.c");
+        File file1;
+        if (null != element && null != element.getSourceFile()) {
+            file1 = element.getSourceFile();
+        } else {
+            file1 = new File("file1.c");
+        }
         SourceFile<CodeElement<?>> sourceFile1 = new SourceFile<>(file1);
         if (element != null) {
             sourceFile1.addElement(element);
@@ -113,5 +119,5 @@ public abstract class AbstractFinderTests<R> {
      * @throws SetUpException If analysis fails.
      */
     protected abstract AnalysisComponent<R> createAnalysor(TestConfiguration tConfig,
-        AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException;
+        @NonNull AnalysisComponent<SourceFile<?>> cmComponent) throws SetUpException;
 }

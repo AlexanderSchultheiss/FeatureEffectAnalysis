@@ -29,6 +29,7 @@ import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
 import net.ssehub.kernel_haven.util.logic.Conjunction;
+import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
 import net.ssehub.kernel_haven.util.logic.True;
@@ -46,6 +47,11 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     public static final @NonNull Setting<@NonNull Boolean> ORDER_RESULTS = new Setting<>(
         "analysis.code_block.order", Type.BOOLEAN, true, "false", "Whether " + CodeBlockAnalysis.class.getName()
         + " should order the results, which will block until all results are finished.");
+    
+    public static final @NonNull Setting<@NonNull Boolean> MISSING_BUILD_INFORMATION_AS_FALSE = new Setting<>(
+        "analysis.code_block.consider_missing_bm_infos", Type.BOOLEAN, true, "true", "Whether "
+        + CodeBlockAnalysis.class.getName() + " should treat missing build information as FALSE (e.g., as this belongs"
+        + " to another architecture). This will only be considered if a build model was passed to the analysis.");
     
     /**
      * An entry that stores a condition of a <b>code block</b> of a code file.
@@ -159,6 +165,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     private @NonNull AnalysisComponent<SourceFile<?>> sourceFiles;
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     private boolean orderResults;
+    private boolean missingBuildAsFalse;
     private CodeBlockStore results;
 
     /**
@@ -178,6 +185,9 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         config.registerSetting(ORDER_RESULTS);
         orderResults = config.getValue(ORDER_RESULTS);
         results = new CodeBlockStore();
+        
+        config.registerSetting(MISSING_BUILD_INFORMATION_AS_FALSE);
+        missingBuildAsFalse = config.getValue(MISSING_BUILD_INFORMATION_AS_FALSE);
     }
     
     /**
@@ -208,7 +218,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
                 LOGGER.logDebug("Calculating presence conditions including information from build model");
             } else {
                 LOGGER.logWarning("Should use build information for calculation of presence conditions, "
-                        + "but build model provider returned null", "Ignoring build model");
+                    + "but build model provider returned null", "Ignoring build model");
             }
         } else {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
@@ -222,6 +232,10 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
+                
+                if (null == filePc) {
+                    filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
+                }
             }
             
             // Code block parameters, which are constant for the whole file
@@ -231,15 +245,13 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             // Recursively analyze all top level blocks of the file
             for (CodeElement<?> block : file) {
                 analyzeBlock(block, path, fileCondition);
-                
             }
 
             progress.processedOne();
         }
         
         if (orderResults) {
-            results.getOrderedStream()
-                .forEach(this::addResult);
+            results.getOrderedStream().forEach(this::addResult);
         }
         
         // All files processed

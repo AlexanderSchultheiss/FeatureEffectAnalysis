@@ -18,7 +18,7 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
 import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.or;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.util.HashSet;
