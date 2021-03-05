@@ -81,7 +81,7 @@ public abstract class AbstractFinderTests<R> {
         
         // Create virtual files
         File file1;
-        if (null != element && null != element.getSourceFile()) {
+        if (null != element && !"<unknown>".equals(element.getSourceFile().getPath())) {
             file1 = element.getSourceFile();
         } else {
             file1 = new File("file1.c");
