@@ -20,8 +20,10 @@ import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.ssehub.kernel_haven.SetUpException;
@@ -31,8 +33,10 @@ import net.ssehub.kernel_haven.code_model.CodeBlock;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.fe_analysis.AbstractFinderTests;
 import net.ssehub.kernel_haven.fe_analysis.Settings.SimplificationType;
+import net.ssehub.kernel_haven.logic_utils.LogicUtils;
 import net.ssehub.kernel_haven.test_utils.TestAnalysisComponentProvider;
 import net.ssehub.kernel_haven.test_utils.TestConfiguration;
+import net.ssehub.kernel_haven.util.StaticClassLoader;
 import net.ssehub.kernel_haven.util.logic.False;
 import net.ssehub.kernel_haven.util.logic.Formula;
 import net.ssehub.kernel_haven.util.logic.True;
@@ -49,6 +53,20 @@ public class CodeBlockAnalysisTests extends
     
     private BuildModel bm;
     private boolean missingBuildAsFalse;
+    
+    /**
+     * Makes sure that LogicUtils has been initialized. This is only needed in test cases, because
+     * {@link StaticClassLoader} does not run.
+     * 
+     * This ensures that this test suite uses the same simplifier as the rest of the test suite and does not behave
+     * differently when executed alone.
+     * 
+     * @throws SetUpException unwanted.
+     */
+    @BeforeClass
+    public static void loadLogicUtils() throws SetUpException {
+        LogicUtils.initialize(new TestConfiguration(new Properties()));
+    }
     
     /**
      * Tests handling of files without any code blocks.
@@ -199,7 +217,7 @@ public class CodeBlockAnalysisTests extends
         assertBlock(results.get(0), element, filePC, varA);
         assertBlock(results.get(1), conditionalBlockIf, filePC, varA);
         assertBlock(results.get(2), nested, filePC, and(varA, and(varA, varB)));
-        assertBlock(results.get(3), conditionalBlockElse, filePC, and(varA, not(varA)));
+        assertBlock(results.get(3), conditionalBlockElse, filePC, False.INSTANCE);
     }
     
     /**
