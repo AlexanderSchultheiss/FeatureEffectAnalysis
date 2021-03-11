@@ -15,6 +15,7 @@
  */
 package net.ssehub.kernel_haven.fe_analysis.pcs;
 
+import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.and;
 import static net.ssehub.kernel_haven.util.logic.FormulaBuilder.not;
 
 import java.io.File;
@@ -64,7 +65,8 @@ public class CodeBlockAnalysisTests extends
         // Verify correct analysis results
         Assert.assertEquals(1, results.size());
         // No build model passed -> BM = True, Block = TRUE
-        assertBlock(results.get(0), element, True.INSTANCE, True.INSTANCE);
+        Formula filePC = True.INSTANCE;
+        assertBlock(results.get(0), element, filePC, True.INSTANCE);
     }
     
     /**
@@ -88,9 +90,79 @@ public class CodeBlockAnalysisTests extends
         // Verify correct analysis results
         Assert.assertEquals(3, results.size());
         // No build model passed -> BM = True
-        assertBlock(results.get(0), element, True.INSTANCE, True.INSTANCE);
-        assertBlock(results.get(1), conditionalBlockIf, True.INSTANCE, varA);
-        assertBlock(results.get(2), conditionalBlockElse, True.INSTANCE, not(varA));
+        Formula filePC = True.INSTANCE;
+        assertBlock(results.get(0), element, filePC, True.INSTANCE);
+        assertBlock(results.get(1), conditionalBlockIf, filePC, varA);
+        assertBlock(results.get(2), conditionalBlockElse, filePC, not(varA));
+    }
+    
+    /**
+     * Tests handling of files with nested code blocks, but no build model.
+     */
+    @Test
+    public void testNestedBlocks() {
+        // Input files to analyze
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        File fakeFile = new File("src/File1.c");
+        CodeBlock element = new CodeBlock(1, 100, fakeFile, True.INSTANCE, True.INSTANCE);
+        CodeBlock conditionalBlockIf = new CodeBlock(1, 50, fakeFile, varA, varA);
+        CodeBlock nested = new CodeBlock(25, 30, fakeFile, varB, and(varA, varB));
+        conditionalBlockIf.addNestedElement(nested);
+        CodeBlock conditionalBlockElse = new CodeBlock(51, 100, fakeFile, not(varA), not(varA));
+        element.addNestedElement(conditionalBlockIf);
+        element.addNestedElement(conditionalBlockElse);
+        
+        // Run the analysis
+        List<net.ssehub.kernel_haven.fe_analysis.pcs.CodeBlockAnalysis.CodeBlock> results
+            = runAnalysis(element, SimplificationType.PRESENCE_CONDITIONS);
+        
+        // Verify correct analysis results
+        Assert.assertEquals(4, results.size());
+        // No build model passed -> BM = True
+        Formula filePC = True.INSTANCE;
+        assertBlock(results.get(0), element, filePC, True.INSTANCE);
+        assertBlock(results.get(1), conditionalBlockIf, filePC, varA);
+        assertBlock(results.get(2), nested, filePC, and(varA, varB));
+        assertBlock(results.get(3), conditionalBlockElse, filePC, not(varA));
+    }
+    
+    /**
+     * Tests handling of files with nested code blocks with a build model.
+     */
+    @Test
+    public void testNestedBlocksWithBm() {
+        Variable varA = new Variable("A");
+        Variable varB = new Variable("B");
+        Variable varX = new Variable("X");
+        Variable varY = new Variable("Y");
+
+        bm = new BuildModel();
+        bm.add(new File("file1.c"), varX);
+        bm.add(new File("file2.c"), varY); // irrelevant
+        
+        // Input files to analyze
+        File fakeFile = new File("file1.c");
+        CodeBlock element = new CodeBlock(1, 100, fakeFile, True.INSTANCE, True.INSTANCE);
+        CodeBlock conditionalBlockIf = new CodeBlock(1, 50, fakeFile, varA, varA);
+        CodeBlock nested = new CodeBlock(25, 30, fakeFile, varB, and(varA, varB));
+        conditionalBlockIf.addNestedElement(nested);
+        CodeBlock conditionalBlockElse = new CodeBlock(51, 100, fakeFile, not(varA), not(varA));
+        element.addNestedElement(conditionalBlockIf);
+        element.addNestedElement(conditionalBlockElse);
+        
+        // Run the analysis
+        List<net.ssehub.kernel_haven.fe_analysis.pcs.CodeBlockAnalysis.CodeBlock> results
+            = runAnalysis(element, SimplificationType.PRESENCE_CONDITIONS);
+        
+        // Verify correct analysis results
+        Assert.assertEquals(4, results.size());
+        // Build model used -> BM = varX
+        Formula filePC = varX;
+        assertBlock(results.get(0), element, filePC, varX);
+        assertBlock(results.get(1), conditionalBlockIf, filePC, and(varX, varA));
+        assertBlock(results.get(2), nested, filePC, and(varX, and(varA, varB)));
+        assertBlock(results.get(3), conditionalBlockElse, filePC, and(varX, not(varA)));
     }
         
     /**
