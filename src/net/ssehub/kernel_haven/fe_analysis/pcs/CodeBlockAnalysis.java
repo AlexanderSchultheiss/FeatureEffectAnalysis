@@ -250,16 +250,14 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
-                
-                if (null == filePc) {
-                    filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
-                }
             }
-            
+            if (null == filePc) {
+                filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
+            }
+
             // Code block parameters, which are constant for the whole file
             @NonNull String path = NullHelpers.notNull(file.getPath().getPath());
             @NonNull Formula fileCondition = getCondition(filePc);
-            
             // Recursively analyze all top level blocks of the file
             for (CodeElement<?> block : file) {
                 analyzeBlock(block, path, fileCondition);
