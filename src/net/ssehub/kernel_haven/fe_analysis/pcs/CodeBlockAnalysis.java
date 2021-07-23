@@ -12,6 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * NOTE: The original version of this file was changed by Alexander Schultheiß,
+ * Humboldt-Universität zu Berlin, alexander.schultheiss@informatik.hu-berlin.de
  */
 package net.ssehub.kernel_haven.fe_analysis.pcs;
 
@@ -21,6 +24,7 @@ import net.ssehub.kernel_haven.build_model.BuildModel;
 import net.ssehub.kernel_haven.code_model.CodeElement;
 import net.ssehub.kernel_haven.code_model.SourceFile;
 import net.ssehub.kernel_haven.config.Configuration;
+import net.ssehub.kernel_haven.config.DefaultSettings;
 import net.ssehub.kernel_haven.config.Setting;
 import net.ssehub.kernel_haven.config.Setting.Type;
 import net.ssehub.kernel_haven.fe_analysis.pcs.CodeBlockAnalysis.CodeBlock;
@@ -36,6 +40,9 @@ import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * 
@@ -166,6 +173,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     private boolean orderResults;
     private boolean missingBuildAsFalse;
+    private File sourceTree;
     private CodeBlockStore results;
 
     /**
@@ -188,6 +196,8 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         
         config.registerSetting(MISSING_BUILD_INFORMATION_AS_FALSE);
         missingBuildAsFalse = config.getValue(MISSING_BUILD_INFORMATION_AS_FALSE);
+
+        sourceTree = config.getValue(DefaultSettings.SOURCE_TREE);
     }
     
     /**
@@ -219,6 +229,14 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             } else {
                 LOGGER.logWarning("Should use build information for calculation of presence conditions, "
                     + "but build model provider returned null", "Ignoring build model");
+                File prepareFailedFile = new File(sourceTree, "PREPARE_FAILED");
+                try {
+                    if(prepareFailedFile.createNewFile()) {
+                        LOGGER.logWarning("Created PREPARE_FAILED file under " + prepareFailedFile);
+                    }
+                } catch (IOException e) {
+                    LOGGER.logException("No build model extracted but PREPARE_FAILED could not be created: ", e);
+                }
             }
         } else {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
@@ -232,16 +250,14 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             Formula filePc = null;
             if (null != bm) {
                 filePc = bm.getPc(file.getPath());
-                
-                if (null == filePc) {
-                    filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
-                }
             }
-            
+            if (null == filePc) {
+                filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
+            }
+
             // Code block parameters, which are constant for the whole file
             @NonNull String path = NullHelpers.notNull(file.getPath().getPath());
             @NonNull Formula fileCondition = getCondition(filePc);
-            
             // Recursively analyze all top level blocks of the file
             for (CodeElement<?> block : file) {
                 analyzeBlock(block, path, fileCondition);
