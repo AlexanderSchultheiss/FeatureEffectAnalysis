@@ -32,11 +32,7 @@ import net.ssehub.kernel_haven.fe_analysis.pcs.PcFinder.VariableWithPcs;
 import net.ssehub.kernel_haven.util.ProgressLogger;
 import net.ssehub.kernel_haven.util.io.TableElement;
 import net.ssehub.kernel_haven.util.io.TableRow;
-import net.ssehub.kernel_haven.util.logic.Conjunction;
-import net.ssehub.kernel_haven.util.logic.False;
-import net.ssehub.kernel_haven.util.logic.Formula;
-import net.ssehub.kernel_haven.util.logic.FormulaSimplifier;
-import net.ssehub.kernel_haven.util.logic.True;
+import net.ssehub.kernel_haven.util.logic.*;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
@@ -45,8 +41,8 @@ import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.file.Files;
+import java.util.*;
 
 /**
  * 
@@ -101,13 +97,13 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
          */
         //checkstyle: stop parameter number check
         public CodeBlock(@NonNull String path, @NonNull Formula fileCondition, @NonNull Formula condition,
-            @NonNull Formula presencecondition, int start, int end) {
+                         @NonNull Formula presencecondition, int start, int end, IFormulaVisitor<Formula> filter) {
         //checkstyle: resume parameter number check
            
             this.path = path;
-            this.fileCondition = fileCondition;
-            this.condition = condition;
-            this.presencecondition = presencecondition;
+            this.fileCondition = fileCondition.accept(filter);
+            this.condition = condition.accept(filter);
+            this.presencecondition = presencecondition.accept(filter);
             this.start = start;
             this.end = end;
         }
@@ -181,6 +177,8 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     private boolean orderResults;
     private boolean missingBuildAsFalse;
     private File sourceTree;
+    private final File filterCountFile;
+    private final File variablesFile;
     private CodeBlockStore results;
 
     /**
@@ -205,6 +203,8 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         missingBuildAsFalse = config.getValue(MISSING_BUILD_INFORMATION_AS_FALSE);
 
         sourceTree = config.getValue(DefaultSettings.SOURCE_TREE);
+        filterCountFile = new File(config.getValue(DefaultSettings.OUTPUT_DIR), "FILTERED.txt");
+        variablesFile = new File(config.getValue(DefaultSettings.OUTPUT_DIR), "VARIABLES.txt");
     }
     
     /**
@@ -267,14 +267,22 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
         }
         
-        VariabilityModel vm = vmComponent.getNextResult();
-        if (vm != null) {
-            vm.getVariables().stream().map(VariabilityVariable::getName).forEach(features::add);
-            featureFilter = new FeatureFilter(features);
-            LOGGER.logDebug("Calculating presence conditions including information from feature model");
-        } else {
-            LOGGER.logError("Should use feature information for calculation of presence conditions, "
-                    + "but feature model provider returned null", "Ignoring feature model");
+        VariabilityModel vm;
+        if (bmComponent != null) {
+            vm = vmComponent.getNextResult();
+            if (vm != null) {
+                vm.getVariables().stream().map(VariabilityVariable::getName).forEach(features::add);
+                try {
+                    Files.write(variablesFile.toPath(), features);
+                } catch (IOException e) {
+                    LOGGER.logException("Was not able to write variables.", e);
+                }
+                featureFilter = new FeatureFilter(features);
+                LOGGER.logDebug("Calculating presence conditions including information from feature model");
+            } else {
+                LOGGER.logError("Should use feature information for calculation of presence conditions, "
+                        + "but feature model provider returned null", "Ignoring feature model");
+            }
         }
         
         ProgressLogger progress = new ProgressLogger(getResultName() + " Collecting");
@@ -304,6 +312,16 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         if (orderResults) {
             results.getOrderedStream().forEach(this::addResult);
         }
+
+        try {
+            List<String> counts = new ArrayList<>(3);
+            counts.add("FILTERED: " + featureFilter.filtered());
+            counts.add("KEPT: " + featureFilter.kept());
+            counts.add("CONST: " + featureFilter.constants());
+            Files.write(filterCountFile.toPath(), counts);
+        } catch (IOException e) {
+            LOGGER.logError("Was not able to write number of filtered variables to " + filterCountFile);
+        }
         
         // All files processed
         progress.close();
@@ -316,13 +334,11 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * @param fileCondition The path to the analyzed file.
      */
     private void analyzeBlock(CodeElement<?> block, @NonNull String path, @NonNull Formula fileCondition) {
-        fileCondition = fileCondition.accept(featureFilter);
         Formula blockCondition = getCondition(block.getCondition());
         Formula pcCondition = computePresenceCondition(block.getPresenceCondition(), fileCondition);
 
-        pcCondition = pcCondition.accept(featureFilter);
         progressResult(new CodeBlock(path, fileCondition, blockCondition, pcCondition, block.getLineStart(),
-            block.getLineEnd()));
+            block.getLineEnd(), featureFilter));
         
         for (CodeElement<?> nested : block) {
             analyzeBlock(nested, path, fileCondition);
