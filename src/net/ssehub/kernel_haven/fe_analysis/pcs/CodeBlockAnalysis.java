@@ -40,9 +40,13 @@ import net.ssehub.kernel_haven.util.logic.True;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.NullHelpers;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
+import net.ssehub.kernel_haven.variability_model.VariabilityModel;
+import net.ssehub.kernel_haven.variability_model.VariabilityVariable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 
@@ -171,6 +175,9 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
     
     private @NonNull AnalysisComponent<SourceFile<?>> sourceFiles;
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
+    private AnalysisComponent<VariabilityModel> vmComponent;
+    private @NonNull Set<String> features = new HashSet<>();
+    private FeatureFilter featureFilter;
     private boolean orderResults;
     private boolean missingBuildAsFalse;
     private File sourceTree;
@@ -212,10 +219,28 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * 
      */
     public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
-        @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
-        
+                             @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
+        this(config, sourceFiles, bm, null);
+    }
+
+    /**
+     * Creates a {@link PcFinder} for the given code and build model. The build model presence conditions will be
+     * added to the code model conditions.
+     *
+     * @param config The global configuration.
+     * @param sourceFiles The code model provider component.
+     * @param bm The build model provider component.
+     *
+     * @throws SetUpException If setting up this component fails.
+     *
+     */
+    public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
+                             @NonNull AnalysisComponent<BuildModel> bm,
+                             AnalysisComponent<VariabilityModel> vm) throws SetUpException {
+
         this(config, sourceFiles);
         this.bmComponent = bm;
+        this.vmComponent = vm;
     }
 
     @Override
@@ -240,6 +265,16 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             }
         } else {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
+        }
+        
+        VariabilityModel vm = vmComponent.getNextResult();
+        if (vm != null) {
+            vm.getVariables().stream().map(VariabilityVariable::getName).forEach(features::add);
+            featureFilter = new FeatureFilter(features);
+            LOGGER.logDebug("Calculating presence conditions including information from feature model");
+        } else {
+            LOGGER.logError("Should use feature information for calculation of presence conditions, "
+                    + "but feature model provider returned null", "Ignoring feature model");
         }
         
         ProgressLogger progress = new ProgressLogger(getResultName() + " Collecting");
@@ -281,9 +316,11 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * @param fileCondition The path to the analyzed file.
      */
     private void analyzeBlock(CodeElement<?> block, @NonNull String path, @NonNull Formula fileCondition) {
+        fileCondition = fileCondition.accept(featureFilter);
         Formula blockCondition = getCondition(block.getCondition());
         Formula pcCondition = computePresenceCondition(block.getPresenceCondition(), fileCondition);
-        
+
+        pcCondition = pcCondition.accept(featureFilter);
         progressResult(new CodeBlock(path, fileCondition, blockCondition, pcCondition, block.getLineStart(),
             block.getLineEnd()));
         
