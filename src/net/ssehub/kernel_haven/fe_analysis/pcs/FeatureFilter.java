@@ -40,73 +40,48 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
 
     @Override
     public Formula visitNegation(@NonNull Negation formula) {
-        return FormulaBuilder.not(formula.getFormula().accept(this));
+        Formula inner = formula.getFormula().accept(this);
+        // Added manual handling of constants, because it was causing '!1' and '!0' as PC
+        if (inner instanceof True) {
+            return False.INSTANCE;
+        } else if (inner instanceof False) {
+            return True.INSTANCE;
+        } else {
+            return FormulaBuilder.not(inner);
+        }
     }
 
     @Override
     public Formula visitDisjunction(@NonNull Disjunction formula) {
         Formula left = formula.getLeft();
-        if (left instanceof Variable) {
-            if (!features.contains(((Variable) left).getName())) {
-                left = False.INSTANCE;
-                filtered++;
-            } else {
-                kept++;
-            }
-        } else {
-            left = left.accept(this);
-        }
+        left = left.accept(this);
+
 
         Formula right = formula.getRight();
-        if (right instanceof Variable) {
-            if (!features.contains(((Variable) right).getName())) {
-                right = False.INSTANCE;
-                filtered++;
-            } else {
-                kept++;
-            }
-        } else {
-            right = right.accept(this);
-        }
+        right = right.accept(this);
+
         return FormulaBuilder.or(left, right);
     }
 
     @Override
     public Formula visitConjunction(@NonNull Conjunction formula) {
         Formula left = formula.getLeft();
-        if (left instanceof Variable) {
-            if (!features.contains(((Variable) left).getName())) {
-                left = True.INSTANCE;
-                filtered++;
-            } else {
-                kept++;
-            }
-        } else {
-            left = left.accept(this);
-        }
+        left = left.accept(this);
 
         Formula right = formula.getRight();
-        if (right instanceof Variable) {
-            if (!features.contains(((Variable) right).getName())) {
-                right = True.INSTANCE;
-                filtered++;
-            } else {
-                kept++;
-            }
-        } else {
-            right = right.accept(this);
-        }
+        right = right.accept(this);
+
         return FormulaBuilder.or(left, right);
     }
 
     public int filtered() {
         return filtered;
     }
-    
+
     public int kept() {
-        return kept;   
+        return kept;
     }
-    
+
     public int constants() {
         return constants;
     }
