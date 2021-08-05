@@ -4,12 +4,14 @@ import net.ssehub.kernel_haven.util.logic.*;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class FeatureFilter implements IFormulaVisitor<Formula> {
     private final Set<String> features;
     private int filtered = 0;
     private int kept = 0;
     private int constants = 0;
+    private final Pattern splitPattern = Pattern.compile("=");
 
     public FeatureFilter(Set<String> features) {
         this.features = features;
@@ -29,7 +31,8 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
 
     @Override
     public Formula visitVariable(@NonNull Variable variable) {
-        if (features.contains(variable.getName())) {
+        String name = variable.getName().contains("=") ? splitPattern.split(variable.getName())[0].trim() : variable.getName();
+        if (features.contains(name)) {
             kept++;
             return variable;
         } else {
