@@ -4,16 +4,19 @@ import net.ssehub.kernel_haven.util.logic.*;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
 import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class FeatureFilter implements IFormulaVisitor<Formula> {
     private final Set<String> features;
+    private final Set<String> observedVariables;
     private int filtered = 0;
     private int kept = 0;
     private int constants = 0;
 
     public FeatureFilter(@Nullable Set<String> features) {
         this.features = features;
+        this.observedVariables = new HashSet<>();
     }
 
     @Override
@@ -30,6 +33,7 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
 
     @Override
     public Formula visitVariable(@NonNull Variable variable) {
+        observedVariables.add(variable.getName());
         if (features == null) {
             kept++;
             return variable;
@@ -90,5 +94,9 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
 
     public int constants() {
         return constants;
+    }
+
+    public Set<String> variables() {
+        return this.features == null ? this.observedVariables : this.features;
     }
 }

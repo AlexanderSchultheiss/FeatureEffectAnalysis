@@ -267,11 +267,6 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             vm = vmComponent.getNextResult();
             if (vm != null) {
                 vm.getVariables().stream().map(VariabilityVariable::getName).forEach(features::add);
-                try {
-                    Files.write(variablesFile.toPath(), features);
-                } catch (IOException e) {
-                    LOGGER.logException("Was not able to write variables.", e);
-                }
                 featureFilter = new FeatureFilter(features);
                 LOGGER.logDebug("Calculating presence conditions including information from feature model");
             } else {
@@ -311,6 +306,14 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
 
         if (orderResults) {
             results.getOrderedStream().forEach(this::addResult);
+        }
+
+        try {
+            List<String> variables = new ArrayList<>(featureFilter.variables());
+            Collections.sort(variables);
+            Files.write(variablesFile.toPath(), variables);
+        } catch (IOException e) {
+            LOGGER.logException("Was not able to write variables.", e);
         }
 
         try {
