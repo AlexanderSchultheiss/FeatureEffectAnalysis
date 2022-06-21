@@ -305,8 +305,8 @@ public class CodeBlockAnalysisTests extends
         tConfig.setValue(CodeBlockAnalysis.ORDER_RESULTS, Boolean.TRUE);
         
         // Switch to en-/disable treatment of missing build information
-        tConfig.registerSetting(CodeBlockAnalysis.MISSING_BUILD_INFORMATION_AS_FALSE);
-        tConfig.setValue(CodeBlockAnalysis.MISSING_BUILD_INFORMATION_AS_FALSE, missingBuildAsFalse);
+        tConfig.registerSetting(CodeBlockAnalysis.MISSING_BUILD_INFORMATION_AS);
+        tConfig.setValue(CodeBlockAnalysis.MISSING_BUILD_INFORMATION_AS, missingBuildAsFalse);
         
         CodeBlockAnalysis analysis;
         if (bm == null) {

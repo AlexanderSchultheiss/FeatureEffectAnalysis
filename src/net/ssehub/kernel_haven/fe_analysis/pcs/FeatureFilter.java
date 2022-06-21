@@ -2,6 +2,7 @@ package net.ssehub.kernel_haven.fe_analysis.pcs;
 
 import net.ssehub.kernel_haven.util.logic.*;
 import net.ssehub.kernel_haven.util.null_checks.NonNull;
+import net.ssehub.kernel_haven.util.null_checks.Nullable;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
     private int kept = 0;
     private int constants = 0;
 
-    public FeatureFilter(Set<String> features) {
+    public FeatureFilter(@Nullable Set<String> features) {
         this.features = features;
     }
 
@@ -29,6 +30,10 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
 
     @Override
     public Formula visitVariable(@NonNull Variable variable) {
+        if (features == null) {
+            kept++;
+            return variable;
+        }
         String name = variable.getName();
         if (features.contains(name)) {
             kept++;

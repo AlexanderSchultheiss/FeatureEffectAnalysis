@@ -45,21 +45,21 @@ import java.nio.file.Files;
 import java.util.*;
 
 /**
- * 
  * Collects (conditional) code blocks of all code files.
+ *
  * @author El-Sharkawy
  */
 public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
-    
+
     public static final @NonNull Setting<@NonNull Boolean> ORDER_RESULTS = new Setting<>(
-        "analysis.code_block.order", Type.BOOLEAN, true, "false", "Whether " + CodeBlockAnalysis.class.getName()
-        + " should order the results, which will block until all results are finished.");
-    
-    public static final @NonNull Setting<@NonNull Boolean> MISSING_BUILD_INFORMATION_AS_FALSE = new Setting<>(
-        "analysis.code_block.consider_missing_bm_infos", Type.BOOLEAN, true, "true", "Whether "
-        + CodeBlockAnalysis.class.getName() + " should treat missing build information as FALSE (e.g., as this belongs"
-        + " to another architecture). This will only be considered if a build model was passed to the analysis.");
-    
+            "analysis.code_block.order", Type.BOOLEAN, true, "false", "Whether " + CodeBlockAnalysis.class.getName()
+            + " should order the results, which will block until all results are finished.");
+
+    public static final @NonNull Setting<@NonNull Boolean> MISSING_BUILD_INFORMATION_AS = new Setting<>(
+            "analysis.code_block.consider_missing_bm_infos", Type.BOOLEAN, true, "true", "Whether "
+            + CodeBlockAnalysis.class.getName() + " should treat missing build information as TRUE/FALSE (e.g., as this belongs"
+            + " to another architecture). This will be considered if no build information can be retrieved.");
+
     /**
      * An entry that stores a condition of a <b>code block</b> of a code file.
      * The entry consists of:
@@ -71,35 +71,35 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      *   <li>The start line of the block</li>
      *   <li>The end line of the block</li>
      * </ul>
-     * 
+     *
      * @author El-Sharkawy
      */
     @TableRow
     public static class CodeBlock {
-       
+
         private @NonNull String path;
         private @NonNull Formula fileCondition;
         private @NonNull Formula condition;
         private @NonNull Formula presencecondition;
         private int start;
         private int end;
-      
+
 
         /**
          * Creates a new {@link VariableWithPcs}.
-         * 
-         * @param path The path to the analyzed file
-         * @param fileCondition The presence condition in order that the file is compiled into the final product
-         * @param condition The actual condition of the analyzed code block
+         *
+         * @param path              The path to the analyzed file
+         * @param fileCondition     The presence condition in order that the file is compiled into the final product
+         * @param condition         The actual condition of the analyzed code block
          * @param presencecondition The total presence condition of the analyzed code block
-         * @param start The line where the block starts within the analyzed file
-         * @param end The line where the block ends within the analyzed file
+         * @param start             The line where the block starts within the analyzed file
+         * @param end               The line where the block ends within the analyzed file
          */
         //checkstyle: stop parameter number check
         public CodeBlock(@NonNull String path, @NonNull Formula fileCondition, @NonNull Formula condition,
                          @NonNull Formula presencecondition, int start, int end, IFormulaVisitor<Formula> filter) {
-        //checkstyle: resume parameter number check
-           
+            //checkstyle: resume parameter number check
+
             this.path = path;
             this.fileCondition = fileCondition.accept(filter);
             this.condition = condition.accept(filter);
@@ -107,60 +107,60 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             this.start = start;
             this.end = end;
         }
-       
+
         /**
          * Returns the path to the analyzed file.
-         * 
+         *
          * @return The path to the analyzed file.
          */
         @TableElement(name = "Path", index = 0)
         public @NonNull String getPath() {
             return path;
         }
-        
+
         /**
          * Returns the presence condition of the analyzed file.
-         * 
+         *
          * @return The presence condition of the analyzed file.
          */
         @TableElement(name = "File Condition", index = 1)
         public @NonNull Formula getFileCondition() {
             return fileCondition;
-        }   
-        
+        }
+
         /**
          * Returns the condition of the current block.
-         * 
+         *
          * @return The presence condition of the current block.
          */
         @TableElement(name = "Block Condition", index = 2)
         public @NonNull Formula getCondition() {
             return condition;
-        }   
-        
+        }
+
         /**
          * Returns the presence condition of the current block.
-         * 
+         *
          * @return The presence condition of the current block.
          */
         @TableElement(name = "Presence Condition", index = 3)
         public @NonNull Formula getPresenceCondition() {
             return presencecondition;
-        }   
-        
+        }
+
         /**
          * Returns the starting line of the block.
-         * 
+         *
          * @return The starting line of the block.
          */
         @TableElement(name = "start", index = 4)
         public int getStart() {
             return start;
         }
-        
+
         /**
          * Returns the ending line of the block.
-         * 
+         *
          * @return The ending line of the block.
          */
         @TableElement(name = "end", index = 5)
@@ -168,14 +168,14 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             return end;
         }
     }
-    
+
     private @NonNull AnalysisComponent<SourceFile<?>> sourceFiles;
     private @Nullable AnalysisComponent<BuildModel> bmComponent;
     private AnalysisComponent<VariabilityModel> vmComponent;
     private @NonNull Set<String> features = new HashSet<>();
     private FeatureFilter featureFilter;
     private boolean orderResults;
-    private boolean missingBuildAsFalse;
+    private boolean missingBuildAs;
     private File sourceTree;
     private final File filterCountFile;
     private final File variablesFile;
@@ -183,40 +183,37 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
 
     /**
      * Creates a {@link PcFinder} for the given code model.
-     * 
-     * @param config The global configuration.
+     *
+     * @param config      The global configuration.
      * @param sourceFiles The code model provider component.
      * @throws SetUpException If setting up this component fails.
-
      */
     public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles)
-        throws SetUpException {
-        
+            throws SetUpException {
+
         super(config);
         this.sourceFiles = sourceFiles;
-        
+
         config.registerSetting(ORDER_RESULTS);
         orderResults = config.getValue(ORDER_RESULTS);
         results = new CodeBlockStore();
-        
-        config.registerSetting(MISSING_BUILD_INFORMATION_AS_FALSE);
-        missingBuildAsFalse = config.getValue(MISSING_BUILD_INFORMATION_AS_FALSE);
+
+        config.registerSetting(MISSING_BUILD_INFORMATION_AS);
+        missingBuildAs = config.getValue(MISSING_BUILD_INFORMATION_AS);
 
         sourceTree = config.getValue(DefaultSettings.SOURCE_TREE);
         filterCountFile = new File(config.getValue(DefaultSettings.OUTPUT_DIR), "FILTERED.txt");
         variablesFile = new File(config.getValue(DefaultSettings.OUTPUT_DIR), "VARIABLES.txt");
     }
-    
+
     /**
      * Creates a {@link PcFinder} for the given code and build model. The build model presence conditions will be
      * added to the code model conditions.
-     * 
-     * @param config The global configuration.
+     *
+     * @param config      The global configuration.
      * @param sourceFiles The code model provider component.
-     * @param bm The build model provider component.
-     * 
+     * @param bm          The build model provider component.
      * @throws SetUpException If setting up this component fails.
-     * 
      */
     public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
                              @NonNull AnalysisComponent<BuildModel> bm) throws SetUpException {
@@ -227,12 +224,10 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * Creates a {@link PcFinder} for the given code and build model. The build model presence conditions will be
      * added to the code model conditions.
      *
-     * @param config The global configuration.
+     * @param config      The global configuration.
      * @param sourceFiles The code model provider component.
-     * @param bm The build model provider component.
-     *
+     * @param bm          The build model provider component.
      * @throws SetUpException If setting up this component fails.
-     *
      */
     public CodeBlockAnalysis(@NonNull Configuration config, @NonNull AnalysisComponent<SourceFile<?>> sourceFiles,
                              @NonNull AnalysisComponent<BuildModel> bm,
@@ -253,10 +248,10 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
                 LOGGER.logDebug("Calculating presence conditions including information from build model");
             } else {
                 LOGGER.logWarning("Should use build information for calculation of presence conditions, "
-                    + "but build model provider returned null", "Ignoring build model");
+                        + "but build model provider returned null", "Ignoring build model");
                 File prepareFailedFile = new File(sourceTree, "PREPARE_FAILED");
                 try {
-                    if(prepareFailedFile.createNewFile()) {
+                    if (prepareFailedFile.createNewFile()) {
                         LOGGER.logWarning("Created PREPARE_FAILED file under " + prepareFailedFile);
                     }
                 } catch (IOException e) {
@@ -266,7 +261,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         } else {
             LOGGER.logDebug("Calculating presence conditions without considering build model");
         }
-        
+
         VariabilityModel vm;
         if (bmComponent != null) {
             vm = vmComponent.getNextResult();
@@ -283,10 +278,15 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
                 LOGGER.logError("Should use feature information for calculation of presence conditions, "
                         + "but feature model provider returned null", "Ignoring feature model");
             }
+        } else {
+            LOGGER.logDebug("Calculating presence conditions without considering feature model");
         }
-        
+        if (featureFilter == null) {
+            featureFilter = new FeatureFilter(null);
+        }
+
         ProgressLogger progress = new ProgressLogger(getResultName() + " Collecting");
-        
+
         // Iterate through code files to detect all code blocks
         SourceFile<?> file;
         while ((file = sourceFiles.getNextResult()) != null) {
@@ -295,7 +295,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
                 filePc = bm.getPc(file.getPath());
             }
             if (null == filePc) {
-                filePc = missingBuildAsFalse ? False.INSTANCE : True.INSTANCE;
+                filePc = missingBuildAs ? True.INSTANCE : False.INSTANCE;
             }
 
             // Code block parameters, which are constant for the whole file
@@ -308,7 +308,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
 
             progress.processedOne();
         }
-        
+
         if (orderResults) {
             results.getOrderedStream().forEach(this::addResult);
         }
@@ -322,15 +322,16 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         } catch (IOException e) {
             LOGGER.logError("Was not able to write number of filtered variables to " + filterCountFile);
         }
-        
+
         // All files processed
         progress.close();
     }
-    
+
     /**
      * Recursive function to analyze a code block and all its nested blocks.
-     * @param block The block to analyze, start with top level blocks of a file.
-     * @param path The path of the file.
+     *
+     * @param block         The block to analyze, start with top level blocks of a file.
+     * @param path          The path of the file.
      * @param fileCondition The path to the analyzed file.
      */
     private void analyzeBlock(CodeElement<?> block, @NonNull String path, @NonNull Formula fileCondition) {
@@ -338,8 +339,8 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
         Formula pcCondition = computePresenceCondition(block.getPresenceCondition(), fileCondition);
 
         progressResult(new CodeBlock(path, fileCondition, blockCondition, pcCondition, block.getLineStart(),
-            block.getLineEnd(), featureFilter));
-        
+                block.getLineEnd(), featureFilter));
+
         for (CodeElement<?> nested : block) {
             analyzeBlock(nested, path, fileCondition);
         }
@@ -349,6 +350,7 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
      * Processes a new result.
      * Depending whether all results should be processed immediately or stores and sorted,
      * this method will pass them to the next analysis component or stores them inside the {@link CodeBlockStore}.
+     *
      * @param result A newly computed {@link CodeBlock} result.
      */
     private void progressResult(@NonNull CodeBlock result) {
@@ -358,16 +360,17 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             results.add(result);
         }
     }
-    
+
     /**
-     * Computes the presence condition of the current block also considering the file condition. 
+     * Computes the presence condition of the current block also considering the file condition.
+     *
      * @param presenceCondition The presence condition, may be <tt>null</tt> if block is always active.
-     * @param fileCondition The condition of the file, may be <tt>null</tt> if the file is always present.
+     * @param fileCondition     The condition of the file, may be <tt>null</tt> if the file is always present.
      * @return The compound formula, <tt>null</tt> elements are treated as <tt>true</tt>.
      */
     private @NonNull Formula computePresenceCondition(@Nullable Formula presenceCondition,
-        @Nullable Formula fileCondition) {
-        
+                                                      @Nullable Formula fileCondition) {
+
         @NonNull Formula result;
         if (null != presenceCondition) {
             result = null != fileCondition ? new Conjunction(fileCondition, presenceCondition) : presenceCondition;
@@ -375,12 +378,13 @@ public class CodeBlockAnalysis extends AnalysisComponent<CodeBlock> {
             // No presence condition, check if there is a file condition
             result = null != fileCondition ? fileCondition : True.INSTANCE;
         }
-        
+
         return FormulaSimplifier.simplify(result);
     }
-    
+
     /**
      * Helper function to treat <tt>null</tt> elements as <tt>true</tt>.
+     *
      * @param condition A condition to handle, which is maybe <tt>null</tt>.
      * @return The condition if it is not <tt>null</tt>, <tt>true</tt> otherwise.
      */
