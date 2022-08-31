@@ -81,7 +81,7 @@ public class FeatureFilter implements IFormulaVisitor<Formula> {
         Formula right = formula.getRight();
         right = right.accept(this);
 
-        return FormulaBuilder.or(left, right);
+        return FormulaBuilder.and(left, right);
     }
 
     public int filtered() {
